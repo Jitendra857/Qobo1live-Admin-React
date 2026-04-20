@@ -86,6 +86,13 @@ export const adminService = {
   manageSellerStock: (data: { sellerId: string; amount: number; type: 'TOPUP' | 'DEDUCT' }) => 
     api.post('/admin/seller-stock', data),
   getSellerReports: (id: string) => api.get(`/admin/seller-reports/${id}`),
+
+  // Agency Extensions
+  getAgencyRevenue: () => api.get('/agency/revenue'),
+  payoutAgency: (data: { agencyId: string }) => api.post('/agency/payout', data),
+
+  // PK & Dating
+  getPKStatus: (battleId: string) => api.get(`/pk/status?battle_id=${battleId}`),
 };
 
 export default api;

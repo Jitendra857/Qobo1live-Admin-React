@@ -4,7 +4,7 @@ import {
   Home, Users, Gift, List, FileText, UserCheck, 
   Video, MessageSquare, Dice1, Headset, Wallet, 
   Image as ImageIcon, Monitor, Mic, Bell, Settings, LogOut, Layout,
-  ChevronDown, ChevronRight
+  ChevronDown, ChevronRight, Sword
 } from 'lucide-react';
 import '../styles/Sidebar.css';
 
@@ -39,6 +39,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     { title: 'Fake Video Live', path: '/fake-video', icon: <Video size={20} /> },
     { title: 'Fake Chat Group', path: '/fake-chat', icon: <MessageSquare size={20} /> },
     { title: 'Greedy Game', path: '/greedy-game', icon: <Dice1 size={20} /> },
+    { title: 'PK Battles', path: '/pk-battles', icon: <Sword size={20} /> },
     { title: 'Help & support', path: '/support', icon: <Headset size={20} /> },
     { title: 'Withdrawal requests', path: '/withdrawals', icon: <Wallet size={20} /> },
     { title: 'Transaction History', path: '/transactions', icon: <FileText size={20} /> },

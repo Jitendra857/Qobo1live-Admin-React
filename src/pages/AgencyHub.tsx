@@ -5,27 +5,71 @@ import '../styles/UserManagement.css';
 
 const AgencyHub: React.FC = () => {
   const [agencies, setAgencies] = useState<any[]>([]);
+  const [revenue, setRevenue] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    adminService.getAgencies().then(res => {
-      setAgencies(res.data.data || []);
+  const fetchData = async () => {
+    try {
+      const [agenciesRes, revenueRes] = await Promise.all([
+        adminService.getAgencies(),
+        adminService.getAgencyRevenue()
+      ]);
+      setAgencies(agenciesRes.data.data || []);
+      setRevenue(revenueRes.data.data || null);
+    } catch (err) {
+      console.error(err);
+    } finally {
       setLoading(false);
-    });
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
   }, []);
+
+  const handlePayout = async () => {
+    if (!agencies[0]) return;
+    try {
+      await adminService.payoutAgency({ agencyId: agencies[0].id });
+      alert('Payout successful!');
+      fetchData();
+    } catch (err) {
+      alert('Payout failed or no pending commissions');
+    }
+  };
 
   return (
     <div className="user-management fade-in">
       <div className="header-actions">
         <div>
           <h2 className="page-title">Agency Hub</h2>
-          <p style={{ color: 'var(--text-secondary)' }}>Manage recruitment networks</p>
+          <p style={{ color: 'var(--text-secondary)' }}>Manage recruitment networks and commissions</p>
         </div>
-        <button className="primary flex-center gap-2">
-          <Plus size={18} />
-          <span>Onboard Agency</span>
-        </button>
+        <div className="flex gap-3">
+          <button className="secondary" onClick={handlePayout}>Process Payouts</button>
+          <button className="primary flex-center gap-2">
+            <Plus size={18} />
+            <span>Onboard Agency</span>
+          </button>
+        </div>
       </div>
+
+      {revenue && (
+        <div className="bento-grid mt-10" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+          <div className="bento-card">
+            <div className="card-label">TOTAL VOLUME</div>
+            <div className="card-value">₹{revenue.totalVolume.toLocaleString()}</div>
+          </div>
+          <div className="bento-card">
+            <div className="card-label">EARNED COMMISSIONS</div>
+            <div className="card-value" style={{ color: 'var(--accent-green)' }}>₹{revenue.earnedCommissions.toLocaleString()}</div>
+          </div>
+          <div className="bento-card">
+            <div className="card-label">PENDING PAYOUTS</div>
+            <div className="card-value" style={{ color: 'var(--accent-orange)' }}>₹{revenue.pendingCommissions.toLocaleString()}</div>
+          </div>
+        </div>
+      )}
 
       <div className="table-wrapper glass mt-10">
         <table className="premium-table">
@@ -34,6 +78,7 @@ const AgencyHub: React.FC = () => {
               <th>Agency Name</th>
               <th>Owner ID</th>
               <th>Agency Code</th>
+              <th>Commission Rate</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -48,6 +93,7 @@ const AgencyHub: React.FC = () => {
                 <td>
                   <span style={{ color: 'var(--accent-blue)', fontWeight: 800 }}>{agency.code}</span>
                 </td>
+                <td>{(agency.commissionRate * 100).toFixed(0)}%</td>
                 <td>
                   <span className={`status-neon ${agency.status === 'active' ? 'active' : ''}`}>
                     {agency.status}
@@ -58,13 +104,6 @@ const AgencyHub: React.FC = () => {
                 </td>
               </tr>
             ))}
-            {agencies.length === 0 && (
-              <tr>
-                <td colSpan={5} style={{ textAlign: 'center', padding: '100px', color: 'var(--text-secondary)' }}>
-                  No agencies linked to the ecosystem yet.
-                </td>
-              </tr>
-            )}
           </tbody>
         </table>
       </div>

@@ -20,6 +20,7 @@ import SellerManager from './pages/ops/SellerManager';
 import AmbienceManager from './pages/ops/AmbienceManager';
 import AudioRoomManager from './pages/ops/AudioRoomManager';
 import GiftCategories from './pages/GiftCategories';
+import PKBattleManager from './pages/PKBattleManager';
 import './styles/global.css';
 
 function App() {
@@ -52,6 +53,7 @@ function App() {
           <Route path="/fake-video" element={<SimulationManager />} />
           <Route path="/fake-chat" element={<SimulationManager />} />
           <Route path="/greedy-game" element={<GameCenter />} />
+          <Route path="/pk-battles" element={<PKBattleManager />} />
           <Route path="/support" element={<SupportDesk />} />
           <Route path="/withdrawals" element={<Withdrawals />} />
           <Route path="/transactions" element={<TransactionHistory />} />
