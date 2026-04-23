@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import '../styles/UserManagement.css';
 import ConfirmationModal from '../components/ConfirmationModal';
+import { scrollToModalTop } from '../utils/scrollToModalTop';
 
 const TaskCenter: React.FC = () => {
     const [tasks, setTasks] = useState<any[]>([]);
@@ -59,8 +60,7 @@ const TaskCenter: React.FC = () => {
             });
         }
         setIsModalOpen(true);
-        // Precision scroll to top of the content area for premium accessibility
-        document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'smooth' });
+        scrollToModalTop();
     };
 
     // Manage background scroll lock for premium focus
@@ -112,22 +112,22 @@ const TaskCenter: React.FC = () => {
     }, []);
 
     return (
-        <div className="dashboard-container-ambient">
+        <div className="dashboard-container-ambient dynamic-task-page">
             <Toaster position="top-right" />
-            
+
             <div className="dashboard-header-premium">
                 <div className="header-text-group">
                     <h1 className="dashboard-title-highdef">Growth Missions</h1>
                     <p className="dashboard-subtitle-highdef">Configure dynamic engagement architecture and operational objectives</p>
                 </div>
-                <div className="header-actions-premium">
-                    <button className="secondary-action-btn" onClick={fetchTasks} title="Refresh Global State">
+                <div className="header-actions-premium dynamic-task-header-actions">
+                    <button className="secondary-action-btn dynamic-task-action-btn" onClick={fetchTasks} title="Reload task data">
                         <Activity size={18} />
-                        <span>Refresh Registry</span>
+                        <span>Reload Data</span>
                     </button>
-                    <button className="primary-provision-btn" onClick={() => handleOpenModal()}>
+                    <button className="primary-provision-btn dynamic-task-action-btn" onClick={() => handleOpenModal()}>
                         <Plus size={20} />
-                        <span>Provision Mission</span>
+                        <span>Add New Task</span>
                     </button>
                 </div>
             </div>
@@ -164,7 +164,7 @@ const TaskCenter: React.FC = () => {
                 </div>
             </div>
 
-            <div className="bento-grid">
+            <div className="bento-grid dynamic-task-list-grid">
                 {tasks.map((task) => (
                     <div key={task.id} className="bento-card-premium">
                         <div className="card-payload">
@@ -293,29 +293,27 @@ const TaskCenter: React.FC = () => {
 
                             <div className="form-section">
                                 <label className="input-label-premium">Operation Status</label>
-                                <div className="grid grid-cols-2 gap-4 mt-2">
-                                    <div 
-                                        className={`status-card-selector ${formData.status === 'active' ? 'active' : ''}`}
-                                        onClick={() => setFormData({...formData, status: 'active'})}
-                                    >
-                                        <div className="status-indicator active"></div>
-                                        <div className="status-label-group">
-                                            <span className="status-main">Active Deployment</span>
-                                            <span className="status-sub">Live & visible to users</span>
-                                        </div>
-                                        {formData.status === 'active' && <Check size={16} className="status-check" />}
-                                    </div>
-                                    <div 
-                                        className={`status-card-selector ${formData.status === 'draft' ? 'active' : ''}`}
-                                        onClick={() => setFormData({...formData, status: 'draft'})}
-                                    >
-                                        <div className="status-indicator draft"></div>
-                                        <div className="status-label-group">
-                                            <span className="status-main">Archived/Draft</span>
-                                            <span className="status-sub">Internal configuration only</span>
-                                        </div>
-                                        {formData.status === 'draft' && <Check size={16} className="status-check" />}
-                                    </div>
+                                <div className="radio-group">
+                                    <label className="radio-option">
+                                        <input 
+                                            type="radio" 
+                                            name="taskStatus" 
+                                            value="active"
+                                            checked={formData.status === 'active'}
+                                            onChange={e => setFormData({...formData, status: e.target.value})}
+                                        />
+                                        <span>Active (1)</span>
+                                    </label>
+                                    <label className="radio-option">
+                                        <input 
+                                            type="radio" 
+                                            name="taskStatus" 
+                                            value="draft"
+                                            checked={formData.status === 'draft'}
+                                            onChange={e => setFormData({...formData, status: e.target.value})}
+                                        />
+                                        <span>Inactive (0)</span>
+                                    </label>
                                 </div>
                             </div>
 

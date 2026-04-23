@@ -66,7 +66,7 @@ const SimulationManager: React.FC = () => {
           </div>
         </div>
 
-        {bots.map((bot) => (
+        {bots.map((bot: any) => (
           <div key={bot.id} className="bento-card">
             <div className="card-top">
               <div className="card-label">SIMULATED</div>

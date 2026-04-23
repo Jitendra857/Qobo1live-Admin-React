@@ -45,7 +45,7 @@ const AmbienceManager: React.FC = () => {
       </div>
 
       <div className="bento-grid mt-10">
-        {backgrounds.map(bg => (
+        {backgrounds.map((bg: any) => (
           <div key={bg.id} className="bento-card">
             <div className="card-top">
               <div className="card-label">PREMIUM ASSET</div>

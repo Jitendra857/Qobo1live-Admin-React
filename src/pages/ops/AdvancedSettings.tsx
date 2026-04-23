@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { adminService } from '../../services/api';
 import { Settings, Shield, Globe, Database, Save } from 'lucide-react';
 import '../../styles/UserManagement.css';
 

@@ -21,6 +21,9 @@ import AmbienceManager from './pages/ops/AmbienceManager';
 import AudioRoomManager from './pages/ops/AudioRoomManager';
 import GiftCategories from './pages/GiftCategories';
 import PKBattleManager from './pages/PKBattleManager';
+import HostRegistry from './pages/HostRegistry';
+import VipStore from './pages/VipStore';
+import Moderation from './pages/Moderation';
 import './styles/global.css';
 
 function App() {
@@ -46,10 +49,12 @@ function App() {
           <Route path="/users" element={<UserManagement />} />
           <Route path="/gifts" element={<Gifts />} />
           <Route path="/gift-categories" element={<GiftCategories />} />
+          <Route path="/vip-store" element={<VipStore />} />
           <Route path="/dynamic-tasks" element={<TaskCenter />} />
           <Route path="/super-admin-forms" element={<StaffManagement />} />
           <Route path="/coin-seller-forms" element={<SellerManager />} />
           <Route path="/agents" element={<AgencyHub />} />
+          <Route path="/host-registry" element={<HostRegistry />} />
           <Route path="/fake-video" element={<SimulationManager />} />
           <Route path="/fake-chat" element={<SimulationManager />} />
           <Route path="/greedy-game" element={<GameCenter />} />
@@ -57,10 +62,11 @@ function App() {
           <Route path="/support" element={<SupportDesk />} />
           <Route path="/withdrawals" element={<Withdrawals />} />
           <Route path="/transactions" element={<TransactionHistory />} />
-          <Route path="/banners" element={<OperationalSettings />} />
+          <Route path="/operational-settings" element={<OperationalSettings />} />
           <Route path="/backgrounds" element={<AmbienceManager />} />
           <Route path="/audio-rooms" element={<AudioRoomManager />} />
           <Route path="/notifications" element={<NotificationCenter />} />
+          <Route path="/moderation" element={<Moderation />} />
           <Route path="/settings" element={<AdvancedSettings />} />
         </Routes>
       </main>

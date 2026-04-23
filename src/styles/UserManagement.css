@@ -33,15 +33,17 @@ button.primary:hover {
 
 .header-actions {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
   gap: 10px;
-  margin-bottom: 40px;
+  margin-bottom: 30px;
 }
 
 .page-title {
-  font-size: 3rem;
+  font-size: 1.85rem;
   font-weight: 900;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.03em;
   color: var(--text-primary);
 }
 
@@ -541,7 +543,7 @@ button.primary:hover {
 
 .gift-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-auto-rows: 320px;
   gap: 32px;
   width: 100%;
@@ -557,6 +559,18 @@ button.primary:hover {
 
 @media (min-width: 768px) {
   .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 1200px) {
+  .gift-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .gift-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Modal Polish */
@@ -1444,6 +1458,23 @@ button.primary:hover {
   margin-bottom: 40px;
 }
 
+/* Keep Gifts inventory stats in one row of 3 */
+.gifts-stats-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 1200px) {
+  .gifts-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .gifts-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .stats-card-premium {
   background: white;
   padding: 32px;
@@ -1550,6 +1581,116 @@ button.primary:hover {
   letter-spacing: -0.04em;
   line-height: 0.9;
   margin: 0;
+}
+
+/* Gifts page polish */
+.gifts-page .dashboard-title-highdef {
+  font-size: 2.55rem;
+  line-height: 0.95;
+}
+
+.gifts-page .dashboard-subtitle-highdef {
+  font-size: 1rem;
+}
+
+.gifts-header-actions {
+  gap: 12px;
+}
+
+.gifts-action-btn {
+  padding: 11px 18px;
+  border-radius: 14px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  gap: 8px;
+}
+
+.gifts-action-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.gifts-list-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.gifts-list-card {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0;
+}
+
+/* Dynamic task page polish */
+.dynamic-task-page .dashboard-title-highdef {
+  font-size: 2.55rem;
+  line-height: 0.95;
+}
+
+.dynamic-task-page .dashboard-subtitle-highdef {
+  font-size: 1rem;
+}
+
+.dynamic-task-header-actions {
+  gap: 12px;
+}
+
+.dynamic-task-action-btn {
+  padding: 11px 18px;
+  border-radius: 14px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  gap: 8px;
+}
+
+.dynamic-task-action-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.dynamic-task-list-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+@media (max-width: 1200px) {
+  .gifts-list-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dynamic-task-list-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .gifts-page .dashboard-title-highdef {
+    font-size: 2rem;
+  }
+
+  .gifts-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .gifts-list-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dynamic-task-page .dashboard-title-highdef {
+    font-size: 2rem;
+  }
+
+  .dynamic-task-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .dynamic-task-list-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .dashboard-subtitle-highdef {
@@ -1669,4 +1810,190 @@ button.primary:hover {
   background: #eff6ff;
   border-radius: 50%;
   padding: 4px;
+}
+
+/* User listing page cleanup */
+.user-management .page-title {
+  font-size: 2.6rem;
+  letter-spacing: -0.02em;
+}
+
+.user-management .header-actions {
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.user-management .top-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.user-management .search-bar {
+  flex: 1;
+  min-width: 300px;
+  max-width: 580px;
+  background: #ffffff;
+  border: 1px solid #dbe3ee;
+  border-radius: 12px;
+  padding: 0 14px;
+}
+
+.user-management .search-bar svg {
+  color: #64748b;
+}
+
+.user-management .search-bar input {
+  color: #0f172a;
+  font-size: 0.95rem;
+  padding: 12px;
+}
+
+.user-management .search-bar input::placeholder {
+  color: #94a3b8;
+}
+
+.user-management .search-bar:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.user-management .primary {
+  border-radius: 12px !important;
+  padding: 11px 18px !important;
+}
+
+.user-table-shell {
+  width: 100%;
+  margin-top: 6px;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.user-management .table-container-premium {
+  margin-top: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: #ffffff;
+}
+
+.user-management .modern-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.72rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.user-management .modern-table td {
+  color: #0f172a;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.user-management .row-premium:hover {
+  background: #f8fbff;
+  transform: none;
+}
+
+.user-management .avatar-glass {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: #e0e7ff;
+  color: #3730a3;
+  box-shadow: none;
+  border: 0;
+}
+
+.user-management .name-bold {
+  color: #0f172a;
+}
+
+.user-management .email-sub {
+  color: #64748b;
+}
+
+.user-management .data-cell-dim {
+  color: #475569;
+}
+
+.user-management .asset-tag {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.user-management .rank-badge {
+  background: #fffbeb;
+  color: #a16207;
+}
+
+.user-management .status-pill {
+  font-size: 0.67rem;
+  font-weight: 800;
+  border-radius: 999px;
+}
+
+.user-management .status-pill.active {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.user-management .status-pill.warning {
+  background: #fef9c3;
+  color: #854d0e;
+  border: 1px solid #fde68a;
+}
+
+.user-management .status-pill.danger {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.user-management .ops-cluster {
+  gap: 8px;
+}
+
+.user-management .op-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+}
+
+.user-management .table-empty {
+  text-align: center;
+  padding: 44px;
+  color: #64748b;
+}
+
+.user-management .cell-center {
+  text-align: center;
+}
+
+.user-management .rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+}
+
+@media (max-width: 900px) {
+  .user-management .page-title {
+    font-size: 2rem;
+  }
+
+  .user-management .top-tools {
+    align-items: stretch;
+  }
+
+  .user-management .search-bar {
+    min-width: 100%;
+    max-width: 100%;
+  }
 }

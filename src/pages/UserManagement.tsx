@@ -4,7 +4,7 @@ import CoinModal from '../components/CoinModal';
 import CreateUserModal from '../components/CreateUserModal';
 import EditUserModal from '../components/EditUserModal';
 import ConfirmationModal from '../components/ConfirmationModal';
-import { UserPlus, Search, RefreshCw } from 'lucide-react';
+import { UserPlus, Search } from 'lucide-react';
 import { adminService } from '../services/api';
 import '../styles/UserManagement.css';
 
@@ -16,6 +16,7 @@ const UserManagement: React.FC = () => {
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const fetchUsers = async () => {
     try {
@@ -71,37 +72,42 @@ const UserManagement: React.FC = () => {
   };
 
   return (
-    <div className="user-management fade-in">
-      <div className="header-actions">
-        <h2 className="page-title">User Management</h2>
-        <div className="top-tools">
-          <div className="search-bar">
-            <Search size={18} />
-            <input 
-              type="text" 
-              placeholder="Filter by name or registry..." 
-              onChange={(e) => {
-                const val = e.target.value;
-                if (val.length >= 3 || val.length === 0) {
-                  adminService.getUsers(val).then(res => setUsers(res.data.data || []));
-                }
-              }}
-            />
+    <>
+      <div className="user-management fade-in">
+        <div className="header-actions">
+          <h2 className="page-title">User Management</h2>
+          <div className="top-tools">
+            <div className="search-bar">
+              <Search size={18} />
+              <input 
+                type="text" 
+                placeholder="Search by name, email, or phone..."
+                value={searchTerm}
+                onChange={(e) => {
+                  const val = e.target.value.trimStart();
+                  setSearchTerm(val);
+                  if (val.length >= 3 || val.length === 0) {
+                    adminService.getUsers(val).then(res => setUsers(res.data.data || []));
+                  }
+                }}
+              />
+            </div>
+            <button className="primary flex-center gap-2" onClick={() => setCreateModalOpen(true)}>
+              <UserPlus size={18} />
+              <span>Create User</span>
+            </button>
           </div>
-          <button className="primary flex-center gap-2" onClick={() => setCreateModalOpen(true)}>
-            <UserPlus size={18} />
-            <span>Create User</span>
-          </button>
         </div>
-      </div>
 
-      <div className="glass mt-10 p-1" style={{ width: '100%', overflow: 'hidden' }}>
-        <UserTable 
-          users={users} 
-          onAddCoins={handleAddCoins} 
-          onEdit={handleEdit}
-          onDelete={handleDeleteClick}
-        />
+        <div className="user-table-shell">
+          <UserTable 
+            users={users} 
+            onAddCoins={handleAddCoins} 
+            onEdit={handleEdit}
+            onDelete={handleDeleteClick}
+            loading={loading}
+          />
+        </div>
       </div>
 
       {isCoinModalOpen && (
@@ -138,7 +144,7 @@ const UserManagement: React.FC = () => {
           onClose={() => setDeleteModalOpen(false)}
         />
       )}
-    </div>
+    </>
   );
 };
 

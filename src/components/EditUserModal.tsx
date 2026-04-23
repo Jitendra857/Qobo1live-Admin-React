@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, Mail, ShieldCheck, Save, AlertCircle } from 'lucide-react';
+import { X, User, Mail, ShieldCheck, Save, AlertCircle, Star, Zap } from 'lucide-react';
 import { adminService } from '../services/api';
 import '../styles/Modal.css';
+import { scrollToModalTop } from '../utils/scrollToModalTop';
 
 interface EditUserModalProps {
   user: any;
@@ -15,9 +16,16 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
     email: user.email || '',
     phone: user.phone || '',
     role: user.role || 'user',
-    status: user.status || 'active'
+    status: user.status || 'active',
+    level: user.level || 1,
+    xp: user.xp || 0,
+    pattiStyle: user.pattiStyle || 'classic'
   });
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    scrollToModalTop();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,8 +47,8 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content glass-panel slide-up" style={{ maxWidth: '480px' }}>
+    <div className="modal-overlay edit-user-overlay">
+      <div className="modal-content glass-panel slide-up edit-user-modal" style={{ maxWidth: '500px' }}>
         <div className="modal-header">
           <h3>Modify Account: {user.name}</h3>
           <button className="close-btn" onClick={onClose}><X size={20} /></button>
@@ -70,19 +78,32 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
           </div>
 
           <div className="form-group" style={{ marginBottom: '20px' }}>
-            <label><AlertCircle size={14} /> Status</label>
-            <select 
-              className="admin-input"
-              value={formData.status}
-              onChange={e => setFormData({...formData, status: e.target.value})}
-            >
-              <option value="active">Active</option>
-              <option value="suspended">Suspended</option>
-              <option value="pending">Pending</option>
-            </select>
+            <label><AlertCircle size={14} /> Account Status</label>
+            <div className="radio-group">
+              <label className="radio-option">
+                <input 
+                  type="radio" 
+                  name="status" 
+                  value="active"
+                  checked={formData.status === 'active'}
+                  onChange={e => setFormData({...formData, status: e.target.value})}
+                />
+                <span>Active (1)</span>
+              </label>
+              <label className="radio-option">
+                <input 
+                  type="radio" 
+                  name="status" 
+                  value="suspended"
+                  checked={formData.status === 'suspended'}
+                  onChange={e => setFormData({...formData, status: e.target.value})}
+                />
+                <span>Inactive (0)</span>
+              </label>
+            </div>
           </div>
 
-          <div className="form-group" style={{ marginBottom: '28px' }}>
+          <div className="form-group" style={{ marginBottom: '20px' }}>
             <label><ShieldCheck size={14} /> Role</label>
             <select 
               className="admin-input"
@@ -94,6 +115,27 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
               <option value="admin">Admin</option>
               <option value="super_admin">Super Admin</option>
             </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4" style={{ marginBottom: '28px' }}>
+            <div className="form-group">
+              <label><Star size={14} /> Level</label>
+              <input 
+                type="number" 
+                className="admin-input" 
+                value={formData.level}
+                onChange={e => setFormData({...formData, level: Number(e.target.value)})}
+              />
+            </div>
+            <div className="form-group">
+              <label><Zap size={14} /> XP Points</label>
+              <input 
+                type="number" 
+                className="admin-input" 
+                value={formData.xp}
+                onChange={e => setFormData({...formData, xp: Number(e.target.value)})}
+              />
+            </div>
           </div>
 
           <button 

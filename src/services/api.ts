@@ -18,7 +18,9 @@ api.interceptors.request.use((config) => {
 });
 
 export const adminService = {
-  getStats: () => api.get('/admin/stats'),
+  getStats: (country?: string) => api.get(`/admin/stats${country ? `?country=${country}` : ''}`),
+  getLeaderboard: (type: 'GIFTER' | 'RECEIVER', period: 'DAILY' | 'WEEKLY' | 'ALL_TIME') => 
+    api.get(`/admin/leaderboard?type=${type}&period=${period}`),
   login: (data: any) => api.post('/admin/login', data),
   getUsers: (search?: string) => api.get(`/admin/user-list${search ? `?search=${search}` : ''}`),
   createUser: (data: any) => api.post('/admin/user-create', data),
@@ -93,6 +95,16 @@ export const adminService = {
 
   // PK & Dating
   getPKStatus: (battleId: string) => api.get(`/pk/status?battle_id=${battleId}`),
+
+  // VIP Management
+  getVipPackages: () => api.get('/admin/vip-list'),
+  manageVipPackage: (action: string, data: any, id?: string) => 
+    api.post(`/admin/vip-action?action=${action}${id ? `&id=${id}` : ''}`, data),
+
+  // Moderation
+  getBannedWords: () => api.get('/admin/moderation/words'),
+  manageBannedWord: (data: { action: 'ADD' | 'REMOVE'; word?: string; id?: string }) => 
+    api.post('/admin/moderation/word-action', data),
 };
 
 export default api;

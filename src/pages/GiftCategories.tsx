@@ -4,6 +4,7 @@ import { toast, Toaster } from 'react-hot-toast';
 import { Layout, Plus, Trash2, Edit, Save, X, Check, Archive } from 'lucide-react';
 import ConfirmationModal from '../components/ConfirmationModal';
 import '../styles/UserManagement.css';
+import { scrollToModalTop } from '../utils/scrollToModalTop';
 
 const GiftCategories: React.FC = () => {
     const [categories, setCategories] = useState<any[]>([]);
@@ -42,7 +43,7 @@ const GiftCategories: React.FC = () => {
             setFormData({ name: '' });
         }
         setIsModalOpen(true);
-        // Removed window.scrollTo to prevent UI jumping
+        scrollToModalTop();
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -82,75 +83,77 @@ const GiftCategories: React.FC = () => {
     };
 
     return (
-        <div className="user-management fade-in relative">
-            <Toaster position="top-right" />
-            
-            <div className="header-actions">
-                <h2 className="page-title">Gift Categories</h2>
-                <div className="top-tools">
-                    <button className="primary flex-center gap-2" onClick={() => handleOpenModal()}>
-                        <Plus size={18} />
-                        <span>Create Category</span>
-                    </button>
+        <>
+            <div className="user-management fade-in relative">
+                <Toaster position="top-right" />
+                
+                <div className="header-actions">
+                    <h2 className="page-title">Gift Categories</h2>
+                    <div className="top-tools">
+                        <button className="primary flex-center gap-2" onClick={() => handleOpenModal()}>
+                            <Plus size={18} />
+                            <span>Create Category</span>
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <div className="glass mt-10 p-1" style={{ width: '100%', overflow: 'hidden' }}>
-                <div className="table-container-premium">
-                    <table className="modern-table">
-                        <thead>
-                            <tr>
-                                <th style={{ width: '40%' }}>Category Identity</th>
-                                <th style={{ width: '20%' }}>Asset Density</th>
-                                <th style={{ width: '20%' }}>Registry Date</th>
-                                <th style={{ width: '20%', textAlign: 'right' }}>Operations</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {categories.length === 0 ? (
+                <div className="glass mt-10 p-1" style={{ width: '100%', overflow: 'hidden' }}>
+                    <div className="table-container-premium">
+                        <table className="modern-table">
+                            <thead>
                                 <tr>
-                                    <td colSpan={4} style={{ textAlign: 'center', padding: '60px', color: 'var(--text-secondary)' }}>
-                                        No category data recovered.
-                                    </td>
+                                    <th style={{ width: '40%' }}>Category Identity</th>
+                                    <th style={{ width: '20%' }}>Asset Density</th>
+                                    <th style={{ width: '20%' }}>Registry Date</th>
+                                    <th style={{ width: '20%', textAlign: 'right' }}>Operations</th>
                                 </tr>
-                            ) : (
-                                categories.map((cat) => (
-                                    <tr key={cat.id} className="row-premium">
-                                        <td>
-                                            <div className="identity-block">
-                                                <div className="avatar-glass"><Archive size={18} /></div>
-                                                <div className="identity-text">
-                                                    <span className="name-bold" style={{ color: '#1e293b' }}>{cat.name}</span>
-                                                    <span className="email-sub" style={{ color: '#64748b' }}>Active Category Identity</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="data-cell">
-                                            <div className="asset-tag">
-                                                <Layout size={14} />
-                                                <span>{cat._count?.gifts || 0} Assets</span>
-                                            </div>
-                                        </td>
-                                        <td className="data-cell">
-                                            <span className="rank-badge" style={{ background: '#fef9c3', color: '#854d0e', border: '1px solid #fef08a' }}>
-                                                {new Date(cat.createdAt).toLocaleDateString()}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div className="ops-cluster">
-                                                <button className="op-btn edit" title="Modify" onClick={() => handleOpenModal(cat)}>
-                                                    <Edit size={18} />
-                                                </button>
-                                                <button className="op-btn delete" title="Terminate" onClick={() => setShowDeleteConfirm(cat.id)}>
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
+                            </thead>
+                            <tbody>
+                                {categories.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={4} style={{ textAlign: 'center', padding: '60px', color: 'var(--text-secondary)' }}>
+                                            No category data recovered.
                                         </td>
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+                                ) : (
+                                    categories.map((cat) => (
+                                        <tr key={cat.id} className="row-premium">
+                                            <td>
+                                                <div className="identity-block">
+                                                    <div className="avatar-glass"><Archive size={18} /></div>
+                                                    <div className="identity-text">
+                                                        <span className="name-bold" style={{ color: '#1e293b' }}>{cat.name}</span>
+                                                        <span className="email-sub" style={{ color: '#64748b' }}>Active Category Identity</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="data-cell">
+                                                <div className="asset-tag">
+                                                    <Layout size={14} />
+                                                    <span>{cat._count?.gifts || 0} Assets</span>
+                                                </div>
+                                            </td>
+                                            <td className="data-cell">
+                                                <span className="rank-badge" style={{ background: '#fef9c3', color: '#854d0e', border: '1px solid #fef08a' }}>
+                                                    {new Date(cat.createdAt).toLocaleDateString()}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div className="ops-cluster">
+                                                    <button className="op-btn edit" title="Modify" onClick={() => handleOpenModal(cat)}>
+                                                        <Edit size={18} />
+                                                    </button>
+                                                    <button className="op-btn delete" title="Terminate" onClick={() => setShowDeleteConfirm(cat.id)}>
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -202,7 +205,7 @@ const GiftCategories: React.FC = () => {
                     onClose={() => setShowDeleteConfirm(null)}
                 />
             )}
-        </div>
+        </>
     );
 };
 

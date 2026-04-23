@@ -4,6 +4,7 @@ import { toast, Toaster } from 'react-hot-toast';
 import { Gift as GiftIcon, Plus, Trash2, Edit, Trophy, TrendingUp, Music, Layout, X, Check, Save, Gem, Coins, PieChart, AlertCircle, Archive, ArrowUpRight, Activity } from 'lucide-react';
 import ConfirmationModal from '../components/ConfirmationModal';
 import '../styles/UserManagement.css';
+import { scrollToModalTop } from '../utils/scrollToModalTop';
 
 const Gifts: React.FC = () => {
     const [gifts, setGifts] = useState<any[]>([]);
@@ -108,6 +109,7 @@ const Gifts: React.FC = () => {
         }
         setFiles({ icon: null, animation: null, sound: null });
         setIsModalOpen(true);
+        scrollToModalTop();
     };
 
     const handleDeleteClick = (id: string) => {
@@ -170,7 +172,7 @@ const Gifts: React.FC = () => {
     };
 
     return (
-        <div className="user-management fade-in relative">
+        <div className="dashboard-container-ambient gifts-page">
             <Toaster position="top-right" gutter={8} toastOptions={{
                 duration: 5000,
                 style: {
@@ -185,74 +187,57 @@ const Gifts: React.FC = () => {
                     zIndex: 99999
                 }
             }} containerStyle={{ top: 60, right: 60, zIndex: 99999 }} />
-            {/* Analytics Section */}
-            <div className="analytics-overview mb-10">
-                <div className="flex justify-between items-center">
-                    <div>
-                        <h2 className="page-title">Digital Store Inventory</h2>
-                        <p style={{ color: 'var(--text-secondary)' }}>Advanced asset and economy management</p>
-                    </div>
-                    <button className="primary flex items-center gap-2 px-8 py-3 rounded-xl shadow-lg hover:transform hover:-translate-y-1 transition-all w-fit" onClick={() => handleOpenModal()}>
+            <div className="dashboard-header-premium">
+                <div className="header-text-group">
+                    <h1 className="dashboard-title-highdef">Digital Store Inventory</h1>
+                    <p className="dashboard-subtitle-highdef">Advanced asset and economy management</p>
+                </div>
+                <div className="header-actions-premium gifts-header-actions">
+                    <button className="secondary-action-btn gifts-action-btn" onClick={fetchGifts} title="Reload inventory data">
+                        <Activity size={18} />
+                        <span>Reload Data</span>
+                    </button>
+                    <button className="primary-provision-btn gifts-action-btn" onClick={() => handleOpenModal()}>
                         <Plus size={20} />
-                        <span>Add New Asset</span>
+                        <span>Add New Gift</span>
                     </button>
                 </div>
+            </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 justify-items-center">
-                    <div className="bento-card gift-analytics-card blue p-6">
-                        <div className="highlight-bar"></div>
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <p className="data-cell-dim">Top Selling Asset</p>
-                                <h3 className="text-2xl font-bold mt-1">{stats[0]?.name || 'N/A'}</h3>
-                                <p className="text-xs text-blue-500 mt-2 flex items-center gap-1">
-                                    <TrendingUp size={12} /> {stats[0]?.salesCount || 0} units this week
-                                </p>
-                            </div>
-                            <div className="p-3 bg-blue-50 rounded-lg text-blue-500">
-                                <Trophy size={24} />
-                            </div>
-                        </div>
+            <div className="stats-grid-highdef gifts-stats-grid">
+                <div className="stats-card-premium">
+                    <div className="stats-icon-wrap sapphire">
+                        <Trophy size={28} />
                     </div>
-                    
-                    <div className="bento-card gift-analytics-card yellow p-6">
-                        <div className="highlight-bar"></div>
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <p className="data-cell-dim">Lucky Pool Revenue</p>
-                                <h3 className="text-2xl font-bold mt-1">₹{stats.reduce((acc, s) => acc + s.totalRevenue, 0).toLocaleString()}</h3>
-                                <p className="text-xs text-yellow-500 mt-2 flex items-center gap-1">
-                                    <PieChart size={12} /> Total gift sales
-                                </p>
-                            </div>
-                            <div className="p-3 bg-yellow-50 rounded-lg text-yellow-500">
-                                <TrendingUp size={24} />
-                            </div>
-                        </div>
+                    <div className="stats-info-group">
+                        <span className="stats-label-refined">Top Selling Asset</span>
+                        <span className="stats-value-refined">{stats[0]?.name || 'N/A'}</span>
                     </div>
-
-                    <div className="bento-card gift-analytics-card purple p-6">
-                        <div className="highlight-bar"></div>
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <p className="data-cell-dim">Active Inventory</p>
-                                <h3 className="text-2xl font-bold mt-1">{gifts.length} Items</h3>
-                                <p className="text-xs text-purple-500 mt-2 flex items-center gap-1">
-                                    <Layout size={12} /> Normal, Lucky & Luxury
-                                </p>
-                            </div>
-                            <div className="p-3 bg-purple-50 rounded-lg text-purple-500">
-                                <GiftIcon size={24} />
-                            </div>
-                        </div>
+                </div>
+                <div className="stats-card-premium">
+                    <div className="stats-icon-wrap emerald">
+                        <TrendingUp size={28} />
+                    </div>
+                    <div className="stats-info-group">
+                        <span className="stats-label-refined">Lucky Pool Revenue</span>
+                        <span className="stats-value-refined">₹{stats.reduce((acc, s) => acc + s.totalRevenue, 0).toLocaleString()}</span>
+                    </div>
+                </div>
+                <div className="stats-card-premium">
+                    <div className="stats-icon-wrap amber">
+                        <GiftIcon size={28} />
+                    </div>
+                    <div className="stats-info-group">
+                        <span className="stats-label-refined">Active Inventory</span>
+                        <span className="stats-value-refined">{gifts.length} Items</span>
                     </div>
                 </div>
             </div>
 
             {/* Assets Grid */}
-            <div className="gift-grid mt-6">
+            <div className="gift-grid gifts-list-grid">
                 {gifts.map((gift) => (
-                    <div key={gift.id} className="gift-card asset-card overflow-hidden">
+                    <div key={gift.id} className="gift-card asset-card overflow-hidden gifts-list-card">
                         <div className="card-top">
                             <div className={`card-label ${gift.type}`}>
                                 {gift.type === 'lucky' ? <Trophy size={12} /> : gift.type === 'luxury' ? <Gem size={12} /> : <GiftIcon size={12} />}

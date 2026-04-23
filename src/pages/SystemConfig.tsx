@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { adminService } from '../services/api';
 import { Shield, Settings, Tv } from 'lucide-react';
 import '../styles/UserManagement.css';
@@ -39,7 +39,7 @@ const SystemConfig: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {ads.map(ad => (
+              {ads.map((ad: any) => (
                 <tr key={ad.id}>
                   <td className="name-main">{ad.title}</td>
                   <td><span className="badge-outline">{ad.type}</span></td>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { adminService } from '../../services/api';
 import { Bell, Send, History, Info } from 'lucide-react';
 import '../../styles/UserManagement.css';
 

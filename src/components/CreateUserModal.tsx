@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, User, Mail, ShieldCheck, UserPlus } from 'lucide-react';
 import { adminService } from '../services/api';
 import '../styles/Modal.css';
+import { scrollToModalTop } from '../utils/scrollToModalTop';
 
 interface CreateUserModalProps {
   onClose: () => void;
@@ -17,6 +18,10 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onSuccess })
     password: 'Password123!' // Default fallback
   });
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    scrollToModalTop();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,15 +43,15 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onSuccess })
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content glass-panel slide-up" style={{ maxWidth: '480px' }}>
+    <div className="modal-overlay create-user-overlay">
+      <div className="modal-content glass-panel slide-up create-user-modal" style={{ maxWidth: '500px' }}>
         <div className="modal-header">
           <h3>Provision User Identity</h3>
           <button className="close-btn" onClick={onClose}><X size={20} /></button>
         </div>
         
-        <form onSubmit={handleSubmit} style={{ marginTop: '30px' }}>
-          <div className="form-group" style={{ marginBottom: '24px' }}>
+        <form onSubmit={handleSubmit} style={{ marginTop: '18px' }}>
+          <div className="form-group" style={{ marginBottom: '16px' }}>
             <label>
               <User size={16} color="var(--accent-blue)" /> Name
             </label>
@@ -60,7 +65,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onSuccess })
             />
           </div>
 
-          <div className="form-group" style={{ marginBottom: '24px' }}>
+          <div className="form-group" style={{ marginBottom: '16px' }}>
             <label>
               <Mail size={16} color="var(--accent-blue)" /> Email Address
             </label>
@@ -74,7 +79,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onSuccess })
             />
           </div>
 
-          <div className="form-group" style={{ marginBottom: '24px' }}>
+          <div className="form-group" style={{ marginBottom: '16px' }}>
             <label>
               <User size={16} color="var(--accent-blue)" /> Phone Number
             </label>
@@ -88,7 +93,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onSuccess })
             />
           </div>
 
-          <div className="form-group" style={{ marginBottom: '32px' }}>
+          <div className="form-group" style={{ marginBottom: '20px' }}>
             <label>
               <ShieldCheck size={16} color="var(--accent-blue)" /> Assign Role
             </label>

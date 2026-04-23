@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Send, Coins, ShieldAlert } from 'lucide-react';
 import { adminService } from '../services/api';
 import '../styles/Modal.css';
+import { scrollToModalTop } from '../utils/scrollToModalTop';
 
 interface CoinModalProps {
   user: any;
@@ -13,6 +14,10 @@ const CoinModal: React.FC<CoinModalProps> = ({ user, onClose, onSuccess }) => {
   const [amount, setAmount] = useState<number>(0);
   const [type, setType] = useState<'coins' | 'diamonds'>('coins');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    scrollToModalTop();
+  }, []);
 
   const handleSubmit = async () => {
     if (amount <= 0) return;
@@ -33,66 +38,62 @@ const CoinModal: React.FC<CoinModalProps> = ({ user, onClose, onSuccess }) => {
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content glass-panel slide-up">
+    <div className="modal-overlay coin-overlay">
+      <div className="modal-content glass-panel slide-up coin-modal" style={{ maxWidth: '500px' }}>
         <div className="modal-header">
-          <h3>Currency Management</h3>
+          <h3>Asset Injection: {user.name}</h3>
           <button className="close-btn" onClick={onClose}><X size={20} /></button>
         </div>
         
-        <div className="modal-body">
-          <div className="user-preview">
-            <div className="avatar-large">{user.name[0]}</div>
-            <div className="user-meta">
-              <span className="user-name">{user.name}</span>
-              <span className="user-id" title={user.id}>
-                ID: {user.id.length > 20 ? `${user.id.substring(0, 8)}...${user.id.substring(user.id.length - 8)}` : user.id}
-              </span>
-            </div>
+        <div style={{ marginTop: '20px' }}>
+          <div className="form-group" style={{ marginBottom: '20px' }}>
+            <label><ShieldAlert size={14} /> Currency Type</label>
+            <select 
+              className="admin-input"
+              value={type}
+              onChange={e => setType(e.target.value as 'coins' | 'diamonds')}
+            >
+              <option value="coins">Coins (Virtual Currency)</option>
+              <option value="diamonds">Diamonds (Premium Assets)</option>
+            </select>
           </div>
 
-          <div className="form-group mt-6">
-            <label>Currency Type</label>
-            <div className="toggle-group">
-              <button 
-                className={type === 'coins' ? 'active' : ''} 
-                onClick={() => setType('coins')}
-              >
-                Coins
-              </button>
-              <button 
-                className={type === 'diamonds' ? 'active' : ''} 
-                onClick={() => setType('diamonds')}
-              >
-                Diamonds
-              </button>
-            </div>
+          <div className="form-group" style={{ marginBottom: '28px' }}>
+            <label><Coins size={14} /> Amount to Inject</label>
+            <input 
+              type="number" 
+              className="admin-input" 
+              value={amount}
+              onChange={e => setAmount(Number(e.target.value))}
+              placeholder="Enter amount..."
+              min="1"
+            />
           </div>
 
-          <div className="form-group mt-4">
-            <label>Amount to Assign</label>
-            <div className="input-with-icon">
-              <Coins size={18} className="icon-gold" />
-              <input 
-                type="number" 
-                value={amount} 
-                onChange={(e) => setAmount(Number(e.target.value))}
-                placeholder="0.00"
-              />
-            </div>
+          <div className="warning-note" style={{ 
+            marginBottom: '28px', 
+            padding: '16px', 
+            background: 'rgba(245, 158, 11, 0.05)', 
+            borderRadius: '12px',
+            border: '1px solid rgba(245, 158, 11, 0.1)',
+            display: 'flex',
+            gap: '10px',
+            alignItems: 'center',
+            color: '#d97706',
+            fontSize: '0.9rem',
+            fontWeight: 600
+          }}>
+            <ShieldAlert size={18} />
+            <span>This protocol is irreversible. Assets will be credited instantly.</span>
           </div>
 
-          <div className="warning-note mt-6">
-            <ShieldAlert size={16} />
-            <span>This action is irreversible and will be logged.</span>
-          </div>
-        </div>
-
-        <div className="modal-footer">
-          <button className="secondary" onClick={onClose}>Cancel</button>
-          <button className="primary flex-center gap-2" onClick={handleSubmit} disabled={loading}>
+          <button 
+            onClick={handleSubmit}
+            className="primary-btn w-full flex-center gap-2" 
+            disabled={loading || amount <= 0}
+          >
             <Send size={18} />
-            <span>{loading ? 'Processing...' : 'Confirm Assign'}</span>
+            <span>{loading ? 'Injecting Assets...' : 'Verify & Execute'}</span>
           </button>
         </div>
       </div>

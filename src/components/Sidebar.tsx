@@ -4,7 +4,8 @@ import {
   Home, Users, Gift, List, FileText, UserCheck, 
   Video, MessageSquare, Dice1, Headset, Wallet, 
   Image as ImageIcon, Monitor, Mic, Bell, Settings, LogOut, Layout,
-  ChevronDown, ChevronRight, Sword
+  ChevronDown, ChevronRight, Sword, Shield, ShoppingCart, Activity,
+  Tv, History, ArrowUpRight
 } from 'lucide-react';
 import '../styles/Sidebar.css';
 
@@ -29,13 +30,40 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
       icon: <Gift size={20} />,
       subItems: [
         { title: 'Categories', path: '/gift-categories' },
-        { title: 'Inventory', path: '/gifts' }
+        { title: 'Inventory', path: '/gifts' },
+        { title: 'VIP Store', path: '/vip-store' }
       ]
     },
     { title: 'Dynamic Task', path: '/dynamic-tasks', icon: <List size={20} /> },
-    { title: 'Super Admin Forms', path: '/super-admin-forms', icon: <FileText size={20} /> },
-    { title: 'Coin Seller Forms', path: '/coin-seller-forms', icon: <FileText size={20} /> },
-    { title: 'Agents', path: '/agents', icon: <UserCheck size={20} /> },
+    { title: 'System Analytics', path: '/', icon: <Activity size={20} /> },
+    { title: 'Wallet & Ledger', path: '/economy', icon: <Wallet size={20} /> },
+    { title: 'Operational Media', path: '/operational-settings', icon: <ImageIcon size={20} /> },
+    { title: 'Audio Room Matrix', path: '/audio-rooms', icon: <Mic size={20} /> },
+    { title: 'PK Battle Center', path: '/pk-battles', icon: <Sword size={20} /> },
+    { title: 'Dating & Swipes', path: '/fake-video', icon: <Monitor size={20} /> },
+    { title: 'Support & Tickets', path: '/support', icon: <Headset size={20} /> },
+    { title: 'Transaction Log', path: '/transactions', icon: <History size={20} /> },
+    { title: 'Banned Keywords', path: '/moderation', icon: <MessageSquare size={20} /> },
+    { title: 'Agency Withdrawals', path: '/withdrawals', icon: <ArrowUpRight size={20} /> },
+    { title: 'Advanced Config', path: '/settings', icon: <Settings size={20} /> },
+    { title: 'Global Ambience', path: '/backgrounds', icon: <Monitor size={20} /> },
+    { title: 'Simulated Assets', path: '/fake-video', icon: <Video size={20} /> },
+    { title: 'Live Broadcasts', path: '/audio-rooms', icon: <Activity size={20} /> },
+    { title: 'PK Battle Center', path: '/pk-battles', icon: <Sword size={20} /> },
+    { title: 'Support & Tickets', path: '/support', icon: <Headset size={20} /> },
+    { title: 'Broadcast Ads', path: '/operational-settings', icon: <Tv size={20} /> },
+    { title: 'Global Ambience', path: '/backgrounds', icon: <Monitor size={20} /> },
+    { title: 'Transaction Log', path: '/transactions', icon: <History size={20} /> },
+    { title: 'Staff Management', path: '/super-admin-forms', icon: <Shield size={20} /> },
+    { title: 'Seller Management', path: '/coin-seller-forms', icon: <ShoppingCart size={20} /> },
+    { 
+      title: 'Recruitment', 
+      icon: <UserCheck size={20} />,
+      subItems: [
+        { title: 'Agencies', path: '/agents' },
+        { title: 'Host Applications', path: '/host-registry' }
+      ]
+    },
     { title: 'Fake Video Live', path: '/fake-video', icon: <Video size={20} /> },
     { title: 'Fake Chat Group', path: '/fake-chat', icon: <MessageSquare size={20} /> },
     { title: 'Greedy Game', path: '/greedy-game', icon: <Dice1 size={20} /> },
@@ -47,6 +75,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     { title: 'Room Backgrounds', path: '/backgrounds', icon: <Monitor size={20} /> },
     { title: 'Audio Rooms', path: '/audio-rooms', icon: <Mic size={20} /> },
     { title: 'Notification', path: '/notifications', icon: <Bell size={20} /> },
+    { title: 'Moderation', path: '/moderation', icon: <Shield size={20} /> },
     { title: 'Setting', path: '/settings', icon: <Settings size={20} /> },
   ];
 

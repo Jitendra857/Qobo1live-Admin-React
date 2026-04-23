@@ -1,32 +1,46 @@
 import React from 'react';
-import { Edit2, Trash2, Coins, ShieldCheck } from 'lucide-react';
+import { Edit2, Trash2, Coins } from 'lucide-react';
 
 interface UserTableProps {
   users: any[];
   onAddCoins: (user: any) => void;
   onEdit: (user: any) => void;
   onDelete: (id: string) => void;
+  loading?: boolean;
 }
 
-const UserTable: React.FC<UserTableProps> = ({ users, onAddCoins, onEdit, onDelete }) => {
+const UserTable: React.FC<UserTableProps> = ({ users, onAddCoins, onEdit, onDelete, loading = false }) => {
+  const statusClassName = (status?: string) => {
+    const value = (status || 'active').toLowerCase();
+    if (value === 'blocked' || value === 'inactive' || value === 'banned') return 'status-pill danger';
+    if (value === 'pending') return 'status-pill warning';
+    return 'status-pill active';
+  };
+
   return (
     <div className="table-container-premium">
       <table className="modern-table">
         <thead>
           <tr>
-            <th style={{ width: '30%' }}>User Entity</th>
-            <th style={{ width: '15%' }}>Connectivity</th>
-            <th style={{ width: '15%' }}>Assets</th>
+            <th style={{ width: '40%' }}>User</th>
+            <th style={{ width: '20%' }}>Connectivity</th>
+            <th style={{ width: '12%' }}>Assets</th>
             <th style={{ width: '10%' }}>Level</th>
             <th style={{ width: '10%' }}>Status</th>
-            <th style={{ width: '20%', textAlign: 'right' }}>Operations</th>
+            <th style={{ width: '18%', textAlign: 'right' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {users.length === 0 ? (
+          {loading ? (
             <tr>
-              <td colSpan={6} style={{ textAlign: 'center', padding: '60px', color: 'var(--text-secondary)' }}>
-                No demographic data recovered.
+              <td colSpan={6} className="table-empty">
+                Loading users...
+              </td>
+            </tr>
+          ) : users.length === 0 ? (
+            <tr>
+              <td colSpan={6} className="table-empty">
+                No users found.
               </td>
             </tr>
           ) : (
@@ -34,7 +48,11 @@ const UserTable: React.FC<UserTableProps> = ({ users, onAddCoins, onEdit, onDele
               <tr key={user.id} className="row-premium">
                 <td>
                   <div className="identity-block">
-                    <div className="avatar-glass">{user.name?.[0] || 'U'}</div>
+                    {user.displayPicture ? (
+                      <img src={user.displayPicture} alt="" className="avatar-glass" style={{ objectFit: 'cover' }} />
+                    ) : (
+                      <div className="avatar-glass">{user.name?.[0] || 'U'}</div>
+                    )}
                     <div className="identity-text">
                       <span className="name-bold">{user.name || 'Anonymous User'}</span>
                       <span className="email-sub">{user.email || 'N/A'}</span>
@@ -45,14 +63,14 @@ const UserTable: React.FC<UserTableProps> = ({ users, onAddCoins, onEdit, onDele
                 <td className="data-cell">
                   <div className="asset-tag">
                     <Coins size={14} />
-                    <span>{user.coins?.toLocaleString() || 0}</span>
+                    <span>{user.wallet?.coins?.toLocaleString() || 0}</span>
                   </div>
                 </td>
-                <td className="data-cell">
+                <td className="data-cell cell-center">
                   <span className="rank-badge">Lvl {user.level || 1}</span>
                 </td>
-                <td className="data-cell">
-                  <span className={`status-pill ${user.status || 'active'}`}>
+                <td className="data-cell cell-center">
+                  <span className={statusClassName(user.status)}>
                     {user.status || 'active'}
                   </span>
                 </td>

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import '../../styles/UserManagement.css';
+import { scrollToModalTop } from '../../utils/scrollToModalTop';
 
 const SellerManager: React.FC = () => {
   const [sellers, setSellers] = useState<any[]>([]);
@@ -67,6 +68,7 @@ const SellerManager: React.FC = () => {
       isOfficial: seller.isOfficial || false
     });
     setShowSellerModal(true);
+    scrollToModalTop();
   };
 
   const handleOpenCreate = () => {
@@ -82,6 +84,14 @@ const SellerManager: React.FC = () => {
       isOfficial: false
     });
     setShowSellerModal(true);
+    scrollToModalTop();
+  };
+
+  const handleOpenStock = (seller: any) => {
+    setSelectedSeller(seller);
+    setStockData({ amount: 0, type: 'TOPUP' });
+    setShowStockModal(true);
+    scrollToModalTop();
   };
 
   const handleSaveSeller = async (e: React.FormEvent) => {
@@ -124,6 +134,7 @@ const SellerManager: React.FC = () => {
   const handleOpenReports = async (seller: any) => {
     setSelectedSeller(seller);
     setLoading(true);
+    scrollToModalTop();
     try {
       const res = await adminService.getSellerReports(seller.id);
       setReports(res.data.data);
@@ -253,7 +264,7 @@ const SellerManager: React.FC = () => {
                 </td>
                 <td>
                   <div className="ops-cluster">
-                    <button className="op-btn wide coin" onClick={() => { setSelectedSeller(seller); setStockData({ amount: 0, type: 'TOPUP' }); setShowStockModal(true); }}>
+                    <button className="op-btn wide coin" onClick={() => handleOpenStock(seller)}>
                       <Plus size={16} /> Stock
                     </button>
                     <button className="op-btn wide" onClick={() => handleOpenReports(seller)}>
@@ -400,33 +411,27 @@ const SellerManager: React.FC = () => {
                 </div>
                 <div className="col-span-1">
                   <label style={{ display: 'block', color: '#1e293b', fontWeight: '800', marginBottom: '12px', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Operational Status</label>
-                  <div style={{ display: 'flex', gap: '12px' }}>
-                    <div 
-                      onClick={() => setFormData({...formData, status: 'Active'})}
-                      style={{ 
-                        flex: 1, padding: '16px', borderRadius: '16px', border: '2px solid',
-                        borderColor: formData.status === 'Active' ? '#3b82f6' : '#f1f5f9',
-                        background: formData.status === 'Active' ? '#eff6ff' : 'white',
-                        cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '8px'
-                      }}
-                    >
-                      <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981' }} />
-                      <span style={{ fontSize: '0.85rem', fontWeight: '800', color: formData.status === 'Active' ? '#1e293b' : '#64748b' }}>Active</span>
-                      {formData.status === 'Active' && <Check size={14} className="ml-auto text-blue-600" />}
-                    </div>
-                    <div 
-                      onClick={() => setFormData({...formData, status: 'Inactive'})}
-                      style={{ 
-                        flex: 1, padding: '16px', borderRadius: '16px', border: '2px solid',
-                        borderColor: formData.status === 'Inactive' ? '#3b82f6' : '#f1f5f9',
-                        background: formData.status === 'Inactive' ? '#eff6ff' : 'white',
-                        cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '8px'
-                      }}
-                    >
-                      <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#94a3b8' }} />
-                      <span style={{ fontSize: '0.85rem', fontWeight: '800', color: formData.status === 'Inactive' ? '#1e293b' : '#64748b' }}>Inactive</span>
-                      {formData.status === 'Inactive' && <Check size={14} className="ml-auto text-blue-600" />}
-                    </div>
+                  <div className="radio-group" style={{ marginTop: 0 }}>
+                    <label className="radio-option">
+                      <input 
+                        type="radio" 
+                        name="sellerStatus" 
+                        value="active"
+                        checked={formData.status.toLowerCase() === 'active'}
+                        onChange={e => setFormData({...formData, status: e.target.value})}
+                      />
+                      <span>Active (1)</span>
+                    </label>
+                    <label className="radio-option">
+                      <input 
+                        type="radio" 
+                        name="sellerStatus" 
+                        value="inactive"
+                        checked={formData.status.toLowerCase() === 'inactive'}
+                        onChange={e => setFormData({...formData, status: e.target.value})}
+                      />
+                      <span>Inactive (0)</span>
+                    </label>
                   </div>
                 </div>
 
