@@ -4,7 +4,7 @@ import { ShieldCheck, LogIn, Lock, Mail } from 'lucide-react';
 import '../../styles/AuthPage.css';
 
 const LoginPage: React.FC = () => {
-    const [credentials, setCredentials] = useState({ email: '', password: '' });
+    const [credentials, setCredentials] = useState({ email: 'admin@qobo1.com', password: 'admin123' });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -14,7 +14,7 @@ const LoginPage: React.FC = () => {
         setError('');
         try {
             const res = await adminService.login(credentials);
-            if (res.data.status === 'success') {
+            if (res.data.statusCode === 1) {
                 localStorage.setItem('admin_token', res.data.data.token);
                 localStorage.setItem('admin_user', JSON.stringify(res.data.data.admin));
                 window.location.href = '/';
