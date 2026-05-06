@@ -331,10 +331,7 @@ button.primary:hover {
   width: 100%;
   border-collapse: collapse;
   background: transparent;
-  min-width: 900px; /* Force minimum width for scrollability on mobile */
 }
-
-...
 
 @media (max-width: 768px) {
   .header-actions {
