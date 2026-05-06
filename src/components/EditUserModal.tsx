@@ -22,17 +22,40 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
     xp: user.xp || 0,
     pattiStyle: user.pattiStyle || 'classic'
   });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     scrollToModalTop();
   }, []);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await adminService.updateUser(user.id, formData);
+      if (!user?.id) {
+        toast.error('Identity identifier missing');
+        return;
+      }
+
+      const data = new FormData();
+      Object.keys(formData).forEach(key => {
+        const value = (formData as any)[key];
+        if (value !== undefined && value !== null) {
+          data.append(key, String(value));
+        }
+      });
+      if (selectedFile) {
+        data.append('displayPicture', selectedFile);
+      }
+
+      const res = await adminService.updateUser(user.id, data);
       if (res.data.statusCode === 1) {
         toast.success('User updated successfully');
         onSuccess();
@@ -137,6 +160,24 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
                 value={formData.xp}
                 onChange={e => setFormData({...formData, xp: Number(e.target.value)})}
               />
+            </div>
+          </div>
+
+          <div className="form-group" style={{ marginBottom: '24px' }}>
+            <label>Update Profile Picture</label>
+            <div className="file-input-wrapper" style={{ marginTop: '8px' }}>
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={handleFileChange}
+                className="admin-input"
+                style={{ padding: '10px' }}
+              />
+              {selectedFile && (
+                <div style={{ fontSize: '0.8rem', color: 'var(--accent-blue)', marginTop: '4px', fontWeight: 600 }}>
+                  Selected: {selectedFile.name}
+                </div>
+              )}
             </div>
           </div>
 

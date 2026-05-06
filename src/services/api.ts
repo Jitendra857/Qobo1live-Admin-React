@@ -5,9 +5,6 @@ export const BACKEND_URL = 'https://my-backend-api-960q.onrender.com';
 const api = axios.create({
   baseURL: `${BACKEND_URL}/api`,
   timeout: 60000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 // Using dynamic token management for production readiness

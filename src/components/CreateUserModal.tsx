@@ -18,17 +18,35 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onSuccess })
     role: 'user',
     password: 'Password123!' // Default fallback
   });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     scrollToModalTop();
   }, []);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await adminService.createUser(formData);
+      const data = new FormData();
+      Object.keys(formData).forEach(key => {
+        const value = (formData as any)[key];
+        if (value !== undefined && value !== null) {
+          data.append(key, String(value));
+        }
+      });
+      if (selectedFile) {
+        data.append('displayPicture', selectedFile);
+      }
+
+      const res = await adminService.createUser(data);
       if (res.data.statusCode === 1) {
         toast.success('User created successfully');
         onSuccess();
@@ -108,6 +126,24 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onSuccess })
               <option value="host">Live Host</option>
               <option value="admin">System Admin</option>
             </select>
+          </div>
+
+          <div className="form-group" style={{ marginBottom: '24px' }}>
+            <label>Profile Picture (Optional)</label>
+            <div className="file-input-wrapper" style={{ marginTop: '8px' }}>
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={handleFileChange}
+                className="admin-input"
+                style={{ padding: '10px' }}
+              />
+              {selectedFile && (
+                <div style={{ fontSize: '0.8rem', color: 'var(--accent-blue)', marginTop: '4px', fontWeight: 600 }}>
+                  Selected: {selectedFile.name}
+                </div>
+              )}
+            </div>
           </div>
 
           <button 
