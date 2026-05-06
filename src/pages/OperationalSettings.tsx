@@ -31,6 +31,12 @@ const OperationalSettings: React.FC = () => {
     }
   };
 
+  const getImageUrl = (url: string) => {
+    if (!url) return 'https://via.placeholder.com/800x400?text=No+Media';
+    if (url.startsWith('http')) return url;
+    return `https://my-backend-api-960q.onrender.com/uploads/${url}`;
+  };
+
   return (
     <div className="user-management fade-in">
       <div className="header-actions">
@@ -47,7 +53,7 @@ const OperationalSettings: React.FC = () => {
       <div className="bento-grid mt-10">
         {ads.map((ad) => (
           <div key={ad.id} className="bento-card wide" style={{ padding: '0', overflow: 'hidden', height: '250px' }}>
-            <img src={ad.imageUrl} alt={ad.title} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }} />
+            <img src={getImageUrl(ad.imageUrl)} alt={ad.title} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '20px', background: 'linear-gradient(transparent, rgba(0,0,0,0.8))', color: 'white' }}>
               <div className="card-label" style={{ color: '#fff', opacity: 0.8 }}>{ad.type}</div>
               <div style={{ fontSize: '1.2rem', fontWeight: 800 }}>{ad.title}</div>

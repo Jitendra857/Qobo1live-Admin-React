@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Layout, LogIn, UserPlus, CheckCircle, AlertCircle, X } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { adminService } from '../services/api';
 import '../styles/Auth.css';
 import '../styles/Toast.css';
@@ -14,11 +15,11 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
   const [password, setPassword] = useState('admin123');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [toast, setToast] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const [authToast, setAuthToast] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
   const showToast = (type: 'success' | 'error', message: string) => {
-    setToast({ type, message });
-    setTimeout(() => setToast(null), 5000);
+    setAuthToast({ type, message });
+    setTimeout(() => setAuthToast(null), 5000);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,7 +45,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
           setError(res.data.message || 'Login failed');
         }
       } else {
-        alert('Account request submitted for authorization');
+        toast.success('Account request submitted for authorization');
       }
     } catch (err: any) {
       console.error('Login Error Details:', err);
@@ -69,17 +70,17 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
 
   return (
     <div className="auth-page">
-      {toast && (
+      {authToast && (
         <div className="toast-container">
-          <div className={`toast ${toast.type}`}>
+          <div className={`toast ${authToast.type}`}>
             <div className="toast-icon">
-              {toast.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
+              {authToast.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
             </div>
             <div className="toast-content">
-              <p className="toast-title">{toast.type === 'success' ? 'Authorized' : 'Access Denied'}</p>
-              <p className="toast-message">{toast.message}</p>
+              <p className="toast-title">{authToast.type === 'success' ? 'Authorized' : 'Access Denied'}</p>
+              <p className="toast-message">{authToast.message}</p>
             </div>
-            <div className="toast-icon" style={{ cursor: 'pointer', opacity: 0.5 }} onClick={() => setToast(null)}>
+            <div className="toast-icon" style={{ cursor: 'pointer', opacity: 0.5 }} onClick={() => setAuthToast(null)}>
               <X size={16} />
             </div>
           </div>
@@ -88,7 +89,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
       <div className="auth-card">
         <div className="auth-header">
           <div className="auth-logo">
-            <Layout size={28} />
+            <img src="/logo.svg" alt="Qobo1live" />
           </div>
           <h1 className="auth-title">{isLogin ? 'Welcome Back' : 'Create Access'}</h1>
           <p style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: 600 }}>

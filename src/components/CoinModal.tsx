@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { X, Send, Coins, ShieldAlert } from 'lucide-react';
 import { adminService } from '../services/api';
+import toast from 'react-hot-toast';
 import '../styles/Modal.css';
 import { scrollToModalTop } from '../utils/scrollToModalTop';
 
@@ -31,7 +32,7 @@ const CoinModal: React.FC<CoinModalProps> = ({ user, onClose, onSuccess }) => {
       onSuccess();
       onClose();
     } catch (err) {
-      alert('Failed to assign coins');
+      toast.error('Failed to assign coins');
     } finally {
       setLoading(false);
     }

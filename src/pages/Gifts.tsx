@@ -69,7 +69,7 @@ const Gifts: React.FC = () => {
     const refreshCategories = async () => {
         try {
             const res = await adminService.getCategories();
-            if (res.data.success) {
+            if (res.data.statusCode === 1) {
                 const fetchedCats = res.data.data || [];
                 setCategories(fetchedCats);
                 if (fetchedCats.length > 0) {

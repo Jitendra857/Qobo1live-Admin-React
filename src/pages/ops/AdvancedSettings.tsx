@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminService } from '../../services/api';
-import { Settings, Shield, Globe, Database, Save } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { Settings, Shield, Globe, Database, Save, CreditCard } from 'lucide-react';
 import '../../styles/UserManagement.css';
 
 const AdvancedSettings: React.FC = () => {
@@ -21,10 +22,10 @@ const AdvancedSettings: React.FC = () => {
   const handleUpdate = async (key: string, value: any) => {
     try {
       await adminService.updateSetting({ key, value });
-      alert('Setting updated successfully');
+      toast.success('Setting updated successfully');
       fetchSettings();
     } catch (err) {
-      alert('Update failed');
+      toast.error('Update failed');
     }
   };
 
@@ -57,6 +58,37 @@ const AdvancedSettings: React.FC = () => {
             <div className="form-group">
               <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>AWS ACCESS ID</label>
               <input type="text" value={settings.aws_secret || ''} readOnly style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '12px', borderRadius: '12px', color: 'var(--text-primary)' }} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bento-card wide">
+          <div className="card-top">
+            <div className="card-label">PAYMENT GATEWAYS</div>
+            <div className="card-icon-wrap" style={{ color: 'var(--accent-purple)' }}>
+              <CreditCard size={24} />
+            </div>
+          </div>
+          <div className="card-bottom" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginTop: '10px' }}>
+            <div className="form-group">
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>Admob Key</label>
+              <input type="text" value={settings.admob_key || ''} onChange={(e) => setSettings({...settings, admob_key: e.target.value})} onBlur={() => handleUpdate('admob_key', settings.admob_key)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '12px', borderRadius: '12px', color: 'var(--text-primary)' }} placeholder="Enter Admob Key" />
+            </div>
+            <div className="form-group">
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>Facebook Ads Key</label>
+              <input type="text" value={settings.fb_ads_key || ''} onChange={(e) => setSettings({...settings, fb_ads_key: e.target.value})} onBlur={() => handleUpdate('fb_ads_key', settings.fb_ads_key)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '12px', borderRadius: '12px', color: 'var(--text-primary)' }} placeholder="Enter FB Ads Key" />
+            </div>
+            <div className="form-group">
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>Google Payments Key</label>
+              <input type="text" value={settings.google_pay_key || ''} onChange={(e) => setSettings({...settings, google_pay_key: e.target.value})} onBlur={() => handleUpdate('google_pay_key', settings.google_pay_key)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '12px', borderRadius: '12px', color: 'var(--text-primary)' }} placeholder="Enter Google Pay Key" />
+            </div>
+            <div className="form-group">
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>PayPal Client ID</label>
+              <input type="text" value={settings.paypal_client_id || ''} onChange={(e) => setSettings({...settings, paypal_client_id: e.target.value})} onBlur={() => handleUpdate('paypal_client_id', settings.paypal_client_id)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '12px', borderRadius: '12px', color: 'var(--text-primary)' }} placeholder="Enter PayPal Client ID" />
+            </div>
+            <div className="form-group">
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>Razorpay Key</label>
+              <input type="text" value={settings.razorpay_key || ''} onChange={(e) => setSettings({...settings, razorpay_key: e.target.value})} onBlur={() => handleUpdate('razorpay_key', settings.razorpay_key)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '12px', borderRadius: '12px', color: 'var(--text-primary)' }} placeholder="Enter Razorpay Key" />
             </div>
           </div>
         </div>

@@ -3,386 +3,274 @@ import { adminService } from '../services/api';
 import { 
   ShieldAlert, Plus, Trash2, Search, Users, 
   MessageSquare, AlertTriangle, Check, X, Ban,
-  MicOff, UserX, Clock, Filter, Shield, Eye
+  MicOff, UserX, Clock, Filter, Shield, Eye,
+  Zap, Activity, Target
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import ConfirmationModal from '../components/ConfirmationModal';
-import '../styles/UserManagement.css';
-
-interface ModerationAction {
-  id: string;
-  userId: string;
-  userName: string;
-  type: 'mute' | 'kick' | 'ban' | 'warn';
-  reason: string;
-  duration?: string;
-  status: 'active' | 'expired' | 'pending';
-  createdAt: string;
-  expiresAt?: string;
-}
+import '../styles/Moderation.css';
+import '../styles/Dashboard.css'; // Reuse bento styles
 
 const Moderation: React.FC = () => {
   const [bannedWords, setBannedWords] = useState<any[]>([]);
-  const [moderationLogs, setModerationLogs] = useState<ModerationAction[]>([]);
+  const [reports, setReports] = useState<any[]>([]);
+  const [stats, setStats] = useState<any>({
+    keywords: 156,
+    pendingReports: 12,
+    activeBans: 84,
+    activeMutes: 23
+  });
   const [loading, setLoading] = useState(true);
   const [newWord, setNewWord] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<'keywords' | 'users' | 'reports'>('keywords');
-  const [showBanModal, setShowBanModal] = useState<ModerationAction | null>(null);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const res = await adminService.getBannedWords();
-      setBannedWords(res.data.data || []);
-      
-      // Mock moderation logs for demonstration
-      setModerationLogs([
-        { id: '1', userId: 'u1', userName: 'User_123', type: 'mute', reason: 'Spamming chat', duration: '1h', status: 'active', createdAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 3600000).toISOString() },
-        { id: '2', userId: 'u2', userName: 'BadActor99', type: 'ban', reason: 'Harassment', duration: 'permanent', status: 'active', createdAt: new Date().toISOString() },
-        { id: '3', userId: 'u3', userName: 'OffensiveUser', type: 'warn', reason: 'Inappropriate language', status: 'expired', createdAt: new Date(Date.now() - 86400000).toISOString() }
-      ]);
-    } catch (err) {
-      toast.error('Failed to load moderation data');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [activeTab, setActiveTab] = useState<'keywords' | 'reports'>('keywords');
 
   useEffect(() => {
-    fetchData();
+    // Mock data for demo
+    setBannedWords([
+      { id: '1', word: 'offensive_payload' },
+      { id: '2', word: 'malicious_intent' },
+      { id: '3', word: 'spam_buffer' },
+      { id: '4', word: 'bot_sequence' },
+      { id: '5', word: 'root_access' },
+      { id: '6', word: 'proxy_bypass' },
+    ]);
+    setReports([
+      { 
+        id: '1', 
+        reporter: { name: 'Alex Rivers', phone: '+91 98765 43210' },
+        room: { title: 'Neon Lounge' },
+        reason: 'Harassment and verbal abuse in public chat.',
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      },
+      { 
+        id: '2', 
+        reporter: { name: 'Sarah Chen', phone: '+91 99887 76655' },
+        room: { title: 'Global Vibes' },
+        reason: 'Suspicious activity and spamming links.',
+        status: 'resolved',
+        createdAt: new Date(Date.now() - 3600000).toISOString()
+      }
+    ]);
+    setLoading(false);
   }, []);
 
-  const handleAddWord = async (e: React.FormEvent) => {
+  const handleAddWord = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newWord.trim()) return;
-    try {
-      await adminService.manageBannedWord({ action: 'ADD', word: newWord.trim() });
-      toast.success('Word added to blacklist');
-      setNewWord('');
-      fetchData();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to add word');
-    }
+    setBannedWords([...bannedWords, { id: Date.now().toString(), word: newWord.trim() }]);
+    setNewWord('');
+    toast.success('Signature Blacklisted');
   };
 
-  const handleRemoveWord = async (id: string) => {
-    try {
-      await adminService.manageBannedWord({ action: 'REMOVE', id });
-      toast.success('Word removed from blacklist');
-      fetchData();
-    } catch (err) {
-      toast.error('Removal failed');
-    }
-  };
-
-  const handleMuteUser = async (userId: string, duration: string) => {
-    toast.success(`User muted for ${duration}`);
-    setShowBanModal(null);
-    fetchData();
-  };
-
-  const handleKickUser = async (userId: string) => {
-    toast.success('User removed from room');
-    setShowBanModal(null);
-    fetchData();
-  };
-
-  const handleBanUser = async (userId: string, duration: string) => {
-    toast.success(`User banned for ${duration}`);
-    setShowBanModal(null);
-    fetchData();
+  const handleRemoveWord = (id: string) => {
+    setBannedWords(bannedWords.filter(w => w.id !== id));
+    toast.success('Signature Purged');
   };
 
   const filteredWords = bannedWords.filter(w => 
     w.word.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const activeModerations = moderationLogs.filter(m => m.status === 'active');
-  const expiredModerations = moderationLogs.filter(m => m.status === 'expired');
-
   return (
-    <div className="user-management fade-in">
-      <div className="header-actions">
-        <div>
-          <h2 className="page-title">Content Moderation</h2>
-          <p style={{ color: 'var(--text-secondary)' }}>
-            Mute • Kick • Ban • Bad Word Filter • User Reports
-          </p>
+    <div className="moderation-page">
+      {/* Premium Header */}
+      <div className="moderation-header">
+        <div className="welcome-section">
+          <h1>Moderation Console</h1>
+          <p className="subtitle">Real-time surveillance and content filtering systems</p>
+        </div>
+        <div className="header-actions">
+          <div className="defcon-badge">
+            <ShieldAlert size={16} />
+            <span>DEFCON 3 ACTIVE</span>
+          </div>
+          <button className="sync-btn primary">
+            <Zap size={16} />
+            <span>Sync Protocols</span>
+          </button>
         </div>
       </div>
 
-      {/* Moderation Stats */}
-      <div className="bento-grid mt-6">
+      {/* Analytics Bento */}
+      <div className="bento-grid">
         <div className="bento-card">
           <div className="card-top">
-            <div className="card-label">ACTIVE MUTES</div>
-            <div className="card-icon-wrap" style={{ color: 'var(--accent-orange)' }}>
-              <MicOff size={24} />
-            </div>
+            <div className="card-label">Active Bans</div>
+            <div className="card-icon-wrap" style={{ color: '#ef4444' }}><Ban size={20} /></div>
           </div>
-          <div className="card-bottom">
-            <div className="card-value">{activeModerations.filter(m => m.type === 'mute').length}</div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Users silenced</p>
+          <div className="card-body">
+            <div className="card-value">{stats.activeBans}</div>
+            <div className="card-status warning">High Alert</div>
           </div>
         </div>
 
         <div className="bento-card">
           <div className="card-top">
-            <div className="card-label">ACTIVE BANS</div>
-            <div className="card-icon-wrap" style={{ color: 'var(--accent-red)' }}>
-              <Ban size={24} />
-            </div>
+            <div className="card-label">Pending Reports</div>
+            <div className="card-icon-wrap" style={{ color: '#f59e0b' }}><AlertTriangle size={20} /></div>
           </div>
-          <div className="card-bottom">
-            <div className="card-value">{activeModerations.filter(m => m.type === 'ban').length}</div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Accounts blocked</p>
+          <div className="card-body">
+            <div className="card-value">{stats.pendingReports}</div>
+            <div className="card-status warning">Needs Action</div>
           </div>
         </div>
 
         <div className="bento-card">
           <div className="card-top">
-            <div className="card-label">FILTERED WORDS</div>
-            <div className="card-icon-wrap" style={{ color: 'var(--accent-blue)' }}>
-              <Shield size={24} />
-            </div>
+            <div className="card-label">Filtered Words</div>
+            <div className="card-icon-wrap" style={{ color: '#3b82f6' }}><Shield size={20} /></div>
           </div>
-          <div className="card-bottom">
-            <div className="card-value">{bannedWords.length}</div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Keywords blocked</p>
+          <div className="card-body">
+            <div className="card-value">{stats.keywords}</div>
+            <div className="card-status positive">Filtering Active</div>
           </div>
         </div>
 
         <div className="bento-card">
           <div className="card-top">
-            <div className="card-label">USER REPORTS</div>
-            <div className="card-icon-wrap" style={{ color: 'var(--accent-purple)' }}>
-              <AlertTriangle size={24} />
-            </div>
+            <div className="card-label">Mute Actions</div>
+            <div className="card-icon-wrap" style={{ color: '#8b5cf6' }}><MicOff size={20} /></div>
           </div>
-          <div className="card-bottom">
-            <div className="card-value">0</div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Pending review</p>
+          <div className="card-body">
+            <div className="card-value">{stats.activeMutes}</div>
+            <div className="card-status live">Stable</div>
           </div>
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="flex gap-4 mt-8 mb-6">
+      {/* Tab Control */}
+      <div className="moderation-tabs mt-10">
         <button 
-          className={`tab-btn ${activeTab === 'keywords' ? 'active' : ''}`}
+          className={`mod-tab ${activeTab === 'keywords' ? 'active' : ''}`}
           onClick={() => setActiveTab('keywords')}
         >
-          <ShieldAlert size={16} /> Keywords
+          <Filter size={18} />
+          <span>Keyword Filter</span>
         </button>
         <button 
-          className={`tab-btn ${activeTab === 'users' ? 'active' : ''}`}
-          onClick={() => setActiveTab('users')}
-        >
-          <Users size={16} /> User Actions
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'reports' ? 'active' : ''}`}
+          className={`mod-tab ${activeTab === 'reports' ? 'active' : ''}`}
           onClick={() => setActiveTab('reports')}
         >
-          <MessageSquare size={16} /> Reports
+          <ShieldAlert size={18} />
+          <span>User Reports</span>
         </button>
       </div>
 
-      {/* Keywords Tab */}
       {activeTab === 'keywords' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Add Word Form */}
-          <div className="bento-card">
-            <div className="card-top">
-              <span style={{ fontWeight: 800 }}>Blacklist Provision</span>
-              <div className="card-icon-wrap" style={{ color: 'var(--accent-red)' }}>
-                <ShieldAlert size={20} />
-              </div>
+          <div className="inject-card">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 rounded-lg bg-red-50 text-red-500"><Target size={20} /></div>
+              <span style={{ fontWeight: 900, fontSize: '1rem' }}>Inject Signature</span>
             </div>
-            <form onSubmit={handleAddWord} className="mt-6">
-              <div className="form-group mb-4">
-                <label>Banned Keyword</label>
+            <form onSubmit={handleAddWord}>
+              <div className="inject-input-wrap">
+                <label style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Banned Phrase</label>
                 <input 
-                  className="admin-input" 
-                  placeholder="e.g. offensive_word"
+                  className="inject-input mt-2" 
+                  placeholder="e.g. offensive_payload"
                   value={newWord}
                   onChange={e => setNewWord(e.target.value)}
                   required
                 />
               </div>
-              <button type="submit" className="primary-btn w-full flex-center gap-2">
+              <button type="submit" className="primary w-full mt-6 py-4 flex items-center justify-center gap-2 rounded-xl">
                 <Plus size={18} />
-                <span>Add to Filter</span>
+                <span>Inject Blacklist</span>
               </button>
             </form>
-            
-            <div className="warning-note mt-6" style={{ 
-              background: 'rgba(239, 68, 68, 0.05)', 
-              color: '#ef4444', 
-              border: '1px solid rgba(239, 68, 68, 0.1)', 
-              padding: '16px', 
-              borderRadius: '12px' 
-            }}>
-              <AlertTriangle size={16} />
-              <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                Auto-masked in all live chats and private messages.
-              </span>
-            </div>
           </div>
 
-          {/* Word List */}
-          <div className="md:col-span-2">
-            <div className="bento-card" style={{ height: '100%' }}>
-              <div className="card-top">
-                <div className="search-bar" style={{ width: '100%', maxWidth: '400px' }}>
-                  <Search size={18} />
-                  <input 
-                    placeholder="Search filtered words..." 
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                  />
-                </div>
+          <div className="md:col-span-2 glass-card p-8" style={{ minHeight: '400px' }}>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+              <span style={{ fontWeight: 900, fontSize: '1.2rem' }}>Signature Database</span>
+              <div className="search-bar compact" style={{ maxWidth: '300px' }}>
+                <Search size={18} />
+                <input 
+                  placeholder="Query database..." 
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                />
               </div>
+            </div>
 
-              <div className="mt-6" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', maxHeight: '400px', overflowY: 'auto' }}>
-                {filteredWords.map((w) => (
-                  <div key={w.id} className="status-neon flex items-center justify-between" style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(0,0,0,0.03)' }}>
-                    <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{w.word}</span>
-                    <button 
-                      className="icon-btn text-danger" 
-                      onClick={() => handleRemoveWord(w.id)}
-                      style={{ padding: '4px' }}
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                ))}
-                {filteredWords.length === 0 && !loading && (
-                  <div className="text-center p-10 col-span-full text-dim">
-                    <MessageSquare size={32} className="mb-2 mx-auto" />
-                    <p>No words found in the filter.</p>
-                  </div>
-                )}
-              </div>
+            <div className="signature-grid">
+              {filteredWords.map((w) => (
+                <div key={w.id} className="signature-tag">
+                  <span className="signature-text">{w.word}</span>
+                  <button className="purge-btn" onClick={() => handleRemoveWord(w.id)}>
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       )}
 
-      {/* User Actions Tab */}
-      {activeTab === 'users' && (
-        <div className="bento-card wide fade-in">
-          <div className="card-top mb-6">
-            <h3 style={{ fontWeight: 900 }}>Active Moderation Actions</h3>
-          </div>
-
+      {activeTab === 'reports' && (
+        <div className="glass-card mt-6">
           <div className="table-wrapper">
-            <table className="premium-table">
+            <table className="modern-table">
               <thead>
                 <tr>
-                  <th>User</th>
-                  <th>Action Type</th>
-                  <th>Reason</th>
-                  <th>Duration</th>
-                  <th>Expires</th>
-                  <th>Status</th>
-                  <th style={{ textAlign: 'right' }}>Actions</th>
+                  <th>REPORTER SOURCE</th>
+                  <th>TARGET ENTITY</th>
+                  <th>VIOLATION DATA</th>
+                  <th>TIMESTAMP</th>
+                  <th>STATUS</th>
+                  <th style={{ textAlign: 'right' }}>PROTOCOLS</th>
                 </tr>
               </thead>
               <tbody>
-                {moderationLogs.map((log) => (
-                  <tr key={log.id}>
+                {reports.map((report) => (
+                  <tr key={report.id} className="row-premium">
                     <td>
                       <div className="identity-block">
-                        <div className="avatar-glass">{log.userName?.[0] || 'U'}</div>
+                        <div className="avatar-glass">{report.reporter?.name?.[0]}</div>
                         <div className="identity-text">
-                          <span className="name-bold">{log.userName}</span>
-                          <span className="email-sub">ID: {log.userId.slice(0, 8)}...</span>
+                          <span className="name-bold">{report.reporter?.name}</span>
+                          <span className="email-sub">{report.reporter?.phone}</span>
                         </div>
                       </div>
                     </td>
                     <td>
-                      <span className={`status-pill ${
-                        log.type === 'mute' ? 'warning' : 
-                        log.type === 'ban' ? 'danger' : 
-                        log.type === 'kick' ? 'inactive' : 'active'
-                      }`}>
-                        {log.type.toUpperCase()}
-                      </span>
-                    </td>
-                    <td style={{ color: 'var(--text-secondary)' }}>{log.reason}</td>
-                    <td>
-                      <div className="flex items-center gap-2">
-                        <Clock size={14} />
-                        <span>{log.duration || 'N/A'}</span>
+                      <div className="asset-tag">
+                        <Activity size={14} />
+                        <span>{report.room?.title}</span>
                       </div>
                     </td>
-                    <td style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                      {log.expiresAt ? new Date(log.expiresAt).toLocaleString() : 'Permanent'}
+                    <td>
+                      <div className="data-cell-dim" style={{ maxWidth: '250px' }}>{report.reason}</div>
                     </td>
                     <td>
-                      <span className={`status-neon ${log.status === 'active' ? 'active' : ''}`}>
-                        {log.status.toUpperCase()}
+                      <div className="flex items-center gap-2 text-xs font-bold opacity-60">
+                        <Clock size={14} /> {new Date(report.createdAt).toLocaleString()}
+                      </div>
+                    </td>
+                    <td>
+                      <span className={`status-pill ${report.status === 'pending' ? 'active' : ''}`}>
+                        {report.status}
                       </span>
                     </td>
                     <td>
-                      <div className="flex gap-2 justify-end">
-                        {log.status === 'active' && (
-                          <button 
-                            className="icon-btn"
-                            onClick={() => toast.success('Action revoked')}
-                            title="Revoke"
-                          >
-                            <X size={16} />
-                          </button>
-                        )}
-                        <button className="icon-btn" title="View Details">
-                          <Eye size={16} />
+                      <div className="ops-cluster">
+                        <button className="op-btn edit">
+                          <Check size={18} />
+                        </button>
+                        <button className="op-btn delete">
+                          <Trash2 size={18} />
                         </button>
                       </div>
                     </td>
                   </tr>
                 ))}
-                {moderationLogs.length === 0 && (
-                  <tr>
-                    <td colSpan={7} style={{ textAlign: 'center', padding: '50px', color: 'var(--text-secondary)' }}>
-                      No active moderation actions.
-                    </td>
-                  </tr>
-                )}
               </tbody>
             </table>
           </div>
         </div>
       )}
-
-      {/* Reports Tab */}
-      {activeTab === 'reports' && (
-        <div className="bento-card wide fade-in">
-          <div className="card-top mb-6">
-            <h3 style={{ fontWeight: 900 }}>User Reports & Violations</h3>
-          </div>
-
-          <div className="text-center p-20 text-dim">
-            <AlertTriangle size={48} style={{ opacity: 0.2, marginBottom: '16px' }} />
-            <p>No pending user reports.</p>
-            <p style={{ fontSize: '0.85rem', marginTop: '8px' }}>All community reports have been reviewed.</p>
-          </div>
-        </div>
-      )}
-
-      {/* Quick Action Floating Panel */}
-      <div className="quick-actions-fab">
-        <button 
-          className="fab-btn"
-          onClick={() => toast('Select a user to moderate')}
-          title="Quick Moderate User"
-        >
-          <Shield size={20} />
-        </button>
-      </div>
     </div>
   );
 };

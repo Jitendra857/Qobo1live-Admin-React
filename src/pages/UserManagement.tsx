@@ -6,6 +6,7 @@ import EditUserModal from '../components/EditUserModal';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { UserPlus, Search } from 'lucide-react';
 import { adminService } from '../services/api';
+import toast from 'react-hot-toast';
 import '../styles/UserManagement.css';
 
 const UserManagement: React.FC = () => {
@@ -65,7 +66,7 @@ const UserManagement: React.FC = () => {
       setDeleteModalOpen(false);
     } catch (err: any) {
       console.error('Termination failure:', err);
-      alert(`Termination Protocol Error: ${err.response?.data?.message || err.message}`);
+      toast.error(err.response?.data?.message || err.message || 'Delete failed');
     } finally {
       setLoading(false);
     }

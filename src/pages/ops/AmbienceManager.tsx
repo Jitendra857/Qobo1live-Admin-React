@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { adminService } from '../../services/api';
+import toast from 'react-hot-toast';
 import { Monitor, Plus, Image as ImageIcon, Trash2 } from 'lucide-react';
 import '../../styles/UserManagement.css';
 
@@ -23,7 +24,7 @@ const AmbienceManager: React.FC = () => {
       await adminService.manageAmbience(action, { title: 'New BG', imageUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475' }, id);
       fetchBackgrounds();
     } catch (err) {
-      alert('Action failed');
+      toast.error('Action failed');
     }
   };
 

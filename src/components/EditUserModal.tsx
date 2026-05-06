@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, User, Mail, ShieldCheck, Save, AlertCircle, Star, Zap } from 'lucide-react';
 import { adminService } from '../services/api';
+import toast from 'react-hot-toast';
 import '../styles/Modal.css';
 import { scrollToModalTop } from '../utils/scrollToModalTop';
 
@@ -32,15 +33,16 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
     setLoading(true);
     try {
       const res = await adminService.updateUser(user.id, formData);
-      if (res.data.success) {
+      if (res.data.statusCode === 1) {
+        toast.success('User updated successfully');
         onSuccess();
         onClose();
       } else {
-        alert(`Update Failed: ${res.data.message}`);
+        toast.error(res.data.message || 'Update failed');
       }
     } catch (err: any) {
       const msg = err.response?.data?.message || err.message || 'Operation failed';
-      alert(`Modification Error: ${msg}`);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

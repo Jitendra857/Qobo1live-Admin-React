@@ -19,7 +19,7 @@ const Economy: React.FC = () => {
         adminService.getStats()
       ]);
       setPackages(pkgRes.data.data || []);
-      setTransactions(transRes.data.data || []);
+      setTransactions(transRes.data.data?.transactions || []);
       setStats({
         totalRevenue: statsRes.data.data?.revenue || 0,
         activeWallets: statsRes.data.data?.totalUsers || 0
@@ -134,7 +134,7 @@ const Economy: React.FC = () => {
               <tbody>
                 {transactions.map(tx => (
                   <tr key={tx.id} className="row-premium">
-                    <td className="data-cell-dim" style={{ fontSize: '0.75rem' }}>{tx.id.substring(0, 8)}...</td>
+                    <td className="data-cell-dim" style={{ fontSize: '0.75rem' }}>{tx.id ? `${tx.id.substring(0, 8)}...` : 'N/A'}</td>
                     <td>
                       <div className="flex items-center gap-2 font-bold" style={{ color: tx.type === 'RECHARGE' ? '#10b981' : '#3b82f6' }}>
                         {tx.type === 'RECHARGE' ? '+' : ''}₹{tx.amount.toLocaleString()}

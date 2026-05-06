@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { adminService } from '../../services/api';
+import toast from 'react-hot-toast';
 import { Bell, Send, History, Info } from 'lucide-react';
 import '../../styles/UserManagement.css';
 
@@ -9,15 +10,15 @@ const NotificationCenter: React.FC = () => {
   const [sending, setSending] = useState(false);
 
   const handleBroadcast = async () => {
-    if (!subject || !body) return alert('Fill all fields');
+    if (!subject || !body) { toast.error('Please fill all fields'); return; }
     setSending(true);
     try {
       await adminService.sendBroadcast({ subject, body });
-      alert('Broadcast successfully launched!');
+      toast.success('Broadcast launched successfully');
       setSubject('');
       setBody('');
     } catch (err) {
-      alert('Broadcast failed');
+      toast.error('Broadcast failed');
     } finally {
       setSending(false);
     }

@@ -1,12 +1,17 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
-  Home, Users, Gift, List, FileText, UserCheck, 
-  Video, MessageSquare, Dice1, Headset, Wallet, 
-  Image as ImageIcon, Monitor, Mic, Bell, Settings, LogOut, Layout,
-  ChevronDown, ChevronRight, Sword, Shield, ShoppingCart, Activity,
-  Tv, History, ArrowUpRight
+  Home as HomeIcon, Users as UsersIcon, Gift as GiftIcon, List as ListIcon, 
+  FileText as FileTextIcon, UserCheck as UserCheckIcon, 
+  Headset as HeadsetIcon, Wallet as WalletIcon, 
+  Image as ImageIcon, Mic as MicIcon, Bell as BellIcon, Settings as SettingsIcon, LogOut as LogOutIcon,
+  ChevronDown as ChevronDownIcon, ChevronRight as ChevronRightIcon, Sword as SwordIcon, 
+  Shield as ShieldIcon, ShoppingCart as ShoppingCartIcon, Activity as ActivityIcon,
+  Tv as TvIcon, History as HistoryIcon, ArrowUpRight as ArrowUpRightIcon, 
+  Globe as GlobeIcon, Menu as MenuIcon, ChevronLeft as ChevronLeftIcon,
+  Zap as ZapIcon, Key as KeyIcon, Award as AwardIcon, Monitor as MonitorIcon
 } from 'lucide-react';
+import { useLayout } from '../context/LayoutContext';
 import '../styles/Sidebar.css';
 
 interface SidebarProps {
@@ -14,6 +19,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
+  const { isSidebarCollapsed, setSidebarCollapsed, menuPosition, isMobileMenuOpen, setIsMobileMenuOpen } = useLayout();
   const [expandedMenus, setExpandedMenus] = React.useState<string[]>(['Gifts']);
 
   const toggleMenu = (title: string) => {
@@ -23,126 +29,148 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   };
 
   const menuItems = [
-    { title: 'Dashboard', path: '/dashboard', icon: <Home size={20} /> },
-    { title: 'Users', path: '/users', icon: <Users size={20} /> },
+    { title: 'Dashboard', path: '/dashboard', icon: <HomeIcon size={20} /> },
     { 
-      title: 'Gifts', 
-      icon: <Gift size={20} />,
+      title: 'Economy & Assets', 
+      icon: <GiftIcon size={20} />,
       subItems: [
+        { title: 'Gift Inventory', path: '/gifts' },
         { title: 'Categories', path: '/gift-categories' },
-        { title: 'Inventory', path: '/gifts' },
-        { title: 'VIP Store', path: '/vip-store' }
+        { title: 'VIP Tier Setup', path: '/vip-store' },
+        { title: 'Level System', path: '/level-system' },
+        { title: 'Task Center', path: '/dynamic-tasks' }
       ]
     },
-    { title: 'Dynamic Task', path: '/dynamic-tasks', icon: <List size={20} /> },
-    { title: 'System Analytics', path: '/', icon: <Activity size={20} /> },
-    { title: 'Wallet & Ledger', path: '/economy', icon: <Wallet size={20} /> },
-    { title: 'Operational Media', path: '/operational-settings', icon: <ImageIcon size={20} /> },
-    { title: 'Audio Room Matrix', path: '/audio-rooms', icon: <Mic size={20} /> },
-    { title: 'PK Battle Center', path: '/pk-battles', icon: <Sword size={20} /> },
-    { title: 'Dating & Swipes', path: '/fake-video', icon: <Monitor size={20} /> },
-    { title: 'Support & Tickets', path: '/support', icon: <Headset size={20} /> },
-    { title: 'Transaction Log', path: '/transactions', icon: <History size={20} /> },
-    { title: 'Banned Keywords', path: '/moderation', icon: <MessageSquare size={20} /> },
-    { title: 'Agency Withdrawals', path: '/withdrawals', icon: <ArrowUpRight size={20} /> },
-    { title: 'Advanced Config', path: '/settings', icon: <Settings size={20} /> },
-    { title: 'Global Ambience', path: '/backgrounds', icon: <Monitor size={20} /> },
-    { title: 'Simulated Assets', path: '/fake-video', icon: <Video size={20} /> },
-    { title: 'Live Broadcasts', path: '/audio-rooms', icon: <Activity size={20} /> },
-    { title: 'PK Battle Center', path: '/pk-battles', icon: <Sword size={20} /> },
-    { title: 'Support & Tickets', path: '/support', icon: <Headset size={20} /> },
-    { title: 'Broadcast Ads', path: '/operational-settings', icon: <Tv size={20} /> },
-    { title: 'Global Ambience', path: '/backgrounds', icon: <Monitor size={20} /> },
-    { title: 'Transaction Log', path: '/transactions', icon: <History size={20} /> },
-    { title: 'Staff Management', path: '/super-admin-forms', icon: <Shield size={20} /> },
-    { title: 'Seller Management', path: '/coin-seller-forms', icon: <ShoppingCart size={20} /> },
     { 
-      title: 'Recruitment', 
-      icon: <UserCheck size={20} />,
+      title: 'System Config', 
+      icon: <SettingsIcon size={20} />,
       subItems: [
-        { title: 'Agencies', path: '/agents' },
-        { title: 'Host Applications', path: '/host-registry' }
+        { title: 'Payment Gateways', path: '/payment-gateways' },
+        { title: 'Coin Sellers', path: '/coin-seller-forms' },
+        { title: 'Staff Governance', path: '/super-admin-forms' },
+        { title: 'Privacy Policy', path: '/privacy' },
+        { title: 'Localization', path: '/localization' },
+        { title: 'Advanced Config', path: '/settings' }
       ]
     },
-    { title: 'Fake Video Live', path: '/fake-video', icon: <Video size={20} /> },
-    { title: 'Fake Chat Group', path: '/fake-chat', icon: <MessageSquare size={20} /> },
-    { title: 'Greedy Game', path: '/greedy-game', icon: <Dice1 size={20} /> },
-    { title: 'PK Battles', path: '/pk-battles', icon: <Sword size={20} /> },
-    { title: 'Help & support', path: '/support', icon: <Headset size={20} /> },
-    { title: 'Withdrawal requests', path: '/withdrawals', icon: <Wallet size={20} /> },
-    { title: 'Transaction History', path: '/transactions', icon: <FileText size={20} /> },
-    { title: 'Banners', path: '/banners', icon: <ImageIcon size={20} /> },
-    { title: 'Room Backgrounds', path: '/backgrounds', icon: <Monitor size={20} /> },
-    { title: 'Audio Rooms', path: '/audio-rooms', icon: <Mic size={20} /> },
-    { title: 'Notification', path: '/notifications', icon: <Bell size={20} /> },
-    { title: 'Moderation', path: '/moderation', icon: <Shield size={20} /> },
-    { title: 'Setting', path: '/settings', icon: <Settings size={20} /> },
+    { 
+      title: 'Agency & Hosts', 
+      icon: <UserCheckIcon size={20} />,
+      subItems: [
+        { title: 'Agency Hub', path: '/agents' },
+        { title: 'Host Registry', path: '/host-registry' }
+      ]
+    },
+    { 
+      title: 'Surveillance', 
+      icon: <MonitorIcon size={20} />,
+      subItems: [
+        { title: 'User Directory', path: '/users' },
+        { title: 'Moderation Console', path: '/moderation' },
+        { title: 'Simulation Manager', path: '/simulation' },
+        { title: 'Audio Room Monitor', path: '/audio-rooms' },
+        { title: 'PK Battle Hub', path: '/pk-battles' }
+      ]
+    },
+    { 
+      title: 'Financials', 
+      icon: <WalletIcon size={20} />,
+      subItems: [
+        { title: 'Wallet & Ledger', path: '/economy' },
+        { title: 'Transaction Logs', path: '/transactions' },
+        { title: 'Withdrawal Queue', path: '/withdrawals' }
+      ]
+    },
+    { 
+      title: 'Operational Media', 
+      icon: <TvIcon size={20} />,
+      subItems: [
+        { title: 'Banner Management', path: '/banners' },
+        { title: 'Room Environments', path: '/backgrounds' },
+        { title: 'System Broadcasts', path: '/notifications' }
+      ]
+    },
+    { title: 'Support Desk', path: '/support', icon: <HeadsetIcon size={20} /> },
   ];
 
+  if (menuPosition === 'top') return null;
+
+  const handleNavClick = () => {
+    if (window.innerWidth <= 768) {
+      setIsMobileMenuOpen(false);
+    }
+  };
+
   return (
-    <div className="sidebar">
-      <div className="branding">
-        <div className="logo-square">
-          <Layout size={24} color="white" />
+    <>
+      {isMobileMenuOpen && (
+        <div className="mobile-sidebar-backdrop" onClick={() => setIsMobileMenuOpen(false)} />
+      )}
+      <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''} ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+        <div className="branding">
+          {!isSidebarCollapsed && <img src="/logo.svg" alt="Qobo1live Logo" />}
+          <button className="burger-btn" onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}>
+            {isSidebarCollapsed ? <MenuIcon size={20} /> : <ChevronLeftIcon size={20} />}
+          </button>
         </div>
-        <h1 className="logo-text">Admin</h1>
-      </div>
 
-      <nav className="nav-menu">
-        {menuItems.map((item) => (
-          <div key={item.title}>
-            {item.subItems ? (
-              <>
-                <div 
-                  className={`nav-link submenu-trigger ${expandedMenus.includes(item.title) ? 'active' : ''}`}
-                  onClick={() => toggleMenu(item.title)}
-                  style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}
+        <nav className="nav-menu">
+          {menuItems.map((item) => (
+            <div key={item.title}>
+              {item.subItems ? (
+                <>
+                  <div 
+                    className={`nav-link submenu-trigger ${expandedMenus.includes(item.title) ? 'active' : ''}`}
+                    onClick={() => !isSidebarCollapsed && toggleMenu(item.title)}
+                    style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span className="nav-icon">{item.icon}</span>
+                      {!isSidebarCollapsed && <span className="nav-title">{item.title}</span>}
+                    </div>
+                    {!isSidebarCollapsed && (expandedMenus.includes(item.title) ? <ChevronDownIcon size={16} /> : <ChevronRightIcon size={16} />)}
+                  </div>
+                  {expandedMenus.includes(item.title) && !isSidebarCollapsed && (
+                    <div className="sub-menu-items" style={{ paddingLeft: '32px', marginTop: '4px' }}>
+                      {item.subItems.map(sub => (
+                        <NavLink 
+                          key={sub.path} 
+                          to={sub.path} 
+                          className={({ isActive }) => `nav-link sub-link ${isActive ? 'active' : ''}`}
+                          style={{ fontSize: '0.9rem', padding: '8px 12px' }}
+                          onClick={handleNavClick}
+                        >
+                          {sub.title}
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <NavLink 
+                  to={item.path!} 
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                  title={isSidebarCollapsed ? item.title : ''}
+                  onClick={handleNavClick}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span className="nav-icon">{item.icon}</span>
-                    <span className="nav-title">{item.title}</span>
-                  </div>
-                  {expandedMenus.includes(item.title) ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                </div>
-                {expandedMenus.includes(item.title) && (
-                  <div className="sub-menu-items" style={{ paddingLeft: '32px', marginTop: '4px' }}>
-                    {item.subItems.map(sub => (
-                      <NavLink 
-                        key={sub.path} 
-                        to={sub.path} 
-                        className={({ isActive }) => `nav-link sub-link ${isActive ? 'active' : ''}`}
-                        style={{ fontSize: '0.9rem', padding: '8px 12px' }}
-                      >
-                        {sub.title}
-                      </NavLink>
-                    ))}
-                  </div>
-                )}
-              </>
-            ) : (
-              <NavLink 
-                to={item.path!} 
-                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-              >
-                <span className="nav-icon">{item.icon}</span>
-                <span className="nav-title">{item.title}</span>
-              </NavLink>
-            )}
-          </div>
-        ))}
-      </nav>
+                  <span className="nav-icon">{item.icon}</span>
+                  {!isSidebarCollapsed && <span className="nav-title">{item.title}</span>}
+                </NavLink>
+              )}
+            </div>
+          ))}
+        </nav>
 
-      <div className="sidebar-footer" style={{ padding: '20px', borderTop: '1px solid var(--glass-border)' }}>
-        <button 
-          className="logout-btn" 
-          onClick={onLogout}
-          style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '10px', width: '100%', cursor: 'pointer' }}
-        >
-          <LogOut size={20} />
-          <span>Power Off</span>
-        </button>
+        <div className="sidebar-footer">
+          <button className="logout-btn" onClick={onLogout}>
+            <div className="logout-icon-wrap">
+              <LogOutIcon size={18} />
+            </div>
+            {!isSidebarCollapsed && <span className="logout-text">Power Off</span>}
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

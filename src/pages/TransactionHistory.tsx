@@ -12,7 +12,7 @@ const TransactionHistory: React.FC = () => {
         try {
             setLoading(true);
             const res = await adminService.getTransactions(page);
-            if (res.data.success) {
+            if (res.data.statusCode === 1) {
                 setTransactions(res.data.data.transactions);
                 setPagination(res.data.data.pagination);
             }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { X, User, Mail, ShieldCheck, UserPlus } from 'lucide-react';
 import { adminService } from '../services/api';
+import toast from 'react-hot-toast';
 import '../styles/Modal.css';
 import { scrollToModalTop } from '../utils/scrollToModalTop';
 
@@ -28,15 +29,16 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onSuccess })
     setLoading(true);
     try {
       const res = await adminService.createUser(formData);
-      if (res.data.success) {
+      if (res.data.statusCode === 1) {
+        toast.success('User created successfully');
         onSuccess();
         onClose();
       } else {
-        alert(`Creation Blocked: ${res.data.message}`);
+        toast.error(res.data.message || 'Creation failed');
       }
     } catch (err: any) {
       const msg = err.response?.data?.message || err.message || 'Operation failed';
-      alert(`Provisioning Error: ${msg}`);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

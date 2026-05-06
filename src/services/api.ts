@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://my-backend-api-960q.onrender.com/api',
+  baseURL: 'http://localhost:5000/api',
   timeout: 60000,
   headers: {
     'Content-Type': 'application/json',
@@ -58,11 +58,16 @@ export const adminService = {
   getBots: () => api.get('/admin/simulation/bots'),
   manageBot: (action: string, data: any, id?: string) => 
     api.post(`/admin/simulation/bot-action?action=${action}${id ? `&id=${id}` : ''}`, data),
+  controlSimulation: (action: string, data: any, id?: string) => 
+    api.post(`/admin/simulation/control?action=${action}${id ? `&id=${id}` : ''}`, data),
 
   // Ambience & Assets
   getBackgrounds: () => api.get('/admin/ambience/backgrounds'),
   manageAmbience: (action: string, data: any, id?: string) => 
     api.post(`/admin/ambience/action?action=${action}${id ? `&id=${id}` : ''}`, data),
+
+  // PK Battle Management
+  getPKBattles: () => api.get('/admin/pk-battles'),
 
   // Room Configuration
   getRooms: () => api.get('/admin/rooms'),
@@ -91,6 +96,7 @@ export const adminService = {
 
   // Agency Extensions
   getAgencyRevenue: () => api.get('/agency/revenue'),
+  getGlobalAgencyStats: () => api.get('/admin/agency-stats'),
   payoutAgency: (data: { agencyId: string }) => api.post('/agency/payout', data),
 
   // PK & Dating
@@ -102,6 +108,9 @@ export const adminService = {
     api.post(`/admin/vip-action?action=${action}${id ? `&id=${id}` : ''}`, data),
 
   // Moderation
+  getModerationStats: () => api.get('/admin/moderation/stats'),
+  getReports: () => api.get('/admin/moderation/reports'),
+  resolveReport: (id: string) => api.post(`/admin/moderation/reports/${id}/resolve`),
   getBannedWords: () => api.get('/admin/moderation/words'),
   manageBannedWord: (data: { action: 'ADD' | 'REMOVE'; word?: string; id?: string }) => 
     api.post('/admin/moderation/word-action', data),
