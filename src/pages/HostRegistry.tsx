@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { adminService } from '../services/api';
+import { adminService, BACKEND_URL } from '../services/api';
 import { CheckCircle, XCircle, UserCheck, Eye, Phone, Mail, Calendar, Hash, Type, ShieldCheck, Clock, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import '../styles/UserManagement.css';
+import MediaImage from '../components/MediaImage';
 
 const HostRegistry: React.FC = () => {
     const [apps, setApps] = useState<any[]>([]);
@@ -77,11 +78,11 @@ const HostRegistry: React.FC = () => {
                                         <td>
                                             <div className="identity-block">
                                                 <div className="avatar-glass shadow-lg" style={{ border: '2px solid var(--glass-border)' }}>
-                                                    {app.realPhoto ? (
-                                                        <img src={app.realPhoto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                    ) : (
-                                                        <div style={{ fontSize: '1.2rem', fontWeight: 900 }}>{app.hostName?.[0] || 'H'}</div>
-                                                    )}
+                                                    <MediaImage 
+                                                        src={app.realPhoto} 
+                                                        className="h-full w-full object-cover" 
+                                                        fallbackText={app.hostName?.[0] || 'H'}
+                                                    />
                                                 </div>
                                                 <div className="identity-text">
                                                     <span className="name-bold" style={{ fontSize: '1rem' }}>{app.hostName}</span>

@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+export const BACKEND_URL = 'https://my-backend-api-960q.onrender.com';
+
 const api = axios.create({
-  baseURL: 'https://my-backend-api-960q.onrender.com/api',
+  baseURL: `${BACKEND_URL}/api`,
   timeout: 60000,
   headers: {
     'Content-Type': 'application/json',

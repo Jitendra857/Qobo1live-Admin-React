@@ -1,5 +1,6 @@
-import React from 'react';
 import { Edit2, Trash2, Coins } from 'lucide-react';
+import { BACKEND_URL } from '../services/api';
+import MediaImage from './MediaImage';
 
 interface UserTableProps {
   users: any[];
@@ -48,11 +49,12 @@ const UserTable: React.FC<UserTableProps> = ({ users, onAddCoins, onEdit, onDele
               <tr key={user.id} className="row-premium">
                 <td>
                   <div className="identity-block">
-                    {user.displayPicture ? (
-                      <img src={user.displayPicture} alt="" className="avatar-glass" style={{ objectFit: 'cover' }} />
-                    ) : (
-                      <div className="avatar-glass">{user.name?.[0] || 'U'}</div>
-                    )}
+                    <MediaImage 
+                      src={user.displayPicture} 
+                      className="avatar-glass" 
+                      style={{ objectFit: 'cover' }}
+                      fallbackText={user.name?.[0] || 'U'}
+                    />
                     <div className="identity-text">
                       <span className="name-bold">{user.name || 'Anonymous User'}</span>
                       <span className="email-sub">{user.email || 'N/A'}</span>
