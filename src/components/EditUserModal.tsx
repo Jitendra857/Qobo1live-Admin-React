@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, Mail, ShieldCheck, Save, AlertCircle, Star, Zap } from 'lucide-react';
+import { X, User, Mail, ShieldCheck, Save, AlertCircle, Star, Zap, Trash2, Image as ImageIcon, Plus } from 'lucide-react';
 import { adminService } from '../services/api';
 import toast from 'react-hot-toast';
 import '../styles/Modal.css';
 import { scrollToModalTop } from '../utils/scrollToModalTop';
+import MediaImage from './MediaImage';
 
 interface EditUserModalProps {
   user: any;
@@ -20,7 +21,8 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
     status: user.status || 'active',
     level: user.level || 1,
     xp: user.xp || 0,
-    pattiStyle: user.pattiStyle || 'classic'
+    pattiStyle: user.pattiStyle || 'classic',
+    displayPicture: user.displayPicture || 'default_dp.png'
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -163,21 +165,59 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
             </div>
           </div>
 
-          <div className="form-group" style={{ marginBottom: '24px' }}>
-            <label>Update Profile Picture</label>
-            <div className="file-input-wrapper" style={{ marginTop: '8px' }}>
-              <input 
-                type="file" 
-                accept="image/*" 
-                onChange={handleFileChange}
-                className="admin-input"
-                style={{ padding: '10px' }}
-              />
-              {selectedFile && (
-                <div style={{ fontSize: '0.8rem', color: 'var(--accent-blue)', marginTop: '4px', fontWeight: 600 }}>
-                  Selected: {selectedFile.name}
+          <div className="form-group" style={{ marginBottom: '28px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <ImageIcon size={14} /> Profile Identity
+            </label>
+            <div className="flex items-center gap-6 mt-4 p-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div className="relative group">
+                <MediaImage 
+                  src={selectedFile ? URL.createObjectURL(selectedFile) : formData.displayPicture} 
+                  className="avatar-glass shadow-2xl" 
+                  style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '20px', border: '2px solid var(--accent-blue)' }}
+                  fallbackText={formData.name?.[0] || 'U'}
+                />
+                {selectedFile && (
+                  <div className="absolute -top-2 -right-2 bg-blue-500 rounded-full p-1 shadow-lg animate-bounce">
+                    <Save size={10} color="white" />
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex flex-col gap-3 flex-1">
+                <div className="flex gap-2">
+                  <label 
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    style={{ background: 'var(--accent-blue)', color: 'white', fontSize: '0.8rem', fontWeight: 700 }}
+                  >
+                    <Plus size={14} /> Change Photo
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                  </label>
+                  
+                  {(selectedFile || (formData.displayPicture && formData.displayPicture !== 'default_dp.png')) && (
+                    <button 
+                      type="button" 
+                      className="p-2.5 rounded-xl transition-all hover:bg-red-500/20 hover:scale-[1.02] active:scale-[0.98]"
+                      style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)' }}
+                      onClick={() => {
+                        setSelectedFile(null);
+                        setFormData({...formData, displayPicture: 'default_dp.png'});
+                      }}
+                      title="Remove current image"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  )}
                 </div>
-              )}
+                <p style={{ fontSize: '0.65rem', opacity: 0.5, fontWeight: 600 }}>
+                  {selectedFile ? `New file: ${selectedFile.name}` : 'PNG, JPG or WebP. Max 5MB.'}
+                </p>
+              </div>
             </div>
           </div>
 

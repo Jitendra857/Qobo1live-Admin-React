@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { X, User, Mail, ShieldCheck, UserPlus } from 'lucide-react';
+import { X, User, Mail, ShieldCheck, UserPlus, Plus, Image as ImageIcon } from 'lucide-react';
 import { adminService } from '../services/api';
 import toast from 'react-hot-toast';
 import '../styles/Modal.css';
 import { scrollToModalTop } from '../utils/scrollToModalTop';
+import MediaImage from './MediaImage';
 
 interface CreateUserModalProps {
   onClose: () => void;
@@ -128,21 +129,40 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onSuccess })
             </select>
           </div>
 
-          <div className="form-group" style={{ marginBottom: '24px' }}>
-            <label>Profile Picture (Optional)</label>
-            <div className="file-input-wrapper" style={{ marginTop: '8px' }}>
-              <input 
-                type="file" 
-                accept="image/*" 
-                onChange={handleFileChange}
-                className="admin-input"
-                style={{ padding: '10px' }}
+          <div className="form-group" style={{ marginBottom: '28px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <ImageIcon size={14} /> Profile Picture
+            </label>
+            <div className="flex items-center gap-6 mt-4 p-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <MediaImage 
+                src={selectedFile ? URL.createObjectURL(selectedFile) : null} 
+                className="avatar-glass shadow-2xl" 
+                style={{ width: '70px', height: '70px', objectFit: 'cover', borderRadius: '18px', border: '2px dashed rgba(255,255,255,0.1)' }}
+                fallbackText={formData.name?.[0] || 'U'}
               />
-              {selectedFile && (
-                <div style={{ fontSize: '0.8rem', color: 'var(--accent-blue)', marginTop: '4px', fontWeight: 600 }}>
-                  Selected: {selectedFile.name}
-                </div>
-              )}
+              <div className="flex-1">
+                <label 
+                  className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  style={{ background: 'var(--accent-blue)', color: 'white', fontSize: '0.8rem', fontWeight: 700 }}
+                >
+                  <Plus size={14} /> {selectedFile ? 'Change Photo' : 'Upload Photo'}
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </label>
+                {selectedFile && (
+                  <button 
+                    type="button"
+                    onClick={() => setSelectedFile(null)}
+                    style={{ fontSize: '0.65rem', color: '#ef4444', marginTop: '8px', fontWeight: 700, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                  >
+                    Cancel Upload
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
