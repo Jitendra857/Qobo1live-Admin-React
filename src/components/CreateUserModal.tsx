@@ -135,7 +135,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onSuccess })
             </label>
             <div className="flex items-center gap-6 mt-4 p-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
               <MediaImage 
-                src={selectedFile ? URL.createObjectURL(selectedFile) : null} 
+                src={selectedFile ? URL.createObjectURL(selectedFile) : undefined} 
                 className="avatar-glass shadow-2xl" 
                 style={{ width: '70px', height: '70px', objectFit: 'cover', borderRadius: '18px', border: '2px dashed rgba(255,255,255,0.1)' }}
                 fallbackText={formData.name?.[0] || 'U'}
