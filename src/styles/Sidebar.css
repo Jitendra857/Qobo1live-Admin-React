@@ -23,6 +23,32 @@
 .branding img {
   width: 140px;
   height: auto;
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  animation: logo-cinematic 15s infinite ease-in-out;
+  filter: drop-shadow(0 5px 15px rgba(139, 92, 246, 0.2));
+  cursor: pointer;
+}
+
+@keyframes logo-cinematic {
+  /* Stage 1: Heartbeat (0-3s) */
+  0%, 20% { transform: scale(1); filter: drop-shadow(0 5px 15px rgba(139, 92, 246, 0.2)); }
+  5%, 15% { transform: scale(1.05); filter: drop-shadow(0 8px 25px rgba(139, 92, 246, 0.4)); }
+  
+  /* Stage 2: Elegant Tilt (3-6s) */
+  25% { transform: rotate(-5deg); }
+  35% { transform: rotate(5deg); }
+  
+  /* Stage 3: Zero-G Float (6-9s) */
+  45% { transform: translateY(-10px); }
+  55% { transform: translateY(0); }
+  
+  /* Stage 4: Luminous Shimmer (9-12s) */
+  65% { filter: brightness(1.4) drop-shadow(0 15px 35px rgba(139, 92, 246, 0.6)); }
+  75% { filter: brightness(1) drop-shadow(0 5px 15px rgba(139, 92, 246, 0.2)); }
+  
+  /* Stage 5: Depth Pulse (12-15s) */
+  85% { transform: scale(0.95); opacity: 0.8; }
+  95%, 100% { transform: scale(1); opacity: 1; }
 }
 
 .nav-menu {
