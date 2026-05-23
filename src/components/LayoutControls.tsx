@@ -1,96 +1,129 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { 
-  LayoutDashboard, Users, Gift, Crown, Wallet, 
-  ShieldCheck, Settings, LogOut, Menu, X, Palette, 
-  ArrowLeftRight, Heart
+import {
+  LayoutDashboard, Users, Gift, Crown, Wallet,
+  ShieldCheck, Settings, LogOut, Palette, Check
 } from 'lucide-react';
-import { useLayout } from '../context/LayoutContext';
+import { useLayout, SIDEBAR_THEMES } from '../context/LayoutContext';
 
 const menuItems = [
-  { path: '/dashboard', label: 'Overview', icon: LayoutDashboard },
-  { path: '/users', label: 'Users', icon: Users },
-  { path: '/gifts', label: 'Gifts', icon: Gift },
-  { path: '/agents', label: 'Agencies', icon: Crown },
-  { path: '/withdrawals', label: 'Economy', icon: Wallet },
-  { path: '/moderation', label: 'Safety', icon: ShieldCheck },
-  { path: '/privacy', label: 'Privacy', icon: ShieldCheck },
-  { path: '/operational-settings', label: 'Ops', icon: Settings },
+  { path: '/dashboard',  label: 'Overview', icon: LayoutDashboard },
+  { path: '/users',      label: 'Users',    icon: Users },
+  { path: '/gifts',      label: 'Gifts',    icon: Gift },
+  { path: '/agents',     label: 'Agencies', icon: Crown },
+  { path: '/withdrawals',label: 'Economy',  icon: Wallet },
+  { path: '/moderation', label: 'Safety',   icon: ShieldCheck },
+  { path: '/settings',   label: 'Settings', icon: Settings },
 ];
 
-export const TopMenu: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
-  const { themeColor } = useLayout();
+/* ── Top-bar menu (used when menuPosition === 'top') ─────── */
+export const TopMenu: React.FC<{ onLogout: () => void }> = ({ onLogout }) => (
+  <nav className="top-menu">
+    <div className="top-branding">
+      <img src="/logo.svg" alt="qobo1live" style={{ height: '32px' }} />
+    </div>
+    <div className="top-nav-items">
+      {menuItems.map(item => (
+        <NavLink key={item.path} to={item.path} className="top-nav-link">
+          <item.icon size={18} />
+          <span>{item.label}</span>
+        </NavLink>
+      ))}
+    </div>
+    <div className="top-actions">
+      <button onClick={onLogout} className="top-logout-btn compact">
+        <LogOut size={18} />
+        <span className="logout-label">Power Off</span>
+      </button>
+    </div>
+  </nav>
+);
 
-  return (
-    <nav className="top-menu">
-      <div className="top-branding">
-        <img src="/logo.svg" alt="qobo1live" style={{ height: '32px' }} />
-      </div>
-      <div className="top-nav-items">
-        {menuItems.map(item => (
-          <NavLink key={item.path} to={item.path} className="top-nav-link">
-            <item.icon size={18} />
-            <span>{item.label}</span>
-          </NavLink>
-        ))}
-      </div>
-      <div className="top-actions">
-        <button onClick={onLogout} className="top-logout-btn compact">
-          <LogOut size={18} />
-          <span className="logout-label">Power Off</span>
-        </button>
-      </div>
-    </nav>
-  );
-};
-
+/* ── Floating theme picker (right-side FAB drawer) ────────── */
 export const SettingsToggle: React.FC = () => {
-  const { themeColor, setThemeColor, menuPosition, setMenuPosition } = useLayout();
+  const { sidebarTheme, setSidebarTheme, menuPosition, setMenuPosition } = useLayout();
   const [isOpen, setIsOpen] = React.useState(false);
 
-  const colors = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
-
   return (
-    <div className={`settings-drawer ${isOpen ? 'open' : ''}`}>
-      <button className="settings-fab" onClick={() => setIsOpen(!isOpen)}>
-        <Palette size={24} />
+    <div className={`theme-drawer ${isOpen ? 'open' : ''}`}>
+
+      {/* FAB trigger */}
+      <button
+        className="theme-fab"
+        onClick={() => setIsOpen(!isOpen)}
+        title="Customize Theme"
+      >
+        <Palette size={20} />
       </button>
-      
-      <div className="settings-content">
-        <h3>UI Customization</h3>
-        
-        <div className="setting-group">
-          <label>Theme Color</label>
-          <div className="color-grid">
-            {colors.map(c => (
-              <button 
-                key={c} 
-                className={`color-box ${themeColor === c ? 'active' : ''}`}
-                style={{ background: c }}
-                onClick={() => setThemeColor(c)}
-              />
+
+      {/* Panel */}
+      <div className="theme-panel">
+        <div className="theme-panel-header">
+          <div className="theme-panel-title">
+            <Palette size={16} />
+            <span>Theme Studio</span>
+          </div>
+          <button className="theme-panel-close" onClick={() => setIsOpen(false)}>✕</button>
+        </div>
+
+        {/* Sidebar colour presets */}
+        <div className="theme-section">
+          <div className="theme-section-label">Sidebar Skin</div>
+          <div className="theme-swatches">
+            {SIDEBAR_THEMES.map(t => (
+              <button
+                key={t.id}
+                className={`theme-swatch ${sidebarTheme.id === t.id ? 'selected' : ''}`}
+                onClick={() => setSidebarTheme(t)}
+                title={t.label}
+              >
+                {/* preview mini sidebar */}
+                <span
+                  className="swatch-preview"
+                  style={{ background: t.bg, borderColor: t.accent }}
+                >
+                  <span className="swatch-bar" style={{ background: t.accent }} />
+                  <span className="swatch-lines">
+                    <span style={{ background: t.text, opacity: 0.4 }} />
+                    <span style={{ background: t.text, opacity: 0.25 }} />
+                    <span style={{ background: t.text, opacity: 0.25 }} />
+                  </span>
+                </span>
+                <span className="swatch-label">{t.label}</span>
+                {sidebarTheme.id === t.id && (
+                  <span className="swatch-check" style={{ background: t.accent }}>
+                    <Check size={10} color="#fff" />
+                  </span>
+                )}
+              </button>
             ))}
           </div>
         </div>
 
-        <div className="setting-group">
-          <label>Menu Position</label>
-          <div className="toggle-btn-group">
-            <button 
-              className={menuPosition === 'left' ? 'active' : ''} 
+        {/* Menu Position toggle */}
+        <div className="theme-section">
+          <div className="theme-section-label">Menu Position</div>
+          <div className="theme-position-toggle">
+            <button
+              className={menuPosition === 'left' ? 'active' : ''}
               onClick={() => setMenuPosition('left')}
             >
               Left Sidebar
             </button>
-            <button 
-              className={menuPosition === 'top' ? 'active' : ''} 
+            <button
+              className={menuPosition === 'top' ? 'active' : ''}
               onClick={() => setMenuPosition('top')}
             >
               Top Bar
             </button>
           </div>
         </div>
+
+        <div className="theme-panel-footer">
+          Preferences saved automatically
+        </div>
       </div>
+
     </div>
   );
 };

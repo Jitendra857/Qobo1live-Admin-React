@@ -11,7 +11,7 @@
 .toast {
   min-width: 300px;
   padding: 16px 20px;
-  border-radius: 16px;
+  border-radius: 0px;
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);

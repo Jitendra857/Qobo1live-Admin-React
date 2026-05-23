@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { 
   Users, Gift, Crown, Wallet, Activity, TrendingUp, 
   ArrowUpRight, Clock, ShieldCheck, Zap, Star, Trophy,
-  UserCheck, Heart, Layout, Calendar, Globe
+  UserCheck, Heart, Layout, Calendar, Globe,
+  Package, CheckCircle, Tag, RotateCcw, Trash2, Wrench, ChevronRight,
+  Ban, Target, ShieldAlert
 } from 'lucide-react';
 import { adminService } from '../services/api';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
-  ResponsiveContainer, PieChart, Pie, Cell 
+  ResponsiveContainer, PieChart, Pie, Cell, Legend
 } from 'recharts';
 import '../styles/Dashboard.css';
 
@@ -17,9 +19,9 @@ const Dashboard: React.FC = () => {
     activeUsers: 0,
     revenue: 0,
     roomCount: 0,
-    pendingHosts: 0
+    pendingHosts: 0,
+    giftCount: 0
   });
-  const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [period, setPeriod] = useState<'DAILY' | 'WEEKLY' | 'ALL_TIME'>('DAILY');
 
   useEffect(() => {
@@ -33,21 +35,8 @@ const Dashboard: React.FC = () => {
         console.error('Dashboard Stats Fetch Error:', err);
       }
     };
-
-    const fetchLeaderboard = async () => {
-      try {
-        const res = await adminService.getLeaderboard('GIFTER', period);
-        if (res.data.statusCode === 1) {
-          setLeaderboard(res.data.data);
-        }
-      } catch (err) {
-        console.error('Leaderboard Fetch Error:', err);
-      }
-    };
-
     fetchStats();
-    fetchLeaderboard();
-  }, [period]);
+  }, []);
 
   const growthData = [
     { name: 'Mon', users: 400 },
@@ -59,156 +48,286 @@ const Dashboard: React.FC = () => {
     { name: 'Sun', users: 1500 },
   ];
 
+  const distributionData = [
+    { name: 'Standard', value: 400 },
+    { name: 'VIP', value: 300 },
+    { name: 'Creators', value: 200 },
+    { name: 'Moderators', value: 100 },
+  ];
+
+  const COLORS = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e'];
+
   return (
     <div className="dashboard-page">
-      {/* Premium Header */}
       <div className="dashboard-header">
-        <div className="welcome-section">
-          <h1>Dashboard Overview</h1>
-          <p className="subtitle">Welcome back, Admin. Here's what's happening today.</p>
-        </div>
-        <div className="header-actions">
-          <div className="date-display">
-            <Calendar size={18} />
-            <span>{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-          </div>
-          <button className="sync-btn primary">
-            <Zap size={18} strokeWidth={2.5} />
-            <span>Sync Live Data</span>
-          </button>
+        <h1>Site Overview</h1>
+        <div className="breadcrumb">
+          <span>Home</span> <ChevronRight size={14} style={{ verticalAlign: 'middle', margin: '0 4px' }} /> Dashboard
         </div>
       </div>
 
-      <div className="bento-grid">
-        {/* Main Growth Chart */}
-        <div className="bento-card chart-large">
-          <div className="card-top">
-            <div className="card-info">
-              <div className="card-label">Network Growth</div>
-              <div className="card-title">User Acquisition Trend</div>
-            </div>
-            <div className="card-icon-wrap primary">
-              <TrendingUp size={20} />
-            </div>
+      {/* Row 1: Primary Stats */}
+      <div className="stats-row">
+        <div className="stat-card">
+          <div className="stat-info">
+            <span className="label label-blue">TOTAL USERS</span>
+            <span className="value">{stats?.totalUsers?.toLocaleString() || 0}</span>
           </div>
-          <div className="chart-container">
-            <ResponsiveContainer width="100%" height={220}>
+          <div className="stat-icon stat-icon-blue">
+            <Users size={28} strokeWidth={2} />
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-info">
+            <span className="label label-green">ACTIVE ROOMS</span>
+            <span className="value">{stats?.roomCount || 0}</span>
+          </div>
+          <div className="stat-icon stat-icon-green">
+            <Activity size={28} strokeWidth={2} />
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-info">
+            <span className="label label-purple">PENDING HOSTS</span>
+            <span className="value">{stats?.pendingHosts || 0}</span>
+          </div>
+          <div className="stat-icon stat-icon-purple">
+            <Crown size={28} strokeWidth={2} />
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-info">
+            <span className="label label-orange">DAILY EARNINGS</span>
+            <span className="value">₹{((stats?.revenue || 0) / 1).toLocaleString()}</span>
+          </div>
+          <div className="stat-icon stat-icon-gold">
+            <Wallet size={28} strokeWidth={2} />
+          </div>
+        </div>
+      </div>
+
+      {/* Row 2: Mini Ecosystem Pulse */}
+      <div className="mini-stats-row">
+        <div className="mini-stat-card">
+          <div className="mini-stat-icon red"><Ban size={18} /></div>
+          <div className="mini-stat-info">
+            <span className="mini-label">Active Bans</span>
+            <span className="mini-value">84</span>
+          </div>
+        </div>
+        <div className="mini-stat-card">
+          <div className="mini-stat-icon blue"><Target size={18} /></div>
+          <div className="mini-stat-info">
+            <span className="mini-label">PK Battles</span>
+            <span className="mini-value">12</span>
+          </div>
+        </div>
+        <div className="mini-stat-card">
+          <div className="mini-stat-icon purple"><Zap size={18} /></div>
+          <div className="mini-stat-info">
+            <span className="mini-label">Active Bots</span>
+            <span className="mini-value">156</span>
+          </div>
+        </div>
+        <div className="mini-stat-card">
+          <div className="mini-stat-icon orange"><ShieldAlert size={18} /></div>
+          <div className="mini-stat-info">
+            <span className="mini-label">Pending Reports</span>
+            <span className="mini-value">12</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Row 3: Main Charts */}
+      <div className="charts-row">
+        <div className="chart-card">
+          <div className="chart-header">
+            <h3>Monthly Trend</h3>
+            <select className="chart-select">
+              <option>User Growth</option>
+              <option>Revenue Trend</option>
+            </select>
+          </div>
+          <div style={{ height: 320, width: '100%', marginTop: 20 }}>
+            <ResponsiveContainer>
               <AreaChart data={growthData}>
-                <defs>
-                  <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--accent-purple)" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="var(--accent-purple)" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.03)" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 11, fontWeight: 700, fill: '#94a3b8'}} dy={10} />
-                <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }} />
-                <Area type="monotone" dataKey="users" stroke="var(--accent-purple)" strokeWidth={4} fillOpacity={1} fill="url(#colorUsers)" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6e707e' }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6e707e' }} />
+                <Tooltip />
+                <Area type="monotone" dataKey="users" stroke="#4e73df" fill="rgba(78, 115, 223, 0.05)" strokeWidth={3} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Small Stat Cards */}
-        <div className="bento-card stats-small">
-          <div className="card-top">
-            <div className="card-label">Total Users</div>
-            <div className="card-icon-wrap" style={{ color: 'var(--accent-purple)' }}><Users size={18} /></div>
+        <div className="chart-card">
+          <div className="chart-header">
+            <h3>User Distribution</h3>
           </div>
-          <div className="card-body">
-            <div className="card-value">{stats?.totalUsers.toLocaleString()}</div>
-            <div className="card-status positive">
-              <ArrowUpRight size={14} />
-              <span>+12% this week</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bento-card stats-small">
-          <div className="card-top">
-            <div className="card-label">Active Now</div>
-            <div className="card-icon-wrap" style={{ color: '#10b981' }}><Activity size={18} /></div>
-          </div>
-          <div className="card-body">
-            <div className="card-value">{stats?.activeUsers}</div>
-            <div className="card-status positive live">
-              <span className="live-dot"></span>
-              <span>Real-time</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bento-card stats-small">
-          <div className="card-top">
-            <div className="card-label">Total Revenue</div>
-            <div className="card-icon-wrap" style={{ color: '#f59e0b' }}><Wallet size={18} /></div>
-          </div>
-          <div className="card-body">
-            <div className="card-value">₹{((stats?.revenue || 0) / 1000).toFixed(1)}k</div>
-            <div className="card-status positive">
-              <TrendingUp size={14} />
-              <span>On target</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bento-card stats-small">
-          <div className="card-top">
-            <div className="card-label">Pending Review</div>
-            <div className="card-icon-wrap" style={{ color: '#ef4444' }}><ShieldCheck size={18} /></div>
-          </div>
-          <div className="card-body">
-            <div className="card-value">{stats?.pendingHosts}</div>
-            <div className="card-status warning">Needs Attention</div>
-          </div>
-        </div>
-
-        {/* Leaderboard Section */}
-        <div className="bento-card leaderboard-wide">
-          <div className="card-top">
-            <div className="flex items-center gap-3">
-              <Trophy size={24} style={{ color: '#fbbf24' }} />
-              <div className="flex flex-col">
-                <span style={{ fontWeight: 900, fontSize: '1.1rem' }}>Elite Contributors</span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Ranking based on platform engagement</span>
-              </div>
-            </div>
-            <div className="toggle-group">
-              {(['DAILY', 'WEEKLY', 'ALL_TIME'] as const).map(p => (
-                <button 
-                  key={p}
-                  className={period === p ? 'active' : ''} 
-                  onClick={() => setPeriod(p)}
+          <div className="pie-chart-container" style={{ height: 320, width: '100%' }}>
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie
+                  data={distributionData}
+                  innerRadius={70}
+                  outerRadius={100}
+                  paddingAngle={0}
+                  dataKey="value"
                 >
-                  {p.replace('_', ' ')}
-                </button>
-              ))}
+                  {distributionData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Legend verticalAlign="bottom" iconType="circle" align="center" layout="horizontal" iconSize={12} wrapperStyle={{ paddingTop: 20, fontSize: 12 }} />
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Row 4: Critical Alerts & Activity */}
+      <div className="details-row">
+        <div className="details-card">
+          <div className="card-header-alert red">
+            <div className="header-title-group">
+              <ShieldCheck size={18} />
+              <h3>Critical Alerts (System Health)</h3>
+            </div>
+            <button className="icon-btn"><Layout size={14} /></button>
+          </div>
+          <div className="table-container">
+            <table className="alerts-table">
+              <thead>
+                <tr>
+                  <th>Event Type</th>
+                  <th>Source</th>
+                  <th>Status</th>
+                  <th>Time Remaining</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Pending Host App</td>
+                  <td>Riya Singh</td>
+                  <td><span className="text-warning">Review Needed</span></td>
+                  <td>2 Days left</td>
+                </tr>
+                <tr>
+                  <td>Withdrawal Request</td>
+                  <td>User_8211</td>
+                  <td><span className="text-info">Processing</span></td>
+                  <td>12 Hours left</td>
+                </tr>
+                <tr>
+                  <td>Unresolved Report</td>
+                  <td>Mod_Alpha</td>
+                  <td><span className="text-warning">Pending</span></td>
+                  <td>5 Hours left</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="details-card">
+          <div className="card-header-alert blue">
+            <div className="header-title-group">
+              <RotateCcw size={18} />
+              <h3>Recent Activity Feed</h3>
             </div>
           </div>
-
-          <div className="leaderboard-grid">
-            {leaderboard.map((user, idx) => (
-              <div key={user.userId} className="leader-row">
-                <div className="user-info">
-                  <div className="rank-badge" data-rank={idx + 1}>
-                    {idx < 3 ? <Star size={14} fill="currentColor" /> : idx + 1}
-                  </div>
-                  <div className="avatar-neon">
-                    {user.avatar ? <img src={user.avatar} alt="" /> : (user.name?.[0] || 'U')}
-                  </div>
-                  <div className="user-meta">
-                    <span className="user-name">{user.name}</span>
-                    <span className="user-lvl">Level {user.level}</span>
-                  </div>
-                </div>
-                <div className="user-stats">
-                  <div className="user-amount">₹{user.amount.toLocaleString()}</div>
-                  <div className="progress-mini">
-                    <div className="progress-bar" style={{ width: `${100 - idx * 15}%` }}></div>
-                  </div>
-                </div>
+          <div className="activity-feed">
+            <div className="activity-item">
+              <div className="activity-icon-wrap text-warning"><RotateCcw size={14} /></div>
+              <div className="activity-content">
+                <p><strong>Processed:</strong> Host application for Sonia Roy</p>
+                <span>a day ago</span>
               </div>
-            ))}
+            </div>
+            <div className="activity-item">
+              <div className="activity-icon-wrap text-success"><ArrowUpRight size={14} /></div>
+              <div className="activity-content">
+                <p><strong>Revenue:</strong> ₹500 purchase by Alok Singh</p>
+                <span>3 days ago</span>
+              </div>
+            </div>
+            <div className="activity-item">
+              <div className="activity-icon-wrap text-success"><ArrowUpRight size={14} /></div>
+              <div className="activity-content">
+                <p><strong>System:</strong> New room 'Music Hub' created</p>
+                <span>3 days ago</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Row 5: Agency Hub & Moderation Health */}
+      <div className="details-row">
+        <div className="details-card">
+          <div className="card-header-alert blue">
+            <div className="header-title-group">
+              <Trophy size={18} />
+              <h3>Top Performing Agencies</h3>
+            </div>
+          </div>
+          <div className="leader-list-dash">
+            <div className="leader-item-dash">
+              <span className="leader-rank-dash">01</span>
+              <span className="leader-name-dash">Global Recruitment</span>
+              <span className="leader-value-dash">₹1,24,500</span>
+            </div>
+            <div className="leader-item-dash">
+              <span className="leader-rank-dash">02</span>
+              <span className="leader-name-dash">Star Talent Agency</span>
+              <span className="leader-value-dash">₹98,200</span>
+            </div>
+            <div className="leader-item-dash">
+              <span className="leader-rank-dash">03</span>
+              <span className="leader-name-dash">Neo Media Hub</span>
+              <span className="leader-value-dash">₹76,400</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="details-card">
+          <div className="card-header-alert red">
+            <div className="header-title-group">
+              <ShieldAlert size={18} />
+              <h3>Moderation Health</h3>
+            </div>
+          </div>
+          <div className="moderation-health-stats">
+            <div className="section-title-dash">Compliance Metrics</div>
+            <div className="progress-stat-group">
+              <div className="progress-header">
+                <span>Reports Resolved</span>
+                <span>85%</span>
+              </div>
+              <div className="progress-bar-wrap">
+                <div className="progress-bar-inner bg-primary" style={{ width: '85%' }}></div>
+              </div>
+            </div>
+            <div className="progress-stat-group">
+              <div className="progress-header">
+                <span>Keyword Filtering</span>
+                <span>98%</span>
+              </div>
+              <div className="progress-bar-wrap">
+                <div className="progress-bar-inner bg-success" style={{ width: '98%' }}></div>
+              </div>
+            </div>
+            <div className="progress-stat-group">
+              <div className="progress-header">
+                <span>Active Mutes</span>
+                <span>24</span>
+              </div>
+              <div className="progress-bar-wrap">
+                <div className="progress-bar-inner bg-warning" style={{ width: '40%' }}></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

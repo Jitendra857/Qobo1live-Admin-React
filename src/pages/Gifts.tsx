@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { adminService } from '../services/api';
+import { adminService, BACKEND_URL } from '../services/api';
 import { toast, Toaster } from 'react-hot-toast';
 import { Gift as GiftIcon, Plus, Trash2, Edit, Trophy, TrendingUp, Music, Layout, X, Check, Save, Gem, Coins, PieChart, AlertCircle, Archive, ArrowUpRight, Activity } from 'lucide-react';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -172,72 +172,60 @@ const Gifts: React.FC = () => {
     };
 
     return (
-        <div className="dashboard-container-ambient gifts-page">
-            <Toaster position="top-right" gutter={8} toastOptions={{
-                duration: 5000,
-                style: {
-                    background: '#ffffff',
-                    color: '#1e293b',
-                    borderRadius: '20px',
-                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
-                    border: '1px solid rgba(0,0,0,0.05)',
-                    padding: '20px 28px',
-                    fontSize: '15px',
-                    fontWeight: 500,
-                    zIndex: 99999
-                }
-            }} containerStyle={{ top: 60, right: 60, zIndex: 99999 }} />
-            <div className="dashboard-header-premium">
+        <div className="dashboard-page gifts-page">
+            <Toaster position="top-right" />
+            
+            <div className="dashboard-header">
                 <div className="header-text-group">
-                    <h1 className="dashboard-title-highdef">Digital Store Inventory</h1>
-                    <p className="dashboard-subtitle-highdef">Advanced asset and economy management</p>
+                    <h1>Gift Inventory</h1>
+                    <p className="subtitle">Manage digital assets and gift economy</p>
                 </div>
-                <div className="header-actions-premium gifts-header-actions">
-                    <button className="secondary-action-btn gifts-action-btn" onClick={fetchGifts} title="Reload inventory data">
+                <div className="header-actions">
+                    <button className="secondary" onClick={fetchGifts}>
                         <Activity size={18} />
                         <span>Reload Data</span>
                     </button>
-                    <button className="primary-provision-btn gifts-action-btn" onClick={() => handleOpenModal()}>
+                    <button className="primary flex items-center gap-2" onClick={() => handleOpenModal()}>
                         <Plus size={20} />
                         <span>Add New Gift</span>
                     </button>
                 </div>
             </div>
 
-            <div className="stats-grid-highdef gifts-stats-grid">
-                <div className="stats-card-premium">
-                    <div className="stats-icon-wrap sapphire">
-                        <Trophy size={28} />
+            <div className="stats-row mb-6">
+                <div className="stat-card">
+                    <div className="stat-info">
+                        <span className="label label-blue">Top Selling Asset</span>
+                        <span className="value" style={{ fontSize: '20px' }}>{stats[0]?.name || 'N/A'}</span>
                     </div>
-                    <div className="stats-info-group">
-                        <span className="stats-label-refined">Top Selling Asset</span>
-                        <span className="stats-value-refined">{stats[0]?.name || 'N/A'}</span>
-                    </div>
-                </div>
-                <div className="stats-card-premium">
-                    <div className="stats-icon-wrap emerald">
-                        <TrendingUp size={28} />
-                    </div>
-                    <div className="stats-info-group">
-                        <span className="stats-label-refined">Lucky Pool Revenue</span>
-                        <span className="stats-value-refined">₹{stats.reduce((acc, s) => acc + s.totalRevenue, 0).toLocaleString()}</span>
+                    <div className="stat-icon">
+                        <Trophy size={32} color="#dddfeb" />
                     </div>
                 </div>
-                <div className="stats-card-premium">
-                    <div className="stats-icon-wrap amber">
-                        <GiftIcon size={28} />
+                <div className="stat-card">
+                    <div className="stat-info">
+                        <span className="label label-green">Lucky Pool Revenue</span>
+                        <span className="value" style={{ fontSize: '20px' }}>₹{stats.reduce((acc, s) => acc + s.totalRevenue, 0).toLocaleString()}</span>
                     </div>
-                    <div className="stats-info-group">
-                        <span className="stats-label-refined">Active Inventory</span>
-                        <span className="stats-value-refined">{gifts.length} Items</span>
+                    <div className="stat-icon">
+                        <TrendingUp size={32} color="#dddfeb" />
+                    </div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-info">
+                        <span className="label label-orange">Active Inventory</span>
+                        <span className="value" style={{ fontSize: '20px' }}>{gifts.length} Items</span>
+                    </div>
+                    <div className="stat-icon">
+                        <GiftIcon size={32} color="#dddfeb" />
                     </div>
                 </div>
             </div>
 
             {/* Assets Grid */}
-            <div className="gift-grid gifts-list-grid">
+            <div className="gift-grid">
                 {gifts.map((gift) => (
-                    <div key={gift.id} className="gift-card asset-card overflow-hidden gifts-list-card">
+                    <div key={gift.id} className="gift-card">
                         <div className="card-top">
                             <div className={`card-label ${gift.type}`}>
                                 {gift.type === 'lucky' ? <Trophy size={12} /> : gift.type === 'luxury' ? <Gem size={12} /> : <GiftIcon size={12} />}
@@ -255,12 +243,16 @@ const Gifts: React.FC = () => {
 
                         <div className="card-content flex flex-col items-center py-2">
                             <div className="asset-icon-box mb-3">
-                                {gift.type === 'luxury' ? <Gem className="text-purple-500" size={36} /> : <GiftIcon className="text-blue-500" size={36} />}
+                                {gift.icon ? (
+                                    <img src={`${BACKEND_URL}${gift.icon}`} alt={gift.name} className="asset-icon" />
+                                ) : (
+                                    gift.type === 'luxury' ? <Gem className="text-purple-500" size={36} /> : <GiftIcon className="text-blue-500" size={36} />
+                                )}
                             </div>
-                            <h3 className="asset-name">{gift.name}</h3>
-                            <div className="asset-price">₹{gift.price}</div>
+                            <h3 className="asset-name" style={{ color: '#333', fontWeight: 800 }}>{gift.name}</h3>
+                            <div className="asset-price" style={{ color: '#4e73df', fontWeight: 900, fontSize: '1.2rem' }}>₹{gift.price}</div>
                             {gift.winRate && (
-                                <div className="win-badge mt-1">
+                                <div className="win-badge mt-1" style={{ fontSize: '10px', background: '#fef3c7', color: '#d97706', padding: '2px 8px', fontWeight: 800 }}>
                                     <Check size={10} /> {gift.winRate}% Win Chance
                                 </div>
                             )}
@@ -269,10 +261,10 @@ const Gifts: React.FC = () => {
                         <div className="card-footer mt-auto border-t border-slate-50 pt-4 flex flex-col gap-3">
                             <div className="flex justify-between items-center w-full">
                                 <div className={`meta-pill ${gift.animationUrl ? 'active' : ''}`}>
-                                    <Layout size={12} /> <span>Lottie</span>
+                                    <Layout size={12} /> <span style={{ fontSize: '10px' }}>Lottie</span>
                                 </div>
                                 <div className={`meta-pill ${gift.soundUrl ? 'active' : ''}`}>
-                                    <Music size={12} /> <span>Audio</span>
+                                    <Music size={12} /> <span style={{ fontSize: '10px' }}>Audio</span>
                                 </div>
                             </div>
                             {gift.category && (

@@ -112,54 +112,54 @@ const TaskCenter: React.FC = () => {
     }, []);
 
     return (
-        <div className="dashboard-container-ambient dynamic-task-page">
+        <div className="dashboard-page tasks-page">
             <Toaster position="top-right" />
 
-            <div className="dashboard-header-premium">
+            <div className="dashboard-header">
                 <div className="header-text-group">
-                    <h1 className="dashboard-title-highdef">Growth Missions</h1>
-                    <p className="dashboard-subtitle-highdef">Configure dynamic engagement architecture and operational objectives</p>
+                    <h1>Growth Missions</h1>
+                    <p className="subtitle">Configure engagement architecture and objectives</p>
                 </div>
-                <div className="header-actions-premium dynamic-task-header-actions">
-                    <button className="secondary-action-btn dynamic-task-action-btn" onClick={fetchTasks} title="Reload task data">
+                <div className="header-actions">
+                    <button className="secondary" onClick={fetchTasks}>
                         <Activity size={18} />
                         <span>Reload Data</span>
                     </button>
-                    <button className="primary-provision-btn dynamic-task-action-btn" onClick={() => handleOpenModal()}>
+                    <button className="primary flex items-center gap-2" onClick={() => handleOpenModal()}>
                         <Plus size={20} />
                         <span>Add New Task</span>
                     </button>
                 </div>
             </div>
 
-            <div className="stats-grid-highdef">
-                <div className="stats-card-premium">
-                    <div className="stats-icon-wrap sapphire">
-                        <ShieldCheck size={28} />
+            <div className="stats-row mb-6">
+                <div className="stat-card">
+                    <div className="stat-info">
+                        <span className="label label-blue">Active Missions</span>
+                        <span className="value">{tasks.filter(t => t.status === 'active').length}</span>
                     </div>
-                    <div className="stats-info-group">
-                        <span className="stats-label-refined">Active Missions</span>
-                        <span className="stats-value-refined">{tasks.filter(t => t.status === 'active').length}</span>
-                    </div>
-                </div>
-                <div className="stats-card-premium">
-                    <div className="stats-icon-wrap emerald">
-                        <Zap size={28} />
-                    </div>
-                    <div className="stats-info-group">
-                        <span className="stats-label-refined">Daily Cycle</span>
-                        <span className="stats-value-refined">{tasks.filter(t => t.type === 'DAILY').length}</span>
+                    <div className="stat-icon">
+                        <ShieldCheck size={32} color="#dddfeb" />
                     </div>
                 </div>
-                <div className="stats-card-premium">
-                    <div className="stats-icon-wrap amber">
-                        <Trophy size={28} />
+                <div className="stat-card">
+                    <div className="stat-info">
+                        <span className="label label-green">Daily Cycle</span>
+                        <span className="value">{tasks.filter(t => t.type === 'DAILY').length}</span>
                     </div>
-                    <div className="stats-info-group">
-                        <span className="stats-label-refined">Total Impact</span>
-                        <span className="stats-value-refined">
+                    <div className="stat-icon">
+                        <Zap size={32} color="#dddfeb" />
+                    </div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-info">
+                        <span className="label label-orange">Total Impact</span>
+                        <span className="value">
                             {tasks.reduce((acc, t) => acc + (t._count?.userTasks || 0), 0)}
                         </span>
+                    </div>
+                    <div className="stat-icon">
+                        <Trophy size={32} color="#dddfeb" />
                     </div>
                 </div>
             </div>

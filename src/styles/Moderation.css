@@ -1,66 +1,70 @@
 .moderation-page {
-  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 100%;
 }
 
 .moderation-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .defcon-badge {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  background: #fff;
+  border: 1px solid #e74a3b;
   padding: 8px 16px;
-  border-radius: 12px;
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #e74a3b;
   font-weight: 800;
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-  box-shadow: 0 0 20px rgba(239, 68, 68, 0.1);
+  font-size: 11px;
+  letter-spacing: 1px;
+  box-shadow: var(--card-shadow);
+  border-radius: 0px;
   animation: pulse-danger 2s infinite;
 }
 
 @keyframes pulse-danger {
-  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(231, 74, 59, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(231, 74, 59, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(231, 74, 59, 0); }
 }
 
 /* Tab Styling */
 .moderation-tabs {
   display: flex;
-  background: #f1f5f9;
-  padding: 6px;
-  border-radius: 16px;
+  background: transparent;
+  padding: 0;
+  border-radius: 0px;
   gap: 8px;
   width: fit-content;
   margin-bottom: 24px;
 }
 
 .mod-tab {
-  border: none;
-  background: transparent;
-  padding: 10px 24px;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  font-weight: 800;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: var(--transition-smooth);
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  padding: 12px 24px;
+  font-weight: 700;
+  color: #333;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: var(--card-shadow);
+  transition: var(--transition-smooth);
+  border-radius: 0px;
+}
+
+.mod-tab:hover {
+  border-color: #4e73df;
 }
 
 .mod-tab.active {
-  background: #fff;
-  color: var(--accent-purple);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  background: #4e73df;
+  color: #fff;
+  border-color: #4e73df;
 }
 
 /* Signature List Styling */
@@ -74,7 +78,7 @@
 .signature-tag {
   background: rgba(var(--accent-purple-rgb, 139, 92, 246), 0.05);
   padding: 10px 16px;
-  border-radius: 50px; /* Pill shape */
+  border-radius: 0px; /* Pill shape */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -103,7 +107,7 @@
   border: none;
   width: 24px;
   height: 24px;
-  border-radius: 6px;
+  border-radius: 0px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -119,7 +123,7 @@
 /* Inject Form */
 .inject-card {
   background: #fff;
-  border-radius: 24px;
+  border-radius: 0px;
   padding: 24px;
   border: 1px solid var(--glass-border);
   box-shadow: 0 10px 30px rgba(0,0,0,0.02);
@@ -135,7 +139,7 @@
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   padding: 14px 16px;
-  border-radius: 14px;
+  border-radius: 0px;
   font-weight: 700;
   outline: none;
   transition: var(--transition-smooth);

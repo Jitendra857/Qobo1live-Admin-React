@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Layout, LogIn, UserPlus, CheckCircle, AlertCircle, X } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { adminService } from '../services/api';
+import { adminService, BACKEND_URL } from '../services/api';
 import '../styles/Auth.css';
 import '../styles/Toast.css';
 
@@ -30,7 +30,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
     
     try {
       if (isLogin) {
-        console.log(`Contacting Server: https://my-backend-api-960q.onrender.com/api/admin/login`);
+        console.log(`Contacting Server: ${BACKEND_URL}/api/admin/login`);
         const res = await adminService.login({ email, password });
         console.log('Login response FULL:', JSON.stringify(res.data));
         console.log('statusCode:', res.data.statusCode, typeof res.data.statusCode);
@@ -60,7 +60,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
   const handleHealthCheck = async () => {
     try {
       setError('Checking server connectivity...');
-      const apiBase = 'https://my-backend-api-960q.onrender.com/api';
+      const apiBase = `${BACKEND_URL}/api`;
       const response = await fetch(`${apiBase}/admin/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'test', password: 'test' }) });
       setError(`Server Reachable: Status ${response.status} ${response.statusText}`);
     } catch (err: any) {

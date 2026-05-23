@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const BACKEND_URL = 'https://my-backend-api-960q.onrender.com';
+export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 const api = axios.create({
   baseURL: `${BACKEND_URL}/api`,
@@ -15,6 +15,18 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Automatic redirect on expired/invalid token
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('admin_token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const adminService = {
   getStats: (country?: string) => api.get(`/admin/stats${country ? `?country=${country}` : ''}`),
@@ -43,6 +55,8 @@ export const adminService = {
   processWithdrawal: (data: { id: string; status: string }) => 
     api.post('/admin/withdrawal-process', data),
   getAdmins: () => api.get('/admin/admins'),
+  manageAdmin: (action: string, data: any, id?: string) => 
+    api.post(`/admin/admin-action?action=${action}${id ? `&id=${id}` : ''}`, data),
   getTickets: () => api.get('/admin/tickets'),
   resolveTicket: (id: string) => api.put(`/admin/ticket/${id}/resolve`),
   getAds: () => api.get('/admin/ads-config'),
@@ -113,6 +127,11 @@ export const adminService = {
   getBannedWords: () => api.get('/admin/moderation/words'),
   manageBannedWord: (data: { action: 'ADD' | 'REMOVE'; word?: string; id?: string }) => 
     api.post('/admin/moderation/word-action', data),
+
+  // Payment Gateways
+  getGateways: () => api.get('/admin/gateway-list'),
+  manageGateway: (action: string, data: any, id?: string) => 
+    api.post(`/admin/gateway-action?action=${action}${id ? `&id=${id}` : ''}`, data),
 };
 
 export default api;

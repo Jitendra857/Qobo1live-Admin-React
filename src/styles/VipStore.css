@@ -7,19 +7,19 @@
 
 .vip-card {
   background: #ffffff;
-  border: 1px solid rgba(0,0,0,0.06);
-  border-radius: 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 0px;
   padding: 32px;
   position: relative;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  transition: var(--transition-smooth);
+  box-shadow: var(--card-shadow);
 }
 
 .vip-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
-  border-color: var(--accent-purple);
+  box-shadow: var(--card-shadow-hover);
+  border-color: #4e73df;
 }
 
 .vip-card::before {
@@ -29,7 +29,7 @@
   right: 0;
   width: 150px;
   height: 150px;
-  background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.1), transparent 70%);
+  background: radial-gradient(circle at top right, rgba(78, 115, 223, 0.05), transparent 70%);
   pointer-events: none;
 }
 
@@ -46,14 +46,14 @@
 .vip-badge-icon {
   width: 56px;
   height: 56px;
-  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
-  border-radius: 16px;
+  background: #f8f9fc;
+  border-radius: 0px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 24px;
-  color: var(--accent-purple);
-  box-shadow: 0 8px 16px rgba(139, 92, 246, 0.1);
+  color: #4e73df;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
 .vip-price-tag {
@@ -64,30 +64,69 @@
 }
 
 .vip-amount {
-  font-size: 2.25rem;
-  font-weight: 900;
-  color: var(--text-primary);
+  font-size: 2rem;
+  font-weight: 950;
+  color: #333;
   letter-spacing: -0.04em;
 }
 
 .vip-currency {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 800;
-  color: var(--text-secondary);
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.tier-title {
+  font-size: 1.5rem;
+  font-weight: 950;
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+  color: #333;
+}
+
+.privileges-section {
+  margin-top: 24px;
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #4e73df;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 16px;
+}
+
+.privileges-list {
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .benefit-pill {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
+  padding: 10px 14px;
   background: #f8fafc;
-  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 0px;
   font-size: 0.85rem;
-  font-weight: 600;
-  color: #475569;
-  margin-bottom: 8px;
-  border: 1px solid rgba(0,0,0,0.02);
+  font-weight: 700;
+  color: #4a5568;
+}
+
+.benefit-pill .text-accent {
+  color: #4e73df;
+}
+
+.empty-privileges {
+  font-size: 0.75rem;
+  font-style: italic;
+  color: #a1a1a1;
+  opacity: 0.6;
 }
 
 .vip-actions {
@@ -98,8 +137,36 @@
   border-top: 1px solid #f1f5f9;
 }
 
-.vip-toggle {
-  position: absolute;
-  top: 32px;
-  right: 32px;
+.delete-btn {
+  background: #fff1f2 !important;
+  color: #e11d48 !important;
+  border: 1px solid #fecdd3 !important;
+}
+
+.delete-btn:hover {
+  background: #e11d48 !important;
+  color: #fff !important;
+}
+
+.empty-state-card {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 80px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  box-shadow: var(--card-shadow);
+}
+
+.empty-state-card h2 {
+  font-weight: 950;
+  font-size: 2rem;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.empty-state-card p {
+  color: #64748b;
+  max-width: 400px;
+  margin: 0 auto;
+  font-weight: 600;
 }

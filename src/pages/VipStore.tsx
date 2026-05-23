@@ -114,61 +114,58 @@ const VipStore: React.FC = () => {
   };
 
   return (
-    <div className="user-management fade-in">
-      <div className="header-actions">
+    <div className="dashboard-page vip-store">
+      <div className="dashboard-header">
         <div>
-          <h1 className="page-title">VIP Store Governance</h1>
-          <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Manage premium subscription tiers and exclusive privileges</p>
+          <h1>VIP Store Governance</h1>
+          <p className="subtitle">Manage premium subscription tiers and privileges</p>
         </div>
-        <button className="primary flex items-center gap-2" onClick={handleOpenCreate} style={{ padding: '12px 24px' }}>
+        <button className="primary flex items-center gap-2" onClick={handleOpenCreate}>
           <Plus size={20} /> <span>Provision New Tier</span>
         </button>
       </div>
 
-      <div className="vip-grid mt-10">
+      <div className="vip-grid mt-6">
         {packages.map((pkg) => (
-          <div key={pkg.id} className={`vip-card glass-panel ${pkg.status}`} style={{ border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.02)' }}>
-            <div className="vip-badge-icon" style={{ background: pkg.status === 'active' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', color: pkg.status === 'active' ? '#10b981' : '#ef4444' }}>
+          <div key={pkg.id} className={`vip-card ${pkg.status}`}>
+            <div className="vip-badge-icon">
               <Shield size={28} strokeWidth={2.5} />
             </div>
             
             <div className="vip-toggle">
-              <span className={`status-neon ${pkg.status === 'active' ? 'active' : ''}`} style={{ border: 'none', background: pkg.status === 'active' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)' }}>
+              <span className={`status-pill ${pkg.status === 'active' ? 'active' : ''}`}>
                 {pkg.status.toUpperCase()}
               </span>
             </div>
 
-            <h3 style={{ fontSize: '1.5rem', fontWeight: 950, marginBottom: '4px', letterSpacing: '-0.02em' }}>{pkg.name.toUpperCase()}</h3>
+            <h3 className="tier-title">{pkg.name.toUpperCase()}</h3>
             
             <div className="vip-price-tag">
-              <span className="vip-amount" style={{ color: 'var(--text-primary)' }}>₹{pkg.price}</span>
-              <span className="vip-currency" style={{ opacity: 0.6 }}>/ {pkg.durationDays} DAYS</span>
+              <span className="vip-amount">₹{pkg.price}</span>
+              <span className="vip-currency">/ {pkg.durationDays} DAYS</span>
             </div>
 
-            <div style={{ marginTop: '24px' }}>
-              <div style={{ fontSize: '0.7rem', fontWeight: 900, color: 'var(--accent-purple)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '16px' }}>
-                EXCLUSIVE PRIVILEGES
-              </div>
-              <div style={{ minHeight: '120px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div className="privileges-section">
+              <div className="section-label">EXCLUSIVE PRIVILEGES</div>
+              <div className="privileges-list">
                 {getBenefits(pkg).map((benefit: string, idx: number) => (
-                  <div key={idx} className="benefit-pill" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', color: 'var(--text-secondary)' }}>
-                    <Zap size={14} style={{ color: 'var(--accent-purple)' }} />
-                    <span style={{ fontWeight: 700 }}>{benefit}</span>
+                  <div key={idx} className="benefit-pill">
+                    <Zap size={14} className="text-accent" />
+                    <span>{benefit}</span>
                   </div>
                 ))}
                 {getBenefits(pkg).length === 0 && (
-                  <div className="text-dim text-xs italic opacity-40">No privileges defined for this tier</div>
+                  <div className="empty-privileges">No privileges defined</div>
                 )}
               </div>
             </div>
 
-            <div className="vip-actions" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '20px' }}>
-              <button className="primary w-full flex-center gap-2" onClick={() => handleOpenEdit(pkg)} style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#a78bfa', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
+            <div className="vip-actions">
+              <button className="secondary w-full flex items-center justify-center gap-2" onClick={() => handleOpenEdit(pkg)}>
                 <Edit size={16} /> CONFIG
               </button>
               <button 
-                className="icon-btn" 
-                style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)' }}
+                className="icon-btn delete-btn" 
                 onClick={() => handleDelete(pkg.id)}
               >
                 <Trash2 size={18} />
@@ -178,12 +175,12 @@ const VipStore: React.FC = () => {
         ))}
         
         {packages.length === 0 && !loading && (
-          <div className="glass-panel" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '100px', border: '1px solid var(--glass-border)' }}>
-            <div className="vip-badge-icon" style={{ margin: '0 auto 24px', width: '80px', height: '80px' }}>
+          <div className="empty-state-card">
+            <div className="vip-badge-icon large">
               <Shield size={40} />
             </div>
-            <h2 style={{ fontWeight: 950, fontSize: '2rem' }}>VAULT IS EMPTY</h2>
-            <p className="text-dim" style={{ maxWidth: '400px', margin: '16px auto', fontWeight: 600 }}>No premium tiers detected in the encryption matrix. Provision your first VIP tier to initialize revenue streams.</p>
+            <h2>VAULT IS EMPTY</h2>
+            <p>No premium tiers detected. Provision your first VIP tier to initialize revenue streams.</p>
           </div>
         )}
       </div>
