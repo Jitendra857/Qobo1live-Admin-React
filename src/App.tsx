@@ -79,8 +79,8 @@ function AppContent() {
               <Route path="*" element={<AuthPage onLogin={() => setIsAuthenticated(true)} />} />
             ) : (
               <>
-                <Route path="/" element={<Navigate to="/dashboard" />} />
-                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/" element={<Navigate to={JSON.parse(localStorage.getItem('admin_user') || '{}')?.role === 'super_admin' ? '/agents' : JSON.parse(localStorage.getItem('admin_user') || '{}')?.role === 'admin' ? '/dashboard' : '/agents'} />} />
+                <Route path="/dashboard" element={JSON.parse(localStorage.getItem('admin_user') || '{}')?.role === 'super_admin' ? <Navigate to="/agents" /> : JSON.parse(localStorage.getItem('admin_user') || '{}')?.role === 'admin' ? <Dashboard /> : <Navigate to="/agents" />} />
                 <Route path="/users" element={<UserManagement />} />
                 <Route path="/gifts" element={<Gifts />} />
                 <Route path="/gift-categories" element={<GiftCategories />} />

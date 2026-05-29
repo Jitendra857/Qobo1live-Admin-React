@@ -17,27 +17,39 @@ const menuItems = [
 ];
 
 /* ── Top-bar menu (used when menuPosition === 'top') ─────── */
-export const TopMenu: React.FC<{ onLogout: () => void }> = ({ onLogout }) => (
-  <nav className="top-menu">
-    <div className="top-branding">
-      <img src="/logo.svg" alt="qobo1live" style={{ height: '32px' }} />
-    </div>
-    <div className="top-nav-items">
-      {menuItems.map(item => (
-        <NavLink key={item.path} to={item.path} className="top-nav-link">
-          <item.icon size={18} />
-          <span>{item.label}</span>
-        </NavLink>
-      ))}
-    </div>
-    <div className="top-actions">
-      <button onClick={onLogout} className="top-logout-btn compact">
-        <LogOut size={18} />
-        <span className="logout-label">Power Off</span>
-      </button>
-    </div>
-  </nav>
-);
+export const TopMenu: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
+  const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
+
+  const visibleMenuItems = (() => {
+    if (currentUser?.role === 'admin') return menuItems;
+    if (currentUser?.role === 'super_admin') {
+      return menuItems.filter(item => item.path === '/agents' || item.path === '/host-registry');
+    }
+    return [];
+  })();
+
+  return (
+    <nav className="top-menu">
+      <div className="top-branding">
+        <img src="/logo.svg" alt="qobo1live" style={{ height: '32px' }} />
+      </div>
+      <div className="top-nav-items">
+        {visibleMenuItems.map(item => (
+          <NavLink key={item.path} to={item.path} className="top-nav-link">
+            <item.icon size={18} />
+            <span>{item.label}</span>
+          </NavLink>
+        ))}
+      </div>
+      <div className="top-actions">
+        <button onClick={onLogout} className="top-logout-btn compact">
+          <LogOut size={18} />
+          <span className="logout-label">Power Off</span>
+        </button>
+      </div>
+    </nav>
+  );
+};
 
 /* ── Floating theme picker (right-side FAB drawer) ────────── */
 export const SettingsToggle: React.FC = () => {

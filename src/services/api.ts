@@ -98,6 +98,8 @@ export const adminService = {
     api.post('/admin/assign-coins', data),
   approveHost: (data: { application_id: string; status: string }) => 
     api.post('/admin/host-approve', data),
+  approveAgency: (data: { agency_id: string; status: string }) => 
+    api.post('/admin/agency-approve', data),
   
   // Seller Management
   listSellers: () => api.get('/admin/sellers'),

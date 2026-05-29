@@ -26,6 +26,9 @@ const HostRegistry: React.FC = () => {
 
     useEffect(() => { fetchApps(); }, []);
 
+    const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
+    const canApprove = currentUser?.role === 'super_admin';
+
     const handleAction = async (id: string, status: 'APPROVED' | 'REJECTED') => {
         try {
             const res = await adminService.approveHost({ application_id: id, status });
@@ -119,7 +122,7 @@ const HostRegistry: React.FC = () => {
                                         </td>
                                         <td>
                                             <div className="ops-cluster" style={{ justifyContent: 'flex-end' }}>
-                                                {app.status === 'pending' ? (
+                                                {app.status === 'pending' && canApprove ? (
                                                     <>
                                                         <button 
                                                             className="op-btn edit" 

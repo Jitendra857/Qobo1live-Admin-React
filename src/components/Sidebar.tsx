@@ -113,6 +113,18 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     },
     { title: 'Support Desk', path: '/support', icon: <Headset size={17} />, iconClass: 'icon-cyan' },
   ];
+
+  const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
+  
+  const visibleMenuItems = (() => {
+    if (currentUser?.role === 'admin') return menuItems;
+    if (currentUser?.role === 'super_admin') {
+      return menuItems.filter(item => 
+        item.title === 'RECRUITMENT' || item.title === 'Agency & Hosts'
+      );
+    }
+    return []; // For 'user' or unknown roles, leave it blank
+  })();
   // ──────────────────────────────────────────────────────────────────────────
 
   if (menuPosition === 'top') return null;
@@ -139,7 +151,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
 
         {/* Nav */}
         <nav className="nav-menu">
-          {menuItems.map((item, index) => (
+          {visibleMenuItems.map((item, index) => (
             <div key={(item.title || '') + index}>
 
               {/* ── Category label ── */}

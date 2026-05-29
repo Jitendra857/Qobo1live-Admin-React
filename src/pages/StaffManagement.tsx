@@ -235,24 +235,20 @@ const StaffManagement: React.FC = () => {
                   </div>
                   
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', color: '#0f172a', fontWeight: 700, fontSize: '0.8rem' }}>
-                    {admin.role === 'super_admin' && (
+                    {admin.role === 'admin' && (
                       <>
                         <span style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '4px 8px' }}>FULL_ROOT_ACCESS</span>
-                        <span style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '4px 8px' }}>USER_MUTATE</span>
-                        <span style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '4px 8px' }}>FINANCIAL_AUDIT</span>
+                        <span style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '4px 8px' }}>ALL_MENUS</span>
                       </>
                     )}
-                    {admin.role === 'sub_admin' && (
+                    {admin.role === 'super_admin' && (
                       <>
-                        <span style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '4px 8px' }}>CONTENT_MODERATION</span>
-                        <span style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '4px 8px' }}>ROOM_SURVEILLANCE</span>
+                        <span style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '4px 8px' }}>AGENCY_APPROVAL</span>
+                        <span style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '4px 8px' }}>HOST_APPROVAL</span>
                       </>
                     )}
-                    {admin.role === 'seller_admin' && (
-                      <>
-                        <span style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '4px 8px' }}>SELLER_STOCK_ALLOC</span>
-                        <span style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '4px 8px' }}>REVENUE_READ</span>
-                      </>
+                    {admin.role === 'user' && (
+                      <span style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '4px 8px' }}>NO_ACCESS</span>
                     )}
                   </div>
                 </div>
@@ -366,9 +362,9 @@ const StaffManagement: React.FC = () => {
                   onChange={(e) => setRole(e.target.value)}
                   style={{ borderRadius: '0px', border: '1px solid #cbd5e1', padding: '12px', width: '100%', fontWeight: 700, background: '#fff' }}
                 >
-                  <option value="super_admin">Super Admin (Full Root Permissions)</option>
-                  <option value="sub_admin">Sub Admin / Moderator (Surveillance & Chats)</option>
-                  <option value="seller_admin">Seller Admin (Coin & Package Dealers)</option>
+                  <option value="admin">Admin (All Menu Rights)</option>
+                  <option value="super_admin">Super Admin (Agency & Host Only)</option>
+                  <option value="user">User (No Menu Access)</option>
                 </select>
               </div>
 
