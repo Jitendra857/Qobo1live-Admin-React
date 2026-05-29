@@ -29,7 +29,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     menuPosition, isMobileMenuOpen, setIsMobileMenuOpen
   } = useLayout();
 
-  const [expandedMenus, setExpandedMenus] = React.useState<string[]>([]);
+  const [expandedMenus, setExpandedMenus] = React.useState<string[]>(() => {
+    const user = JSON.parse(localStorage.getItem('admin_user') || '{}');
+    return user?.role === 'super_admin' ? ['Agency & Hosts'] : [];
+  });
 
   const toggleMenu = (title: string) => {
     setExpandedMenus(prev =>

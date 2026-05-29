@@ -3,6 +3,7 @@ import { adminService, BACKEND_URL } from '../services/api';
 import { toast, Toaster } from 'react-hot-toast';
 import { Gift as GiftIcon, Plus, Trash2, Edit, Trophy, TrendingUp, Music, Layout, X, Check, Save, Gem, Coins, PieChart, AlertCircle, Archive, ArrowUpRight, Activity } from 'lucide-react';
 import ConfirmationModal from '../components/ConfirmationModal';
+import MediaImage from '../components/MediaImage';
 import '../styles/UserManagement.css';
 import { scrollToModalTop } from '../utils/scrollToModalTop';
 
@@ -243,11 +244,12 @@ const Gifts: React.FC = () => {
 
                         <div className="card-content flex flex-col items-center py-2">
                             <div className="asset-icon-box mb-3">
-                                {gift.icon ? (
-                                    <img src={`${BACKEND_URL}${gift.icon}`} alt={gift.name} className="asset-icon" />
-                                ) : (
-                                    gift.type === 'luxury' ? <Gem className="text-purple-500" size={36} /> : <GiftIcon className="text-blue-500" size={36} />
-                                )}
+                                <MediaImage 
+                                    src={gift.icon} 
+                                    alt={gift.name} 
+                                    className="asset-icon" 
+                                    fallbackIcon={gift.type === 'luxury' ? <Gem className="text-purple-500" size={36} /> : <GiftIcon className="text-blue-500" size={36} />}
+                                />
                             </div>
                             <h3 className="asset-name" style={{ color: '#333', fontWeight: 800 }}>{gift.name}</h3>
                             <div className="asset-price" style={{ color: '#4e73df', fontWeight: 900, fontSize: '1.2rem' }}>₹{gift.price}</div>

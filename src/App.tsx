@@ -77,10 +77,17 @@ function AppContent() {
             {/* Protected Routes */}
             {!isAuthenticated ? (
               <Route path="*" element={<AuthPage onLogin={() => setIsAuthenticated(true)} />} />
+            ) : JSON.parse(localStorage.getItem('admin_user') || '{}')?.role === 'super_admin' ? (
+              <>
+                <Route path="/" element={<Navigate to="/agents" />} />
+                <Route path="/agents" element={<AgencyHub />} />
+                <Route path="/host-registry" element={<HostRegistry />} />
+                <Route path="*" element={<Navigate to="/agents" />} />
+              </>
             ) : (
               <>
-                <Route path="/" element={<Navigate to={JSON.parse(localStorage.getItem('admin_user') || '{}')?.role === 'super_admin' ? '/agents' : JSON.parse(localStorage.getItem('admin_user') || '{}')?.role === 'admin' ? '/dashboard' : '/agents'} />} />
-                <Route path="/dashboard" element={JSON.parse(localStorage.getItem('admin_user') || '{}')?.role === 'super_admin' ? <Navigate to="/agents" /> : JSON.parse(localStorage.getItem('admin_user') || '{}')?.role === 'admin' ? <Dashboard /> : <Navigate to="/agents" />} />
+                <Route path="/" element={<Navigate to="/dashboard" />} />
+                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/users" element={<UserManagement />} />
                 <Route path="/gifts" element={<Gifts />} />
                 <Route path="/gift-categories" element={<GiftCategories />} />
@@ -106,6 +113,7 @@ function AppContent() {
                 <Route path="/payment-gateways" element={<GatewayConfig />} />
                 <Route path="/simulation" element={<SimulationManager />} />
                 <Route path="/settings" element={<AdvancedSettings />} />
+                <Route path="*" element={<Navigate to="/dashboard" />} />
               </>
             )}
           </Routes>

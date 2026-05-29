@@ -16,16 +16,26 @@ const MediaImage: React.FC<MediaImageProps> = ({
 }) => {
   const getFullUrl = (url?: string) => {
     if (!url) return null;
-    if (url.startsWith('http')) return url;
     
     // If it's the default profile pic string, we can either point to a real default or just return null to show the letter
     if (url === 'default_dp.png' || url === 'default.png') return null;
 
+    // If it's an uploaded asset, extract the clean path from '/uploads' or 'uploads' onwards
+    let path = url;
+    const uploadsIndex = url.indexOf('uploads');
+    if (uploadsIndex !== -1) {
+      path = url.substring(uploadsIndex);
+      let cleanUrl = path.startsWith('/') ? path : `/${path}`;
+      return `${BACKEND_URL}${cleanUrl}`;
+    }
+
+    // Keep external absolute URLs
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+
     // Ensure it starts with /uploads
     let cleanUrl = url.startsWith('/') ? url : `/${url}`;
-    
-    // If the path doesn't include /uploads, but it's a relative path, prepend it
-    // Some older records might just have "profiles/img.jpg"
     if (!cleanUrl.startsWith('/uploads')) {
       cleanUrl = `/uploads${cleanUrl}`;
     }
