@@ -478,7 +478,7 @@ const AgencyHub: React.FC = () => {
               </div>
               <button 
                 onClick={() => setShowFlowModal(false)}
-                style={{ background: '#f1f5f9', border: 'none', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justify: 'center', color: '#64748b', fontWeight: 900 }}
+                style={{ background: '#f1f5f9', border: 'none', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontWeight: 900 }}
               >
                 ✕
               </button>
