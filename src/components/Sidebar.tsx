@@ -34,6 +34,13 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     return user?.role === 'super_admin' ? ['Agency & Hosts'] : [];
   });
 
+  React.useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('admin_user') || '{}');
+    if (user?.role === 'super_admin') {
+      setSidebarCollapsed(false);
+    }
+  }, [setSidebarCollapsed]);
+
   const toggleMenu = (title: string) => {
     setExpandedMenus(prev =>
       prev.includes(title) ? prev.filter(t => t !== title) : [...prev, title]
@@ -120,7 +127,12 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
   
   const visibleMenuItems = (() => {
-    if (currentUser?.role === 'admin' || currentUser?.role === 'super_admin') return menuItems;
+    if (currentUser?.role === 'admin') return menuItems;
+    if (currentUser?.role === 'super_admin') {
+      return menuItems.filter(item => 
+        item.title === 'RECRUITMENT' || item.title === 'Agency & Hosts'
+      );
+    }
     return []; // For 'user' or unknown roles, leave it blank
   })();
   // ──────────────────────────────────────────────────────────────────────────
@@ -142,9 +154,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
         {/* Logo */}
         <div className="branding">
           {!isSidebarCollapsed && <img src="/logo.svg" alt="Qobo1live" />}
-          <button className="burger-btn" onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}>
-            {isSidebarCollapsed ? <MenuIcon size={17} /> : <ChevronLeft size={17} />}
-          </button>
+          {currentUser?.role !== 'super_admin' && (
+            <button className="burger-btn" onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}>
+              {isSidebarCollapsed ? <MenuIcon size={17} /> : <ChevronLeft size={17} />}
+            </button>
+          )}
         </div>
 
         {/* Nav */}
