@@ -4,11 +4,19 @@ import { CheckCircle, XCircle, UserCheck, Eye, Phone, Mail, Calendar, Hash, Type
 import toast from 'react-hot-toast';
 import '../styles/UserManagement.css';
 import MediaImage from '../components/MediaImage';
+import { useLayout } from '../context/LayoutContext';
 
 const HostRegistry: React.FC = () => {
     const [apps, setApps] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedApp, setSelectedApp] = useState<any | null>(null);
+
+    const { setMenuPosition, setSidebarCollapsed } = useLayout();
+
+    useEffect(() => {
+        setMenuPosition('left');
+        setSidebarCollapsed(false);
+    }, [setMenuPosition, setSidebarCollapsed]);
 
     const fetchApps = async () => {
         try {
