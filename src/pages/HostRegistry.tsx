@@ -106,7 +106,7 @@ const HostRegistry: React.FC = () => {
                                         <td>
                                             <div className="asset-tag" style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#a78bfa', borderColor: 'rgba(139, 92, 246, 0.2)' }}>
                                                 <Type size={14} />
-                                                <span style={{ fontWeight: 800 }}>{app.category.toUpperCase()}</span>
+                                                <span style={{ fontWeight: 800 }}>{(app.category || 'general').toUpperCase()}</span>
                                             </div>
                                         </td>
                                         <td>
