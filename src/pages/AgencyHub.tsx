@@ -516,11 +516,10 @@ const AgencyHub: React.FC = () => {
                         color: '#2563eb',
                         display: 'flex',
                         alignItems: 'center',
-                        justifycontent: 'center',
+                        justifyContent: 'center',
                         fontWeight: 800,
                         fontSize: '1rem',
-                        boxShadow: '0 4px 10px rgba(37, 99, 235, 0.05)',
-                        justifyContent: 'center'
+                        boxShadow: '0 4px 10px rgba(37, 99, 235, 0.05)'
                       }}>
                         {agency.name ? agency.name.charAt(0).toUpperCase() : 'A'}
                       </div>
