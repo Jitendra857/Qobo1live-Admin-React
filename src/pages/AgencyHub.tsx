@@ -252,6 +252,19 @@ const AgencyHub: React.FC = () => {
           color: #0f172a;
           margin-bottom: 4px;
         }
+        .status-neon {
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          gap: 6px !important;
+          font-size: 0.72rem !important;
+          font-weight: 800 !important;
+          padding: 6px 14px !important;
+          border-radius: 8px !important;
+          text-transform: uppercase !important;
+          letter-spacing: 0.05em !important;
+          white-space: nowrap !important;
+        }
         .status-neon.pending {
           background: rgba(245, 158, 11, 0.1) !important;
           color: #f59e0b !important;
@@ -266,6 +279,90 @@ const AgencyHub: React.FC = () => {
           background: rgba(239, 68, 68, 0.1) !important;
           color: #ef4444 !important;
           border: 1px solid rgba(239, 68, 68, 0.2) !important;
+        }
+        .owner-id-badge {
+          font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
+          font-size: 0.8rem;
+          color: #475569;
+          background: #f1f5f9;
+          padding: 6px 10px;
+          border-radius: 8px;
+          border: 1px solid #e2e8f0;
+          font-weight: 700;
+          display: inline-block;
+          letter-spacing: 0.5px;
+        }
+        .agency-code-badge {
+          font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
+          font-size: 0.85rem;
+          color: #1d4ed8;
+          background: rgba(59, 130, 246, 0.05);
+          padding: 6px 12px;
+          border-radius: 8px;
+          border: 1px solid rgba(59, 130, 246, 0.15);
+          font-weight: 800;
+          display: inline-block;
+          letter-spacing: 0.5px;
+        }
+        .commission-badge {
+          font-family: inherit;
+          font-size: 0.95rem;
+          font-weight: 800;
+          color: #0f172a;
+          background: rgba(16, 185, 129, 0.03);
+          padding: 6px 12px;
+          border-radius: 8px;
+          border: 1px solid rgba(16, 185, 129, 0.08);
+          display: inline-block;
+        }
+
+        /* Premium Table Perfect Alignment Overrides */
+        .premium-table {
+          width: 100% !important;
+          border-collapse: separate !important;
+          border-spacing: 0 12px !important;
+          margin-top: 0 !important;
+        }
+        .premium-table th {
+          padding: 16px 24px !important;
+          font-size: 0.75rem !important;
+          font-weight: 800 !important;
+          text-transform: uppercase !important;
+          color: #64748b !important;
+          letter-spacing: 0.1em !important;
+          border: none !important;
+          vertical-align: middle !important;
+        }
+        .premium-table td {
+          padding: 16px 24px !important;
+          background: #ffffff !important;
+          border-top: 1px solid #f1f5f9 !important;
+          border-bottom: 1px solid #f1f5f9 !important;
+          color: #334155 !important;
+          vertical-align: middle !important;
+          height: 72px !important;
+        }
+        .premium-table td:first-child {
+          border-left: 1px solid #f1f5f9 !important;
+          border-top-left-radius: 16px !important;
+          border-bottom-left-radius: 16px !important;
+        }
+        .premium-table td:last-child {
+          border-right: 1px solid #f1f5f9 !important;
+          border-top-right-radius: 16px !important;
+          border-bottom-right-radius: 16px !important;
+        }
+        .premium-table tr {
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.01) !important;
+          transition: all 0.25s ease !important;
+        }
+        .premium-table tbody tr:hover {
+          transform: translateY(-2px) !important;
+          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.03) !important;
+        }
+        .premium-table tbody tr:hover td {
+          background: #f8fafc !important;
+          border-color: #e2e8f0 !important;
         }
 
         /* Flow Modal Styling */
@@ -398,43 +495,85 @@ const AgencyHub: React.FC = () => {
           <table className="premium-table">
             <thead>
               <tr>
-                <th>Agency Name</th>
-                <th>Owner ID</th>
-                <th>Agency Code</th>
-                <th>Commission Rate</th>
-                <th>Status</th>
-                <th style={{ textAlign: 'right' }}>Actions</th>
+                <th style={{ textAlign: 'left', width: '25%' }}>Agency Name</th>
+                <th style={{ textAlign: 'left', width: '22%' }}>Owner Details</th>
+                <th style={{ textAlign: 'center', width: '15%' }}>Agency Code</th>
+                <th style={{ textAlign: 'center', width: '14%' }}>Commission Rate</th>
+                <th style={{ textAlign: 'center', width: '12%' }}>Status</th>
+                <th style={{ textAlign: 'right', width: '12%' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {agencies.map((agency) => (
                 <tr key={agency.id} className="row-premium">
-                  <td>
-                    <div style={{ fontWeight: 800, color: '#0f172a' }}>{agency.name}</div>
+                  <td style={{ textAlign: 'left' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '12px',
+                        background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+                        color: '#2563eb',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifycontent: 'center',
+                        fontWeight: 800,
+                        fontSize: '1rem',
+                        boxShadow: '0 4px 10px rgba(37, 99, 235, 0.05)',
+                        justifyContent: 'center'
+                      }}>
+                        {agency.name ? agency.name.charAt(0).toUpperCase() : 'A'}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.95rem', lineHeight: '1.2' }}>{agency.name}</div>
+                        <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600, marginTop: '2px' }}>
+                          Talent Network
+                        </span>
+                      </div>
+                    </div>
                   </td>
-                  <td>
-                    <span style={{ fontFamily: 'monospace', fontSize: '0.85rem', color: '#64748b' }}>{agency.ownerId}</span>
+                  <td style={{ textAlign: 'left' }}>
+                    {agency.owner ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <div style={{ fontWeight: 700, color: '#334155', fontSize: '0.88rem' }}>{agency.owner.name || 'Unnamed Owner'}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b', fontFamily: 'monospace', fontWeight: 550 }}>
+                          {agency.owner.phone || agency.owner.email}
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span className="owner-id-badge" title={agency.ownerId || 'System Assigned'}>
+                          {agency.ownerId ? `${agency.ownerId.slice(0, 8)}...` : 'System Owned'}
+                        </span>
+                      </div>
+                    )}
                   </td>
-                  <td>
-                    <span style={{ color: 'var(--accent-blue)', fontWeight: 800, letterSpacing: '0.5px' }}>{agency.code}</span>
+                  <td style={{ textAlign: 'center' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                      <span className="agency-code-badge">{agency.code}</span>
+                    </div>
                   </td>
-                  <td>
-                    <div style={{ fontWeight: 700, color: '#1e293b' }}>{(agency.commissionRate * 100).toFixed(0)}%</div>
+                  <td style={{ textAlign: 'center' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                      <span className="commission-badge">{(agency.commissionRate * 100).toFixed(0)}%</span>
+                    </div>
                   </td>
-                  <td>
-                    <span className={`status-neon ${agency.status}`}>
-                      {agency.status === 'pending' ? <AlertCircle size={12} style={{ marginRight: '4px' }} /> : <ShieldCheck size={12} style={{ marginRight: '4px' }} />}
-                      {agency.status.toUpperCase()}
-                    </span>
+                  <td style={{ textAlign: 'center' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                      <span className={`status-neon ${agency.status}`}>
+                        {agency.status === 'pending' ? <AlertCircle size={12} /> : <ShieldCheck size={12} />}
+                        <span>{agency.status.toUpperCase()}</span>
+                      </span>
+                    </div>
                   </td>
-                  <td>
-                    <div className="ops-cluster" style={{ justifyContent: 'flex-end' }}>
+                  <td style={{ textAlign: 'right' }}>
+                    <div className="ops-cluster" style={{ justifyContent: 'flex-end', gap: '8px' }}>
                       {agency.status === 'pending' && canApprove ? (
                         <>
                           <button 
                             className="op-btn edit" 
                             onClick={() => handleApprove(agency.id, 'active')}
-                            style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', borderRadius: '10px' }}
+                            style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.15)', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
                             title="Approve Agency"
                           >
                             <CheckCircle size={18} />
@@ -442,14 +581,19 @@ const AgencyHub: React.FC = () => {
                           <button 
                             className="op-btn delete" 
                             onClick={() => handleApprove(agency.id, 'rejected')}
-                            style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', borderRadius: '10px' }}
+                            style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.15)', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
                             title="Reject Agency"
                           >
                             <XCircle size={18} />
                           </button>
                         </>
                       ) : (
-                        <button className="op-btn edit" style={{ opacity: 0.3, cursor: 'not-allowed', background: 'rgba(148, 163, 184, 0.05)', color: '#94a3b8', borderRadius: '10px' }} title="Protected Node">
+                        <button 
+                          className="op-btn edit" 
+                          style={{ opacity: 0.4, cursor: 'not-allowed', background: 'rgba(148, 163, 184, 0.05)', color: '#94a3b8', border: '1px solid rgba(148, 163, 184, 0.1)', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
+                          title="Protected Node"
+                          disabled
+                        >
                           <ShieldCheck size={18} />
                         </button>
                       )}
