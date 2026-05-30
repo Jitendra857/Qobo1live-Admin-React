@@ -120,12 +120,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
   
   const visibleMenuItems = (() => {
-    if (currentUser?.role === 'admin') return menuItems;
-    if (currentUser?.role === 'super_admin') {
-      return menuItems.filter(item => 
-        item.title === 'RECRUITMENT' || item.title === 'Agency & Hosts'
-      );
-    }
+    if (currentUser?.role === 'admin' || currentUser?.role === 'super_admin') return menuItems;
     return []; // For 'user' or unknown roles, leave it blank
   })();
   // ──────────────────────────────────────────────────────────────────────────

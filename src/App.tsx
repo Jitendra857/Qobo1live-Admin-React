@@ -77,16 +77,9 @@ function AppContent() {
             {/* Protected Routes */}
             {!isAuthenticated ? (
               <Route path="*" element={<AuthPage onLogin={() => setIsAuthenticated(true)} />} />
-            ) : JSON.parse(localStorage.getItem('admin_user') || '{}')?.role === 'super_admin' ? (
-              <>
-                <Route path="/" element={<Navigate to="/agents" />} />
-                <Route path="/agents" element={<AgencyHub />} />
-                <Route path="/host-registry" element={<HostRegistry />} />
-                <Route path="*" element={<Navigate to="/agents" />} />
-              </>
             ) : (
               <>
-                <Route path="/" element={<Navigate to="/dashboard" />} />
+                <Route path="/" element={JSON.parse(localStorage.getItem('admin_user') || '{}')?.role === 'super_admin' ? <Navigate to="/agents" /> : <Navigate to="/dashboard" />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/users" element={<UserManagement />} />
                 <Route path="/gifts" element={<Gifts />} />
@@ -113,7 +106,7 @@ function AppContent() {
                 <Route path="/payment-gateways" element={<GatewayConfig />} />
                 <Route path="/simulation" element={<SimulationManager />} />
                 <Route path="/settings" element={<AdvancedSettings />} />
-                <Route path="*" element={<Navigate to="/dashboard" />} />
+                <Route path="*" element={JSON.parse(localStorage.getItem('admin_user') || '{}')?.role === 'super_admin' ? <Navigate to="/agents" /> : <Navigate to="/dashboard" />} />
               </>
             )}
           </Routes>
