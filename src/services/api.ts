@@ -59,6 +59,8 @@ export const adminService = {
     api.post(`/admin/admin-action?action=${action}${id ? `&id=${id}` : ''}`, data),
   getTickets: () => api.get('/admin/tickets'),
   resolveTicket: (id: string) => api.put(`/admin/ticket/${id}/resolve`),
+  getHelpTickets: () => api.get('/admin/help-tickets'),
+  resolveHelpTicket: (id: string) => api.put(`/admin/help-ticket/${id}/resolve`),
   getAds: () => api.get('/admin/ads-config'),
   manageAd: (action: string, data: any, id?: string) => 
     api.post(`/admin/ad-action?action=${action}${id ? `&id=${id}` : ''}`, data),
