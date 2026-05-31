@@ -97,15 +97,15 @@
 .nav-link {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 10px;
+  gap: 12px;
+  padding: 10px 14px;
   color: var(--sb-text);
   text-decoration: none;
-  border-radius: 0;
-  margin-bottom: 1px;
+  border-radius: 8px;
+  margin-bottom: 4px;
   font-size: 0.875rem;
   font-weight: 500;
-  transition: all 0.16s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   position: relative;
   white-space: nowrap;
@@ -114,26 +114,30 @@
 .nav-link:hover {
   background: var(--sb-hover-bg);
   color: var(--sb-text-strong);
+  transform: translateX(2px);
 }
 
 .nav-link:hover .nav-icon {
   color: var(--sb-accent);
+  transform: scale(1.05);
 }
 
 /* ── Active Link ─────────────────────────────────────────── */
 .nav-link.active {
   background: var(--sb-accent-bg) !important;
   color: var(--sb-accent) !important;
-  font-weight: 700;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02), inset 0 0 0 1px rgba(78, 115, 223, 0.08);
 }
 
 .nav-link.active::before {
   content: '';
   position: absolute;
   left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
+  top: 20%;
+  bottom: 20%;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
   background: var(--sb-accent);
 }
 
@@ -157,17 +161,19 @@
 
 .nav-title {
   flex: 1;
+  transition: transform 0.2s ease;
 }
 
 .nav-chevron {
   color: var(--sb-text-dim);
   display: flex;
   align-items: center;
-  transition: color 0.16s ease;
+  transition: transform 0.25s ease, color 0.16s ease;
 }
 
 .submenu-trigger.open .nav-chevron {
   color: var(--sb-accent);
+  transform: rotate(180deg);
 }
 
 /* ── Nav Icon ───────────────────────────────────────────── */
@@ -178,7 +184,7 @@
   color: #a0aec0;
   width: 18px;
   flex-shrink: 0;
-  transition: color 0.16s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ── Per-section icon accent colours ────────────────────── */
@@ -201,60 +207,64 @@
 
 /* ── Sub-Menu Items ─────────────────────────────────────── */
 .sub-menu-items {
-  margin: 2px 0 4px 18px;
-  border-left: 1.5px solid #e8ecf2;
-  padding-left: 0;
+  margin: 2px 0 6px 20px;
+  border-left: 1.5px solid var(--sb-border);
+  padding-left: 4px;
+  animation: fadeInSlide 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes fadeInSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .sub-link {
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 7px 8px 7px 14px;
+  gap: 10px;
+  padding: 8px 12px;
   font-size: 0.815rem;
-  font-weight: 400;
+  font-weight: 500;
   color: var(--sb-text);
   text-decoration: none;
-  margin-bottom: 1px;
-  transition: all 0.14s ease;
-  border-radius: 0;
+  margin-bottom: 2px;
+  transition: all 0.2s ease;
+  border-radius: 6px;
   position: relative;
 }
 
 .sub-link:hover {
   color: var(--sb-accent);
   background: var(--sb-hover-bg);
+  transform: translateX(2px);
 }
 
 .sub-link.active {
   color: var(--sb-accent);
-  font-weight: 700;
+  font-weight: 600;
   background: var(--sb-accent-bg);
-}
-
-.sub-link.active::before {
-  content: '';
-  position: absolute;
-  left: -1.5px;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: var(--sb-accent);
 }
 
 /* Dot */
 .sub-dot {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: #d1d5db;
+  background: #cbd5e1;
   flex-shrink: 0;
-  transition: background 0.14s;
+  transition: all 0.2s ease;
 }
 
 .sub-link:hover .sub-dot,
 .sub-link.active .sub-dot {
   background: var(--sb-accent);
+  box-shadow: 0 0 6px var(--sb-accent);
 }
 
 /* ── Footer / Logout ────────────────────────────────────── */

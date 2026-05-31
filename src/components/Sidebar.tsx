@@ -31,7 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
 
   const [expandedMenus, setExpandedMenus] = React.useState<string[]>(() => {
     const user = JSON.parse(localStorage.getItem('admin_user') || '{}');
-    return user?.role === 'super_admin' ? ['Agency & Hosts'] : [];
+    return user?.role === 'super_admin' ? ['Agencies & Hosts'] : [];
   });
 
   React.useEffect(() => {
@@ -49,79 +49,75 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
 
   // ─── Menu Structure ─────────────────────────────────────────────────────────
   const menuItems: MenuItem[] = [
-    // MAIN
-    { type: 'category', title: 'MAIN' },
-    { title: 'Dashboard', path: '/dashboard', icon: <Home size={17} />, iconClass: 'icon-blue' },
+    // 1. Overview (Direct link to dashboard)
+    { title: 'Overview', path: '/dashboard', icon: <Home size={17} />, iconClass: 'icon-blue' },
 
-    // PLATFORM
-    { type: 'category', title: 'PLATFORM' },
+    // 2. Community & Users
     {
-      title: 'Economy & Assets', icon: <Gift size={17} />, iconClass: 'icon-amber',
+      title: 'Community & Users', icon: <Headset size={17} />, iconClass: 'icon-rose',
       subItems: [
-        { title: 'Gift Inventory',  path: '/gifts' },
+        { title: 'User List', path: '/users' },
+        { title: 'Banned & Reports', path: '/moderation' },
+        { title: 'Help Tickets', path: '/support' },
+      ],
+    },
+
+    // 3. Agencies & Hosts
+    {
+      title: 'Agencies & Hosts', icon: <UserCheck size={17} />, iconClass: 'icon-cyan',
+      subItems: [
+        { title: 'Agencies', path: '/agents' },
+        { title: 'Hosts',    path: '/host-registry' },
+      ],
+    },
+
+    // 4. Gifts & Store
+    {
+      title: 'Gifts & Rewards', icon: <Gift size={17} />, iconClass: 'icon-amber',
+      subItems: [
+        { title: 'Gifts Catalog', path: '/gifts' },
         { title: 'Gift Categories', path: '/gift-categories' },
-        { title: 'VIP Packages',    path: '/vip-store' },
-        { title: 'Level System',    path: '/level-system' },
-        { title: 'Task Center',     path: '/dynamic-tasks' },
+        { title: 'VIP Packages', path: '/vip-store' },
+        { title: 'User Levels', path: '/level-system' },
+        { title: 'Daily Tasks', path: '/dynamic-tasks' },
       ],
     },
+
+    // 5. Earnings & Payouts
     {
-      title: 'System Config', icon: <Settings size={17} />, iconClass: 'icon-violet',
+      title: 'Earnings & Payouts', icon: <Wallet size={17} />, iconClass: 'icon-green',
       subItems: [
+        { title: 'User Balances', path: '/economy' },
+        { title: 'Withdraw Requests', path: '/withdrawals' },
+        { title: 'Payment History', path: '/transactions' },
+      ],
+    },
+
+    // 6. Live Features
+    {
+      title: 'Live Features', icon: <Tv size={17} />, iconClass: 'icon-orange',
+      subItems: [
+        { title: 'Active Rooms', path: '/audio-rooms' },
+        { title: 'PK Battles', path: '/pk-battles' },
+        { title: 'Promo Banners', path: '/banners' },
+        { title: 'Backgrounds', path: '/backgrounds' },
+        { title: 'System Messages', path: '/notifications' },
+      ],
+    },
+
+    // 7. System Settings
+    {
+      title: 'System Settings', icon: <Settings size={17} />, iconClass: 'icon-violet',
+      subItems: [
+        { title: 'Admin Accounts', path: '/super-admin-forms' },
+        { title: 'Coin Resellers', path: '/coin-seller-forms' },
         { title: 'Payment Gateways', path: '/payment-gateways' },
-        { title: 'Coin Sellers',     path: '/coin-seller-forms' },
-        { title: 'Staff Authority',  path: '/super-admin-forms' },
-        { title: 'Localization',     path: '/localization' },
-        { title: 'Advanced Config',  path: '/settings' },
-        { title: 'Privacy Policy',   path: '/privacy' },
+        { title: 'General Settings', path: '/settings' },
+        { title: 'App Language', path: '/localization' },
+        { title: 'Simulator Control', path: '/simulation' },
+        { title: 'Privacy Policy', path: '/privacy' },
       ],
     },
-
-    // SECURITY
-    { type: 'category', title: 'SECURITY' },
-    {
-      title: 'Surveillance', icon: <Monitor size={17} />, iconClass: 'icon-rose',
-      subItems: [
-        { title: 'User Directory',     path: '/users' },
-        { title: 'Moderation Console', path: '/moderation' },
-        { title: 'PK Battle Hub',      path: '/pk-battles' },
-        { title: 'Audio Room Monitor', path: '/audio-rooms' },
-        { title: 'Simulation Manager', path: '/simulation' },
-      ],
-    },
-
-    // FINANCE
-    { type: 'category', title: 'FINANCE' },
-    {
-      title: 'Financials', icon: <Wallet size={17} />, iconClass: 'icon-green',
-      subItems: [
-        { title: 'Wallet & Ledger',  path: '/economy' },
-        { title: 'Transaction Logs', path: '/transactions' },
-        { title: 'Withdrawal Queue', path: '/withdrawals' },
-      ],
-    },
-
-    // RECRUITMENT
-    { type: 'category', title: 'RECRUITMENT' },
-    {
-      title: 'Agency & Hosts', icon: <UserCheck size={17} />, iconClass: 'icon-cyan',
-      subItems: [
-        { title: 'Agency Hub',    path: '/agents' },
-        { title: 'Host Registry', path: '/host-registry' },
-      ],
-    },
-
-    // OPERATIONS
-    { type: 'category', title: 'OPERATIONS' },
-    {
-      title: 'Operational Media', icon: <Tv size={17} />, iconClass: 'icon-orange',
-      subItems: [
-        { title: 'Banner Management', path: '/banners' },
-        { title: 'Room Environments', path: '/backgrounds' },
-        { title: 'System Broadcasts', path: '/notifications' },
-      ],
-    },
-    { title: 'Support Desk', path: '/support', icon: <Headset size={17} />, iconClass: 'icon-cyan' },
   ];
 
   const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
@@ -130,7 +126,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     if (currentUser?.role === 'admin') return menuItems;
     if (currentUser?.role === 'super_admin') {
       return menuItems.filter(item => 
-        item.title === 'RECRUITMENT' || item.title === 'Agency & Hosts'
+        item.title === 'Agencies & Hosts'
       );
     }
     return []; // For 'user' or unknown roles, leave it blank
