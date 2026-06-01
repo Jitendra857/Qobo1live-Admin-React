@@ -187,7 +187,7 @@ const VipStore: React.FC = () => {
 
       {showModal && (
         <div className="modal-overlay">
-          <div className="modal-content glass-panel slide-up" style={{ maxWidth: '550px', padding: '40px', background: 'var(--glass-bg)', backdropFilter: 'blur(40px)' }}>
+          <div className="modal-content glass slide-up" style={{ maxWidth: '550px', padding: '40px' }}>
             <div className="modal-header">
               <div className="flex items-center gap-4">
                 <div className="vip-badge-icon" style={{ width: '48px', height: '48px', marginBottom: 0 }}>
@@ -206,7 +206,6 @@ const VipStore: React.FC = () => {
                   placeholder="e.g. DIAMOND PRIVILEGE"
                   value={formData.name} 
                   onChange={e => setFormData({...formData, name: e.target.value})}
-                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)' }}
                   required
                 />
               </div>
@@ -220,7 +219,6 @@ const VipStore: React.FC = () => {
                     placeholder="0"
                     value={formData.price} 
                     onChange={e => setFormData({...formData, price: Number(e.target.value)})}
-                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)' }}
                     required
                   />
                 </div>
@@ -232,7 +230,6 @@ const VipStore: React.FC = () => {
                     placeholder="30"
                     value={formData.durationDays} 
                     onChange={e => setFormData({...formData, durationDays: Number(e.target.value)})}
-                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)' }}
                     required
                   />
                 </div>
@@ -240,8 +237,8 @@ const VipStore: React.FC = () => {
 
               <div className="form-group mb-6">
                 <label style={{ fontSize: '0.7rem', textTransform: 'uppercase', opacity: 0.6, letterSpacing: '0.1em' }}>Tier Status</label>
-                <div className="radio-group" style={{ background: 'rgba(255,255,255,0.03)', padding: '8px', borderRadius: '12px' }}>
-                  <label className={`radio-option ${formData.status === 'active' ? 'active' : ''}`} style={{ flex: 1, textAlign: 'center', padding: '12px', borderRadius: '8px', cursor: 'pointer', background: formData.status === 'active' ? 'rgba(16, 185, 129, 0.1)' : 'transparent', color: formData.status === 'active' ? '#10b981' : 'inherit' }}>
+                <div className="radio-group">
+                  <label className={`radio-option ${formData.status === 'active' ? 'active active-status' : ''}`}>
                     <input 
                       type="radio" 
                       name="status" 
@@ -250,9 +247,9 @@ const VipStore: React.FC = () => {
                       onChange={e => setFormData({...formData, status: e.target.value})}
                       style={{ display: 'none' }}
                     />
-                    <span style={{ fontWeight: 800 }}>OPERATIONAL</span>
+                    <span>OPERATIONAL</span>
                   </label>
-                  <label className={`radio-option ${formData.status === 'inactive' ? 'active' : ''}`} style={{ flex: 1, textAlign: 'center', padding: '12px', borderRadius: '8px', cursor: 'pointer', background: formData.status === 'inactive' ? 'rgba(239, 68, 68, 0.1)' : 'transparent', color: formData.status === 'inactive' ? '#ef4444' : 'inherit' }}>
+                  <label className={`radio-option ${formData.status === 'inactive' ? 'active inactive-status' : ''}`}>
                     <input 
                       type="radio" 
                       name="status" 
@@ -261,7 +258,7 @@ const VipStore: React.FC = () => {
                       onChange={e => setFormData({...formData, status: e.target.value})}
                       style={{ display: 'none' }}
                     />
-                    <span style={{ fontWeight: 800 }}>DEACTIVATED</span>
+                    <span>DEACTIVATED</span>
                   </label>
                 </div>
               </div>
@@ -275,23 +272,22 @@ const VipStore: React.FC = () => {
                     value={benefitInput}
                     onChange={e => setBenefitInput(e.target.value)}
                     onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addBenefit())}
-                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)' }}
                   />
                   <button type="button" className="primary" onClick={addBenefit} style={{ width: '56px', padding: 0, borderRadius: '12px' }}>
                     <Plus size={24} />
                   </button>
                 </div>
-                <div className="mt-6 flex flex-wrap gap-2">
+                <div className="form-privileges-list">
                   {formData.benefits.map((b, i) => (
-                    <div key={i} className="benefit-pill" style={{ background: 'var(--accent-purple)', color: '#fff', border: 'none', padding: '8px 16px' }}>
-                      <span style={{ fontWeight: 800 }}>{b}</span>
+                    <div key={i} className="form-benefit-pill">
+                      <span>{b}</span>
                       <X size={14} className="cursor-pointer" onClick={() => removeBenefit(i)} />
                     </div>
                   ))}
                 </div>
               </div>
 
-              <button type="submit" className="primary w-full flex-center gap-3" style={{ padding: '20px', borderRadius: '16px', fontSize: '1rem', fontWeight: 950 }}>
+              <button type="submit" className="primary w-full flex items-center justify-center gap-3" style={{ padding: '20px', borderRadius: '16px', fontSize: '1rem', fontWeight: 950 }}>
                 <Save size={24} />
                 <span>{selectedPackage ? 'COMMIT CHANGES' : 'INITIALIZE TIER'}</span>
               </button>

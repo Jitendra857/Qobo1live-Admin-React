@@ -5,7 +5,7 @@ import {
     Trophy, Plus, Trash2, Edit3, Target, X, 
     Activity, Check, Zap, ArrowUpRight, ShieldCheck, Clock
 } from 'lucide-react';
-import '../styles/UserManagement.css';
+import '../styles/TaskCenter.css';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { scrollToModalTop } from '../utils/scrollToModalTop';
 
@@ -132,14 +132,14 @@ const TaskCenter: React.FC = () => {
                 </div>
             </div>
 
-            <div className="stats-row mb-6">
+            <div className="tasks-stats-row mb-6">
                 <div className="stat-card">
                     <div className="stat-info">
                         <span className="label label-blue">Active Missions</span>
                         <span className="value">{tasks.filter(t => t.status === 'active').length}</span>
                     </div>
                     <div className="stat-icon">
-                        <ShieldCheck size={32} color="#dddfeb" />
+                        <ShieldCheck size={32} />
                     </div>
                 </div>
                 <div className="stat-card">
@@ -148,7 +148,7 @@ const TaskCenter: React.FC = () => {
                         <span className="value">{tasks.filter(t => t.type === 'DAILY').length}</span>
                     </div>
                     <div className="stat-icon">
-                        <Zap size={32} color="#dddfeb" />
+                        <Zap size={32} />
                     </div>
                 </div>
                 <div className="stat-card">
@@ -159,7 +159,7 @@ const TaskCenter: React.FC = () => {
                         </span>
                     </div>
                     <div className="stat-icon">
-                        <Trophy size={32} color="#dddfeb" />
+                        <Trophy size={32} />
                     </div>
                 </div>
             </div>
@@ -294,7 +294,7 @@ const TaskCenter: React.FC = () => {
                             <div className="form-section">
                                 <label className="input-label-premium">Operation Status</label>
                                 <div className="radio-group">
-                                    <label className="radio-option">
+                                    <label className={`radio-option ${formData.status === 'active' ? 'active' : ''}`}>
                                         <input 
                                             type="radio" 
                                             name="taskStatus" 
@@ -304,7 +304,7 @@ const TaskCenter: React.FC = () => {
                                         />
                                         <span>Active (1)</span>
                                     </label>
-                                    <label className="radio-option">
+                                    <label className={`radio-option ${formData.status === 'draft' ? 'active' : ''}`}>
                                         <input 
                                             type="radio" 
                                             name="taskStatus" 

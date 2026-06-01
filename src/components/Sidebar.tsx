@@ -26,7 +26,8 @@ interface MenuItem {
 const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   const {
     isSidebarCollapsed, setSidebarCollapsed,
-    menuPosition, isMobileMenuOpen, setIsMobileMenuOpen
+    menuPosition, isMobileMenuOpen, setIsMobileMenuOpen,
+    sidebarTheme
   } = useLayout();
 
   const [expandedMenus, setExpandedMenus] = React.useState<string[]>(() => {
@@ -149,7 +150,13 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
 
         {/* Logo */}
         <div className="branding">
-          {!isSidebarCollapsed && <img src="/logo.svg" alt="Qobo1live" />}
+          {!isSidebarCollapsed && (
+            <img 
+              src="/logo.svg" 
+              alt="Qobo1live" 
+              className={sidebarTheme.id !== 'white' ? 'dark-sidebar-logo' : ''} 
+            />
+          )}
           {currentUser?.role !== 'super_admin' && (
             <button className="burger-btn" onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}>
               {isSidebarCollapsed ? <MenuIcon size={17} /> : <ChevronLeft size={17} />}

@@ -69,43 +69,43 @@ const HostRegistry: React.FC = () => {
                   font-size: 0.75rem !important;
                   font-weight: 800 !important;
                   text-transform: uppercase !important;
-                  color: #64748b !important;
+                  color: var(--text-secondary) !important;
                   letter-spacing: 0.1em !important;
                   border: none !important;
                   vertical-align: middle !important;
                 }
                 .premium-table td {
                   padding: 16px 24px !important;
-                  background: #ffffff !important;
-                  border-top: 1px solid #f1f5f9 !important;
-                  border-bottom: 1px solid #f1f5f9 !important;
-                  color: #334155 !important;
+                  background: var(--bg-surface) !important;
+                  border-top: 1px solid var(--glass-border) !important;
+                  border-bottom: 1px solid var(--glass-border) !important;
+                  color: var(--text-primary) !important;
                   vertical-align: middle !important;
                   height: 72px !important;
                   overflow: hidden !important;
                   text-overflow: ellipsis !important;
                 }
                 .premium-table td:first-child {
-                  border-left: 1px solid #f1f5f9 !important;
+                  border-left: 1px solid var(--glass-border) !important;
                   border-top-left-radius: 16px !important;
                   border-bottom-left-radius: 16px !important;
                 }
                 .premium-table td:last-child {
-                  border-right: 1px solid #f1f5f9 !important;
+                  border-right: 1px solid var(--glass-border) !important;
                   border-top-right-radius: 16px !important;
                   border-bottom-right-radius: 16px !important;
                 }
                 .premium-table tr {
-                  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.01) !important;
+                  box-shadow: var(--card-shadow) !important;
                   transition: all 0.25s ease !important;
                 }
                 .premium-table tbody tr:hover {
                   transform: translateY(-2px) !important;
-                  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.03) !important;
+                  box-shadow: var(--card-shadow-hover) !important;
                 }
                 .premium-table tbody tr:hover td {
-                  background: #f8fafc !important;
-                  border-color: #e2e8f0 !important;
+                  background: var(--bg-surface) !important;
+                  border-color: var(--accent-primary) !important;
                 }
 
                 /* Custom styled elements */
@@ -119,7 +119,7 @@ const HostRegistry: React.FC = () => {
                   height: 44px;
                   border-radius: 12px;
                   overflow: hidden;
-                  background: #f1f5f9;
+                  background: var(--input-bg) !important;
                 }
                 .identity-text {
                   display: flex;
@@ -128,12 +128,12 @@ const HostRegistry: React.FC = () => {
                 }
                 .name-bold {
                   font-weight: 800;
-                  color: #0f172a;
+                  color: var(--text-primary) !important;
                   font-size: 0.95rem !important;
                 }
                 .email-sub {
                   font-size: 0.72rem;
-                  color: #64748b;
+                  color: var(--text-secondary) !important;
                   font-weight: 600;
                 }
 
@@ -141,7 +141,7 @@ const HostRegistry: React.FC = () => {
                 .host-modal-overlay {
                   position: fixed;
                   top: 0; left: 0; right: 0; bottom: 0;
-                  background: rgba(15, 23, 42, 0.6);
+                  background: rgba(15, 23, 42, 0.7);
                   backdrop-filter: blur(10px);
                   display: flex;
                   align-items: center;
@@ -150,13 +150,14 @@ const HostRegistry: React.FC = () => {
                   animation: fadeIn 0.2s ease;
                 }
                 .host-modal-box {
-                  background: white;
+                  background: var(--bg-surface) !important;
+                  color: var(--text-primary) !important;
                   border-radius: 24px;
                   width: 90%;
                   max-width: 500px;
                   padding: 32px;
-                  box-shadow: 0 30px 60px -15px rgba(0,0,0,0.3);
-                  border: 1px solid rgba(255, 255, 255, 0.8);
+                  box-shadow: var(--card-shadow) !important;
+                  border: 1px solid var(--glass-border) !important;
                   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
                 }
                 .details-grid {
@@ -169,8 +170,8 @@ const HostRegistry: React.FC = () => {
                 .detail-item {
                   display: flex;
                   flex-direction: column;
-                  background: #f8fafc;
-                  border: 1px solid #e2e8f0;
+                  background: var(--input-bg) !important;
+                  border: 1px solid var(--glass-border) !important;
                   padding: 12px;
                   border-radius: 12px;
                 }
@@ -178,13 +179,13 @@ const HostRegistry: React.FC = () => {
                   font-size: 0.72rem;
                   text-transform: uppercase;
                   letter-spacing: 0.05em;
-                  color: #64748b;
+                  color: var(--text-secondary) !important;
                   font-weight: 800;
                   margin-bottom: 4px;
                 }
                 .detail-value {
                   font-size: 0.88rem;
-                  color: #0f172a;
+                  color: var(--text-primary) !important;
                   font-weight: 700;
                 }
 
@@ -304,7 +305,7 @@ const HostRegistry: React.FC = () => {
                                                 ) : (
                                                     <button 
                                                         className="op-btn edit" 
-                                                        style={{ opacity: 0.4, cursor: 'not-allowed', background: 'rgba(148, 163, 184, 0.05)', color: '#94a3b8', border: '1px solid rgba(148, 163, 184, 0.1)', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
+                                                        style={{ opacity: 0.4, cursor: 'not-allowed', background: 'rgba(148, 163, 184, 0.05)', color: 'var(--text-secondary)', border: '1px solid var(--glass-border)', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
                                                         title="Identity Authorized"
                                                         disabled
                                                     >
@@ -323,7 +324,7 @@ const HostRegistry: React.FC = () => {
                                         </td>
                                     </tr>
                                 ))
-                            )}
+                             )}
                         </tbody>
                     </table>
                 </div>
@@ -335,24 +336,24 @@ const HostRegistry: React.FC = () => {
                     <div className="host-modal-box">
                         <div className="flex justify-between items-center" style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div className="flex items-center gap-3" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <div style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <div style={{ background: 'rgba(59, 130, 246, 0.1)', color: 'var(--accent-primary)', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     <UserCheck size={20} />
                                 </div>
                                 <div>
-                                    <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#0f172a', margin: 0 }}>Host Application</h3>
-                                    <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>Verification Desk</span>
+                                    <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-primary)', margin: 0 }}>Host Application</h3>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Verification Desk</span>
                                 </div>
                             </div>
                             <button 
                                 onClick={() => setSelectedApp(null)}
-                                style={{ background: '#f1f5f9', border: 'none', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontWeight: 900 }}
+                                style={{ background: 'var(--input-bg)', border: 'none', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', fontWeight: 900 }}
                             >
                                 ✕
                             </button>
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-                            <div className="shadow-lg" style={{ width: '120px', height: '120px', borderRadius: '20px', overflow: 'hidden', border: '3px solid #eff6ff', background: '#f1f5f9' }}>
+                            <div className="shadow-lg" style={{ width: '120px', height: '120px', borderRadius: '20px', overflow: 'hidden', border: '3px solid var(--glass-border)', background: 'var(--bg-body)' }}>
                                 <MediaImage 
                                     src={selectedApp.realPhoto} 
                                     className="h-full w-full object-cover" 
@@ -360,7 +361,7 @@ const HostRegistry: React.FC = () => {
                                 />
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <span style={{ fontSize: '1.25rem', fontWeight: 900, color: '#0f172a' }}>{selectedApp.hostName}</span>
+                                <span style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--text-primary)' }}>{selectedApp.hostName}</span>
                                 <span style={{ fontSize: '0.8rem', color: '#2563eb', fontWeight: 800, marginTop: '4px', letterSpacing: '0.5px' }}>
                                     AGENT CODE: {selectedApp.agencyCode}
                                 </span>

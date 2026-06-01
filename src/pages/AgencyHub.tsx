@@ -88,15 +88,16 @@ const AgencyHub: React.FC = () => {
           .stats-deck-modern { grid-template-columns: 1fr; }
         }
         .stat-card-luxury {
-          background: rgba(255, 255, 255, 0.7);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.6);
+          background: var(--bg-surface) !important;
+          backdrop-filter: blur(20px) saturate(120%) !important;
+          -webkit-backdrop-filter: blur(20px) saturate(120%) !important;
+          border: 1px solid var(--glass-border) !important;
           border-radius: 20px;
           padding: 28px;
           display: flex;
           align-items: center;
           gap: 20px;
-          box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.03);
+          box-shadow: var(--card-shadow) !important;
           transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
           position: relative;
           overflow: hidden;
@@ -111,11 +112,12 @@ const AgencyHub: React.FC = () => {
         .stat-card-luxury.blue::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
         .stat-card-luxury.green::before { background: linear-gradient(90deg, #10b981, #34d399); }
         .stat-card-luxury.orange::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
-
+ 
         .stat-card-luxury:hover {
           transform: translateY(-5px);
-          box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
-          background: rgba(255, 255, 255, 0.95);
+          box-shadow: var(--card-shadow-hover) !important;
+          background: var(--bg-surface) !important;
+          border-color: var(--accent-primary) !important;
         }
         .stat-icon-container {
           width: 56px;
@@ -130,15 +132,15 @@ const AgencyHub: React.FC = () => {
         .stat-card-luxury:hover .stat-icon-container {
           transform: scale(1.1) rotate(5deg);
         }
-        .stat-icon-container.blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-        .stat-icon-container.green { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-        .stat-icon-container.orange { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
-
+        .stat-icon-container.blue { background: rgba(59, 130, 246, 0.1) !important; color: #3b82f6 !important; }
+        .stat-icon-container.green { background: rgba(16, 185, 129, 0.1) !important; color: #10b981 !important; }
+        .stat-icon-container.orange { background: rgba(245, 158, 11, 0.1) !important; color: #f59e0b !important; }
+ 
         .stat-meta-group { display: flex; flex-direction: column; }
         .stat-label-modern {
           font-size: 0.75rem;
           font-weight: 800;
-          color: #8b9bb4;
+          color: var(--text-secondary) !important;
           text-transform: uppercase;
           letter-spacing: 0.1em;
           margin-bottom: 6px;
@@ -146,20 +148,20 @@ const AgencyHub: React.FC = () => {
         .stat-value-modern {
           font-size: 1.85rem;
           font-weight: 900;
-          color: #0f172a;
+          color: var(--text-primary) !important;
           line-height: 1.1;
           letter-spacing: -0.02em;
         }
-
+ 
         /* Beautiful Empty State */
         .empty-state-luxury {
-          background: rgba(255, 255, 255, 0.6);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.5);
+          background: var(--bg-surface) !important;
+          backdrop-filter: blur(20px) saturate(120%) !important;
+          border: 1px solid var(--glass-border) !important;
           border-radius: 24px;
           padding: 64px 32px;
           text-align: center;
-          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.02);
+          box-shadow: var(--card-shadow) !important;
           margin-top: 16px;
           display: flex;
           flex-direction: column;
@@ -169,7 +171,7 @@ const AgencyHub: React.FC = () => {
           width: 80px;
           height: 80px;
           border-radius: 28px;
-          background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+          background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.05) 100%) !important;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -180,18 +182,18 @@ const AgencyHub: React.FC = () => {
         .empty-headline {
           font-size: 1.45rem;
           font-weight: 900;
-          color: #0f172a;
+          color: var(--text-primary) !important;
           margin-bottom: 12px;
           letter-spacing: -0.02em;
         }
         .empty-description {
           font-size: 0.92rem;
-          color: #64748b;
+          color: var(--text-secondary) !important;
           max-width: 480px;
           line-height: 1.6;
           margin-bottom: 36px;
         }
-
+ 
         /* Flow Diagram Steps */
         .flow-diagram-horizontal {
           display: flex;
@@ -208,14 +210,14 @@ const AgencyHub: React.FC = () => {
         }
         .flow-step-card {
           flex: 1;
-          background: rgba(255, 255, 255, 0.9);
-          border: 1px solid rgba(0, 0, 0, 0.03);
+          background: var(--bg-body) !important;
+          border: 1px solid var(--glass-border) !important;
           border-radius: 16px;
           padding: 20px;
           display: flex;
           flex-direction: column;
           align-items: center;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
         }
         .flow-step-num {
           width: 24px;
@@ -233,23 +235,23 @@ const AgencyHub: React.FC = () => {
         .flow-step-title {
           font-size: 0.85rem;
           font-weight: 800;
-          color: #1e293b;
+          color: var(--text-primary) !important;
           margin-bottom: 6px;
         }
         .flow-step-desc {
           font-size: 0.75rem;
-          color: #64748b;
+          color: var(--text-secondary) !important;
           text-align: center;
           line-height: 1.4;
         }
-        .flow-arrow-icon { color: #94a3b8; }
-
+        .flow-arrow-icon { color: #64748b !important; }
+ 
         /* General Customizations */
         .page-title-lux {
           font-size: 2.2rem;
           font-weight: 950;
           letter-spacing: -0.04em;
-          color: #0f172a;
+          color: var(--text-primary) !important;
           margin-bottom: 4px;
         }
         .status-neon {
@@ -283,11 +285,11 @@ const AgencyHub: React.FC = () => {
         .owner-id-badge {
           font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
           font-size: 0.8rem;
-          color: #475569;
-          background: #f1f5f9;
+          color: var(--text-primary) !important;
+          background: var(--input-bg) !important;
           padding: 6px 10px;
           border-radius: 8px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid var(--glass-border) !important;
           font-weight: 700;
           display: inline-block;
           letter-spacing: 0.5px;
@@ -295,11 +297,11 @@ const AgencyHub: React.FC = () => {
         .agency-code-badge {
           font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
           font-size: 0.85rem;
-          color: #1d4ed8;
-          background: rgba(59, 130, 246, 0.05);
+          color: #60a5fa !important;
+          background: rgba(59, 130, 246, 0.1) !important;
           padding: 6px 12px;
           border-radius: 8px;
-          border: 1px solid rgba(59, 130, 246, 0.15);
+          border: 1px solid rgba(59, 130, 246, 0.2) !important;
           font-weight: 800;
           display: inline-block;
           letter-spacing: 0.5px;
@@ -308,14 +310,14 @@ const AgencyHub: React.FC = () => {
           font-family: inherit;
           font-size: 0.95rem;
           font-weight: 800;
-          color: #0f172a;
-          background: rgba(16, 185, 129, 0.03);
+          color: #34d399 !important;
+          background: rgba(16, 185, 129, 0.08) !important;
           padding: 6px 12px;
           border-radius: 8px;
-          border: 1px solid rgba(16, 185, 129, 0.08);
+          border: 1px solid rgba(16, 185, 129, 0.15) !important;
           display: inline-block;
         }
-
+ 
         /* Premium Table Perfect Alignment Overrides */
         .premium-table {
           width: 100% !important;
@@ -328,48 +330,48 @@ const AgencyHub: React.FC = () => {
           font-size: 0.75rem !important;
           font-weight: 800 !important;
           text-transform: uppercase !important;
-          color: #64748b !important;
+          color: var(--text-secondary) !important;
           letter-spacing: 0.1em !important;
           border: none !important;
           vertical-align: middle !important;
         }
         .premium-table td {
           padding: 16px 24px !important;
-          background: #ffffff !important;
-          border-top: 1px solid #f1f5f9 !important;
-          border-bottom: 1px solid #f1f5f9 !important;
-          color: #334155 !important;
+          background: var(--bg-surface) !important;
+          border-top: 1px solid var(--glass-border) !important;
+          border-bottom: 1px solid var(--glass-border) !important;
+          color: var(--text-primary) !important;
           vertical-align: middle !important;
           height: 72px !important;
         }
         .premium-table td:first-child {
-          border-left: 1px solid #f1f5f9 !important;
+          border-left: 1px solid var(--glass-border) !important;
           border-top-left-radius: 16px !important;
           border-bottom-left-radius: 16px !important;
         }
         .premium-table td:last-child {
-          border-right: 1px solid #f1f5f9 !important;
+          border-right: 1px solid var(--glass-border) !important;
           border-top-right-radius: 16px !important;
           border-bottom-right-radius: 16px !important;
         }
         .premium-table tr {
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.01) !important;
+          box-shadow: var(--card-shadow) !important;
           transition: all 0.25s ease !important;
         }
         .premium-table tbody tr:hover {
           transform: translateY(-2px) !important;
-          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.03) !important;
+          box-shadow: var(--card-shadow-hover) !important;
         }
         .premium-table tbody tr:hover td {
-          background: #f8fafc !important;
-          border-color: #e2e8f0 !important;
+          background: var(--bg-surface) !important;
+          border-color: var(--accent-primary) !important;
         }
-
+ 
         /* Flow Modal Styling */
         .flow-modal-overlay {
           position: fixed;
           top: 0; left: 0; right: 0; bottom: 0;
-          background: rgba(15, 23, 42, 0.6);
+          background: rgba(15, 23, 42, 0.7);
           backdrop-filter: blur(10px);
           display: flex;
           align-items: center;
@@ -378,17 +380,18 @@ const AgencyHub: React.FC = () => {
           animation: fadeIn 0.2s ease;
         }
         .flow-modal-box {
-          background: white;
+          background: var(--bg-surface) !important;
+          color: var(--text-primary) !important;
           border-radius: 24px;
           width: 90%;
           max-width: 600px;
           padding: 36px;
-          box-shadow: 0 30px 60px -15px rgba(0,0,0,0.3);
-          border: 1px solid rgba(255, 255, 255, 0.8);
+          box-shadow: var(--card-shadow) !important;
+          border: 1px solid var(--glass-border) !important;
           animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
       `}</style>
-
+ 
       {/* Header Actions */}
       <div className="header-actions">
         <div>
@@ -400,13 +403,13 @@ const AgencyHub: React.FC = () => {
             <Wallet size={16} />
             <span>Process Payouts</span>
           </button>
-          <button className="primary flex-center gap-2" onClick={() => setShowFlowModal(true)} style={{ borderRadius: '12px', background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)', boxShadow: '0 8px 20px rgba(59, 130, 246, 0.3)' }}>
+          <button className="primary flex-center gap-2" onClick={() => setShowFlowModal(true)} style={{ borderRadius: '12px' }}>
             <Plus size={18} />
             <span>Onboard Agency</span>
           </button>
         </div>
       </div>
-
+ 
       {/* Modern Stats deck */}
       {revenue && (
         <div className="stats-deck-modern">
@@ -419,7 +422,7 @@ const AgencyHub: React.FC = () => {
               <span className="stat-value-modern">₹{(revenue.totalVolume || 0).toLocaleString()}</span>
             </div>
           </div>
-
+ 
           <div className="stat-card-luxury green">
             <div className="stat-icon-container green">
               <DollarSign size={24} />
@@ -429,7 +432,7 @@ const AgencyHub: React.FC = () => {
               <span className="stat-value-modern">₹{(revenue.earnedCommissions || 0).toLocaleString()}</span>
             </div>
           </div>
-
+ 
           <div className="stat-card-luxury orange">
             <div className="stat-icon-container orange">
               <AlertCircle size={24} />
@@ -441,12 +444,12 @@ const AgencyHub: React.FC = () => {
           </div>
         </div>
       )}
-
+ 
       {/* Main Table / Elegant Empty State Wrapper */}
       {loading ? (
-        <div className="glass flex-center" style={{ height: '300px', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.4)' }}>
+        <div className="glass flex-center" style={{ height: '300px', borderRadius: '24px', border: '1px solid var(--glass-border)' }}>
           <div className="text-center">
-            <div className="spin" style={{ display: 'inline-block', marginBottom: '16px', color: '#3b82f6' }}>
+            <div className="spin" style={{ display: 'inline-block', marginBottom: '16px', color: 'var(--accent-primary)' }}>
               <ShieldCheck size={36} />
             </div>
             <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Loading Agency Records...</p>
@@ -462,7 +465,7 @@ const AgencyHub: React.FC = () => {
           <p className="empty-description">
             There are currently no active or pending agencies in the ledger. Real-time registrations happen from the mobile side and queue up here automatically.
           </p>
-
+ 
           {/* Interactive Flow Diagram */}
           <div className="flow-diagram-horizontal">
             <div className="flow-step-card">
@@ -471,27 +474,27 @@ const AgencyHub: React.FC = () => {
               <p className="flow-step-desc">User registers a recruitment agency within the mobile application.</p>
             </div>
             <ArrowRight size={20} className="flow-arrow-icon" />
-            <div className="flow-step-card" style={{ border: '1px solid rgba(245, 158, 11, 0.2)', background: 'rgba(245, 158, 11, 0.02)' }}>
+            <div className="flow-step-card" style={{ border: '1px solid var(--glass-border)', background: 'var(--bg-body)' }}>
               <div className="flow-step-num" style={{ background: '#f59e0b' }}>2</div>
               <span className="flow-step-title">Verification Needed</span>
               <p className="flow-step-desc">Application enters as "Pending". Admin verifies details for security compliance.</p>
             </div>
             <ArrowRight size={20} className="flow-arrow-icon" />
-            <div className="flow-step-card" style={{ border: '1px solid rgba(16, 185, 129, 0.2)', background: 'rgba(16, 185, 129, 0.02)' }}>
+            <div className="flow-step-card" style={{ border: '1px solid var(--glass-border)', background: 'var(--bg-body)' }}>
               <div className="flow-step-num" style={{ background: '#10b981' }}>3</div>
               <span className="flow-step-title">Ledger Onboarded</span>
               <p className="flow-step-desc">Super admin approves the agency, generating a live recruitment link.</p>
             </div>
           </div>
-
-          <button className="primary flex-center gap-2" onClick={() => setShowFlowModal(true)} style={{ padding: '14px 28px', borderRadius: '14px', background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)', fontWeight: 800 }}>
+ 
+          <button className="primary flex-center gap-2" onClick={() => setShowFlowModal(true)} style={{ padding: '14px 28px', borderRadius: '14px', fontWeight: 800 }}>
             <Plus size={18} />
             <span>Simulate Onboard Sequence</span>
           </button>
         </div>
       ) : (
         /* Premium Table Grid */
-        <div className="table-wrapper glass mt-6" style={{ borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.4)', padding: '8px', overflow: 'hidden' }}>
+        <div className="table-wrapper glass mt-6" style={{ borderRadius: '24px', border: '1px solid var(--glass-border)', padding: '8px', overflow: 'hidden' }}>
           <table className="premium-table">
             <thead>
               <tr>
@@ -512,20 +515,20 @@ const AgencyHub: React.FC = () => {
                         width: '40px',
                         height: '40px',
                         borderRadius: '12px',
-                        background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
-                        color: '#2563eb',
+                        background: 'var(--input-bg)',
+                        color: 'var(--accent-primary)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontWeight: 800,
                         fontSize: '1rem',
-                        boxShadow: '0 4px 10px rgba(37, 99, 235, 0.05)'
+                        border: '1px solid var(--glass-border)'
                       }}>
                         {agency.name ? agency.name.charAt(0).toUpperCase() : 'A'}
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.95rem', lineHeight: '1.2' }}>{agency.name}</div>
-                        <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600, marginTop: '2px' }}>
+                        <div style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '0.95rem', lineHeight: '1.2' }}>{agency.name}</div>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 600, marginTop: '2px' }}>
                           Talent Network
                         </span>
                       </div>
@@ -534,8 +537,8 @@ const AgencyHub: React.FC = () => {
                   <td style={{ textAlign: 'left' }}>
                     {agency.owner ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        <div style={{ fontWeight: 700, color: '#334155', fontSize: '0.88rem' }}>{agency.owner.name || 'Unnamed Owner'}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#64748b', fontFamily: 'monospace', fontWeight: 550 }}>
+                        <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.88rem' }}>{agency.owner.name || 'Unnamed Owner'}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontFamily: 'monospace', fontWeight: 550 }}>
                           {agency.owner.phone || agency.owner.email}
                         </div>
                       </div>
@@ -589,7 +592,7 @@ const AgencyHub: React.FC = () => {
                       ) : (
                         <button 
                           className="op-btn edit" 
-                          style={{ opacity: 0.4, cursor: 'not-allowed', background: 'rgba(148, 163, 184, 0.05)', color: '#94a3b8', border: '1px solid rgba(148, 163, 184, 0.1)', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
+                          style={{ opacity: 0.4, cursor: 'not-allowed', background: 'rgba(148, 163, 184, 0.05)', color: 'var(--text-secondary)', border: '1px solid var(--glass-border)', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
                           title="Protected Node"
                           disabled
                         >
@@ -604,54 +607,54 @@ const AgencyHub: React.FC = () => {
           </table>
         </div>
       )}
-
+ 
       {/* Elegant Informational & Simulation Flow Modal */}
       {showFlowModal && (
         <div className="flow-modal-overlay">
           <div className="flow-modal-box">
             <div className="flex justify-between items-center" style={{ marginBottom: '24px' }}>
               <div className="flex items-center gap-3">
-                <div style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ background: 'rgba(59, 130, 246, 0.1)', color: 'var(--accent-primary)', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Info size={20} />
                 </div>
                 <div>
-                  <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#0f172a', margin: 0 }}>Onboarding Protocol</h3>
-                  <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>How talent networks join the platform</span>
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-primary)', margin: 0 }}>Onboarding Protocol</h3>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>How talent networks join the platform</span>
                 </div>
               </div>
               <button 
                 onClick={() => setShowFlowModal(false)}
-                style={{ background: '#f1f5f9', border: 'none', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontWeight: 900 }}
+                style={{ background: 'var(--input-bg)', border: 'none', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', fontWeight: 900 }}
               >
                 ✕
               </button>
             </div>
-
+ 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '28px' }}>
-              <p style={{ fontSize: '0.88rem', color: '#475569', lineHeight: '1.6', margin: 0 }}>
+              <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: '1.6', margin: 0 }}>
                 To maintain database integrity, agencies are registered directly by mobile users using their secure user profiles. Manual creation from this dashboard is disabled to protect owner associations.
               </p>
-
-              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '20px' }}>
-                <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: '#1e293b', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <HelpCircle size={16} style={{ color: '#3b82f6' }} />
+ 
+              <div style={{ background: 'var(--bg-body)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '20px' }}>
+                <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <HelpCircle size={16} style={{ color: 'var(--accent-primary)' }} />
                   <span>How to Register an Agency:</span>
                 </h4>
-                <ol style={{ paddingLeft: '20px', fontSize: '0.8rem', color: '#475569', display: 'flex', flexDirection: 'column', gap: '8px', margin: 0 }}>
+                <ol style={{ paddingLeft: '20px', fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '8px', margin: 0 }}>
                   <li><strong>Mobile Register</strong>: A user submits the registration form inside the mobile app.</li>
                   <li><strong>Verification Queue</strong>: The agency immediately registers as <span style={{ color: '#f59e0b', fontWeight: 700 }}>Pending</span> and displays here.</li>
                   <li><strong>Verification & Live Activation</strong>: A Super Admin reviews the application and clicks <span style={{ color: '#10b981', fontWeight: 700 }}>Approve</span> to assign their recruitment code.</li>
                 </ol>
               </div>
-
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.1)', borderRadius: '12px', padding: '12px 16px' }}>
-                <ShieldCheck size={18} style={{ color: '#3b82f6', flexShrink: 0 }} />
-                <span style={{ fontSize: '0.75rem', color: '#3b82f6', fontWeight: 700 }}>
+ 
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', background: 'rgba(59, 130, 246, 0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px 16px' }}>
+                <ShieldCheck size={18} style={{ color: 'var(--accent-primary)', flexShrink: 0 }} />
+                <span style={{ fontSize: '0.75rem', color: 'var(--accent-primary)', fontWeight: 700 }}>
                   Role Check: Standard Admins can track agency statuses, but only Super Admins can authorize approvals.
                 </span>
               </div>
             </div>
-
+ 
             <div className="flex justify-end gap-3">
               <button className="secondary" onClick={() => setShowFlowModal(false)} style={{ padding: '10px 20px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 700 }}>
                 Dismiss
@@ -662,7 +665,7 @@ const AgencyHub: React.FC = () => {
                   setShowFlowModal(false);
                   toast.success('Ready for mobile registration payloads.');
                 }}
-                style={{ padding: '10px 20px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 700, background: '#3b82f6' }}
+                style={{ padding: '10px 20px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 700 }}
               >
                 Acknowledge Flow
               </button>

@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, Gift, Crown, Wallet,
   ShieldCheck, Settings, LogOut, Palette, Check
 } from 'lucide-react';
-import { useLayout, SIDEBAR_THEMES } from '../context/LayoutContext';
+import { useLayout, SIDEBAR_THEMES, APP_THEMES } from '../context/LayoutContext';
 
 const menuItems = [
   { path: '/dashboard',  label: 'Overview',   icon: LayoutDashboard },
@@ -53,7 +53,7 @@ export const TopMenu: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
 
 /* ── Floating theme picker (right-side FAB drawer) ────────── */
 export const SettingsToggle: React.FC = () => {
-  const { sidebarTheme, setSidebarTheme, menuPosition, setMenuPosition } = useLayout();
+  const { sidebarTheme, setSidebarTheme, menuPosition, setMenuPosition, appTheme, setAppTheme } = useLayout();
   const [isOpen, setIsOpen] = React.useState(false);
 
   return (
@@ -76,6 +76,40 @@ export const SettingsToggle: React.FC = () => {
             <span>Theme Studio</span>
           </div>
           <button className="theme-panel-close" onClick={() => setIsOpen(false)}>✕</button>
+        </div>
+
+        {/* App Theme swatches */}
+        <div className="theme-section">
+          <div className="theme-section-label">App Theme</div>
+          <div className="theme-swatches">
+            {APP_THEMES.map(t => (
+              <button
+                key={t.id}
+                className={`theme-swatch ${appTheme === t.id ? 'selected' : ''}`}
+                onClick={() => setAppTheme(t.id)}
+                title={t.label}
+              >
+                {/* preview mini theme */}
+                <span
+                  className="swatch-preview"
+                  style={{ background: t.previewBg, borderColor: t.primaryColor }}
+                >
+                  <span className="swatch-bar" style={{ background: t.primaryColor }} />
+                  <span className="swatch-lines">
+                    <span style={{ background: t.id === 'light' ? '#475569' : '#ffffff', opacity: 0.4 }} />
+                    <span style={{ background: t.id === 'light' ? '#475569' : '#ffffff', opacity: 0.25 }} />
+                    <span style={{ background: t.id === 'light' ? '#475569' : '#ffffff', opacity: 0.25 }} />
+                  </span>
+                </span>
+                <span className="swatch-label">{t.label.split(' ')[0]}</span>
+                {appTheme === t.id && (
+                  <span className="swatch-check" style={{ background: t.primaryColor }}>
+                    <Check size={10} color="#fff" />
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Sidebar colour presets */}

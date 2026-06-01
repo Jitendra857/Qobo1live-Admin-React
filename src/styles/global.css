@@ -1,17 +1,17 @@
 :root {
-  --bg-opal: #f1f5f9;
-  --bg-surface: #ffffff;
-  --glass-border: rgba(0, 0, 0, 0.05);
-  --accent-purple: #4e73df;
-  --accent-blue: #4e73df;
-  --text-primary: #333333;
-  --text-secondary: #6e707e;
+  --bg-opal: #07090e;                  /* Deep slate black space background */
+  --bg-surface: rgba(13, 18, 30, 0.45); /* Sleek dark translucent glass */
+  --glass-border: rgba(255, 255, 255, 0.08); /* Translucent border */
+  --accent-purple: #8b5cf6;            /* Royal violet */
+  --accent-blue: #3b82f6;              /* Electric blue */
+  --text-primary: #f8fafc;             /* Crisp slate white */
+  --text-secondary: #94a3b8;           /* Muted slate grey */
   --sidebar-width: 260px;
   --top-menu-height: 70px;
-  --border-radius: 0px;
-  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  --card-shadow-hover: 0 8px 16px rgba(0, 0, 0, 0.08);
-  --transition-smooth: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  --border-radius: 16px;               /* Modern soft rounded corners! */
+  --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  --card-shadow-hover: 0 8px 32px 0 rgba(139, 92, 246, 0.2); /* Neon purple hover glow */
+  --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 * {
@@ -586,3 +586,676 @@ button.secondary:hover {
 .radio-option span {
   font-size: 0.9rem;
 }
+
+/* ═══════════════════════════════════════
+   PREMIUM DYNAMIC APP THEMES & VARIABLES
+   ═══════════════════════════════════════ */
+
+/* Default Theme: Sapphire Midnight Variables (Highly Professional Dark Navy) */
+body {
+  --bg-body: #0a0f1d;
+  --bg-surface: rgba(16, 24, 48, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.07);
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --accent-primary: #6366f1;
+  --accent-primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --card-bg: rgba(16, 24, 48, 0.55);
+  --card-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.4);
+  --card-shadow-hover: 0 16px 48px 0 rgba(99, 102, 241, 0.15);
+  --input-bg: rgba(0, 0, 0, 0.25);
+  --table-th-bg: rgba(255, 255, 255, 0.02);
+  --table-tr-hover: rgba(255, 255, 255, 0.025);
+  --accent-glow: rgba(99, 102, 241, 0.06);
+}
+
+/* 1. Sapphire Midnight Theme */
+body.theme-sapphire {
+  --bg-body: #0a0f1d;
+  --bg-surface: rgba(16, 24, 48, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.07);
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --accent-primary: #6366f1;
+  --accent-primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --card-bg: rgba(16, 24, 48, 0.55);
+  --card-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.4);
+  --card-shadow-hover: 0 16px 48px 0 rgba(99, 102, 241, 0.15);
+  --input-bg: rgba(0, 0, 0, 0.25);
+  --table-th-bg: rgba(255, 255, 255, 0.02);
+  --table-tr-hover: rgba(255, 255, 255, 0.025);
+  --accent-glow: rgba(99, 102, 241, 0.06);
+}
+
+/* 2. Opal Light Theme (Ultra-Premium Light Mode) */
+body.theme-light {
+  --bg-body: #f8fafc;
+  --bg-surface: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(15, 23, 42, 0.08);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --accent-primary: #4f46e5;
+  --accent-primary-gradient: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+  --border-color: rgba(15, 23, 42, 0.08);
+  --card-bg: rgba(255, 255, 255, 0.85);
+  --card-shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.04);
+  --card-shadow-hover: 0 16px 48px 0 rgba(79, 70, 229, 0.08);
+  --input-bg: #ffffff;
+  --table-th-bg: rgba(15, 23, 42, 0.03);
+  --table-tr-hover: rgba(15, 23, 42, 0.015);
+  --accent-glow: rgba(79, 70, 229, 0.03);
+}
+
+/* 3. Emerald Cyber Theme */
+body.theme-emerald {
+  --bg-body: #050a09;
+  --bg-surface: rgba(10, 22, 20, 0.65);
+  --glass-border: rgba(52, 211, 153, 0.09);
+  --text-primary: #f0fdf4;
+  --text-secondary: #86efac;
+  --accent-primary: #10b981;
+  --accent-primary-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --border-color: rgba(52, 211, 153, 0.1);
+  --card-bg: rgba(10, 22, 20, 0.65);
+  --card-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+  --card-shadow-hover: 0 16px 48px 0 rgba(16, 185, 129, 0.12);
+  --input-bg: rgba(0, 0, 0, 0.35);
+  --table-th-bg: rgba(52, 211, 153, 0.025);
+  --table-tr-hover: rgba(52, 211, 153, 0.03);
+  --accent-glow: rgba(16, 185, 129, 0.05);
+}
+
+/* 4. Sunset Amber Theme */
+body.theme-amber {
+  --bg-body: #0e0906;
+  --bg-surface: rgba(28, 18, 12, 0.65);
+  --glass-border: rgba(245, 158, 11, 0.09);
+  --text-primary: #fdf8f6;
+  --text-secondary: #fcd34d;
+  --accent-primary: #f59e0b;
+  --accent-primary-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  --border-color: rgba(245, 158, 11, 0.1);
+  --card-bg: rgba(26, 17, 11, 0.65);
+  --card-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+  --card-shadow-hover: 0 16px 48px 0 rgba(245, 158, 11, 0.12);
+  --input-bg: rgba(0, 0, 0, 0.35);
+  --table-th-bg: rgba(245, 158, 11, 0.025);
+  --table-tr-hover: rgba(245, 158, 11, 0.03);
+  --accent-glow: rgba(245, 158, 11, 0.05);
+}
+
+/* 5. Amethyst Royal Theme */
+body.theme-amethyst {
+  --bg-body: #090512;
+  --bg-surface: rgba(20, 12, 34, 0.65);
+  --glass-border: rgba(167, 139, 250, 0.12);
+  --text-primary: #faf8ff;
+  --text-secondary: #c084fc;
+  --accent-primary: #8b5cf6;
+  --accent-primary-gradient: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  --border-color: rgba(167, 139, 250, 0.12);
+  --card-bg: rgba(20, 12, 34, 0.65);
+  --card-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+  --card-shadow-hover: 0 16px 48px 0 rgba(139, 92, 246, 0.12);
+  --input-bg: rgba(0, 0, 0, 0.35);
+  --table-th-bg: rgba(167, 139, 250, 0.025);
+  --table-tr-hover: rgba(167, 139, 250, 0.03);
+  --accent-glow: rgba(139, 92, 246, 0.05);
+}
+
+/* ═══════════════════════════════════════
+   PREMIUM DYNAMIC GLASSMORPHISM OVERRIDES
+   ═══════════════════════════════════════ */
+
+/* Global Themed Base Overrides */
+html, body, #root, .app-container, .main-wrapper, .content {
+  background-color: var(--bg-body) !important;
+  color: var(--text-primary) !important;
+  transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), color 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.content {
+  background: var(--bg-body) !important;
+  transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Deep Ambient Background Glow Orbs */
+.app-container::before {
+  content: '';
+  position: fixed;
+  top: -10%;
+  left: -10%;
+  width: 50%;
+  height: 50%;
+  background: radial-gradient(circle, var(--accent-glow) 0%, rgba(0,0,0,0) 70%);
+  pointer-events: none;
+  z-index: 0;
+  transition: background 0.4s ease;
+}
+
+.app-container::after {
+  content: '';
+  position: fixed;
+  bottom: -10%;
+  right: -10%;
+  width: 50%;
+  height: 50%;
+  background: radial-gradient(circle, var(--accent-glow) 0%, rgba(0,0,0,0) 70%);
+  pointer-events: none;
+  z-index: 0;
+  transition: background 0.4s ease;
+}
+
+/* Translucent Glass Containers */
+.glass, 
+.glass-container, 
+.bento-card, 
+.bento-card-premium, 
+.auth-card, 
+.modal-content, 
+.theme-drawer,
+.top-menu,
+.mobile-header {
+  background: var(--bg-surface) !important;
+  backdrop-filter: blur(24px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(140%) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--card-shadow) !important;
+  border-radius: 20px !important;
+  transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Glowing Bento Card Hover States */
+.bento-card:hover, 
+.bento-card-premium:hover, 
+.glass:hover, 
+.glass-container:hover {
+  transform: translateY(-6px) !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: var(--card-shadow-hover) !important;
+}
+
+/* Premium Dynamic Tables */
+.premium-table, .modern-table, table {
+  background: transparent !important;
+  border-collapse: collapse !important;
+}
+
+/* Table Headers */
+.premium-table th, .modern-table th, table th {
+  background: var(--table-th-bg) !important;
+  color: var(--text-secondary) !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.05em !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+  padding: 16px 20px !important;
+}
+
+/* Table Rows & Cells */
+.premium-table td, .modern-table td, table td {
+  border-bottom: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+  padding: 16px 20px !important;
+  background: transparent !important;
+}
+
+.row-premium:hover, tr.row-premium:hover, tr:hover td {
+  background: var(--table-tr-hover) !important;
+}
+
+/* Administrative Side Bar Overrides */
+.sidebar {
+  background: var(--sb-bg) !important;
+  backdrop-filter: blur(30px) !important;
+  border-right: 1px solid var(--sb-border) !important;
+  border-radius: 0px 24px 24px 0px !important;
+}
+
+.nav-link {
+  border-radius: 12px !important;
+  color: var(--sb-text) !important;
+  font-weight: 700 !important;
+}
+
+.nav-link:hover {
+  background: var(--sb-hover-bg) !important;
+  color: var(--sb-text-strong) !important;
+}
+
+.nav-link.active {
+  background: var(--sb-accent-bg) !important;
+  color: var(--sb-accent) !important;
+  border-left: 3px solid var(--sb-accent) !important;
+}
+
+.sub-link {
+  color: var(--sb-text) !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+}
+
+.sub-link:hover {
+  background: var(--sb-hover-bg) !important;
+  color: var(--sb-accent) !important;
+}
+
+.sub-link.active {
+  color: var(--sb-accent) !important;
+  background: var(--sb-accent-bg) !important;
+}
+
+/* Fields & Inputs */
+.admin-input, 
+.auth-input, 
+input[type="text"], 
+input[type="email"], 
+input[type="password"], 
+input[type="number"], 
+input[type="url"], 
+select, 
+textarea {
+  background: var(--input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+  transition: all 0.3s ease !important;
+}
+
+.admin-input:focus, 
+input:focus, 
+select:focus, 
+textarea:focus {
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 0 0 3px var(--accent-glow) !important;
+  background: var(--input-bg) !important;
+  outline: none !important;
+}
+
+/* Stat Cards & Bento Details */
+.card-value, .page-title {
+  color: var(--text-primary) !important;
+  font-weight: 900 !important;
+  text-shadow: 0 2px 10px rgba(255, 255, 255, 0.01);
+}
+
+.card-label {
+  color: var(--text-secondary) !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em !important;
+}
+
+.card-icon-wrap {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-radius: 14px !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: none !important;
+}
+
+/* Premium Status Neon Badges */
+.status-neon, .status-pill {
+  border-radius: 8px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.02em !important;
+}
+
+.status-neon.active, .status-pill.active {
+  background: rgba(16, 185, 129, 0.1) !important;
+  color: #34d399 !important;
+  border: 1px solid rgba(16, 185, 129, 0.2) !important;
+}
+
+.status-neon.inactive, .status-pill.inactive {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #f87171 !important;
+  border: 1px solid rgba(239, 68, 68, 0.2) !important;
+}
+
+/* Buttons Styling */
+button.primary {
+  background: var(--accent-primary-gradient) !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 800 !important;
+  border-radius: 12px !important;
+  box-shadow: var(--card-shadow-hover) !important;
+  transition: all 0.3s ease !important;
+}
+
+button.primary:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: var(--card-shadow-hover) !important;
+}
+
+button.secondary {
+  background: var(--input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+  font-weight: 700 !important;
+  border-radius: 12px !important;
+  transition: all 0.3s ease !important;
+}
+
+button.secondary:hover {
+  background: var(--bg-body) !important;
+  color: var(--text-primary) !important;
+}
+
+.op-btn {
+  background: var(--input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+  border-radius: 8px !important;
+}
+
+.op-btn:hover:not(:disabled) {
+  background: var(--bg-body) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Theme Studio Dynamic Text Elements */
+.theme-panel-title {
+  color: var(--text-primary) !important;
+}
+.theme-panel-title svg {
+  color: var(--accent-primary) !important;
+}
+.swatch-label {
+  color: var(--text-secondary) !important;
+}
+.theme-section-label {
+  color: var(--text-secondary) !important;
+}
+.theme-panel-close {
+  color: var(--text-secondary) !important;
+}
+.theme-panel-close:hover {
+  color: var(--text-primary) !important;
+}
+.theme-fab {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-right: none !important;
+  color: var(--accent-primary) !important;
+}
+.theme-fab:hover {
+  background: var(--bg-body) !important;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--glass-border) !important;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary) !important;
+}
+
+/* Invert dark sidebar logo for visibility */
+.dark-sidebar-logo {
+  filter: brightness(0) invert(1) drop-shadow(0 0 1px rgba(255, 255, 255, 0.1));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   UNIVERSAL THEME-ADAPTIVE OVERRIDES
+   Forces ALL pages (that import UserManagement.css) to use theme variables.
+   These rules have higher specificity than individual CSS files.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Tables: All data tables adapt to active theme ── */
+.modern-table,
+.premium-table,
+.table-container-premium {
+  background: var(--bg-surface) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+.modern-table th,
+.premium-table th {
+  background: var(--table-th-bg) !important;
+  color: var(--text-secondary) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+  border-color: var(--glass-border) !important;
+}
+
+.modern-table td,
+.premium-table td {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+  border-color: var(--glass-border) !important;
+}
+
+.row-premium:hover td,
+.row-premium:hover {
+  background: var(--table-tr-hover) !important;
+}
+
+/* ── Cards & Containers ── */
+.glass-container,
+.bento-card,
+.table-container-premium {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ── Text Elements ── */
+.name-bold,
+.mission-title-highdef,
+.modal-headline,
+.transaction-id-text,
+.tier-title,
+.modal-subline,
+.page-title,
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary) !important;
+}
+
+.email-sub,
+.data-cell-dim,
+.mission-desc-highdef,
+.completions-tag,
+.subtitle,
+.input-label-premium,
+p.subtitle {
+  color: var(--text-secondary) !important;
+}
+
+/* ── Op Buttons (small icon actions on table rows) ── */
+.op-btn {
+  background: var(--input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-secondary) !important;
+  border-radius: 8px !important;
+  transition: var(--transition-smooth) !important;
+}
+
+.op-btn:hover:not(:disabled) {
+  background: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--accent-primary) !important;
+  transform: translateY(-2px) !important;
+}
+
+.op-btn.edit:hover {
+  background: var(--accent-primary-gradient) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: 0 4px 12px var(--accent-glow) !important;
+}
+
+.op-btn.delete:hover {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: 0 4px 12px rgba(239,68,68,0.3) !important;
+}
+
+.op-btn.coin:hover {
+  background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+
+/* ── Icon Buttons (VIP delete etc.) ── */
+.icon-btn {
+  background: var(--input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-secondary) !important;
+  border-radius: 8px !important;
+}
+
+/* ── Action bars & footers inside cards ── */
+.bg-glass-dark,
+.card-action-bar-glass {
+  background: rgba(0, 0, 0, 0.08) !important;
+  border-color: var(--glass-border) !important;
+}
+body.theme-light .bg-glass-dark,
+body.theme-light .card-action-bar-glass {
+  background: rgba(0, 0, 0, 0.03) !important;
+}
+
+/* ── Search Bar ── */
+.search-bar {
+  background: var(--input-bg) !important;
+  border-color: var(--glass-border) !important;
+  border-radius: 12px !important;
+}
+.search-bar input {
+  color: var(--text-primary) !important;
+  background: transparent !important;
+}
+.search-bar input::placeholder {
+  color: var(--text-secondary) !important;
+}
+
+/* ── Modal Overlays (all variants) ── */
+.modal-overlay,
+.modal-overlay-refined {
+  background: rgba(0, 0, 0, 0.65) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.modal-content,
+.modal-content-premium,
+.glass-panel {
+  background: var(--bg-surface) !important;
+  backdrop-filter: blur(24px) saturate(150%) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+  border-radius: 24px !important;
+  box-shadow: var(--card-shadow) !important;
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+
+/* ── Form Groups inside Modals ── */
+.form-group label,
+.input-label-premium {
+  color: var(--text-secondary) !important;
+}
+
+/* ── Stats/Count Cards in TaskCenter ── */
+.stat-card {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 20px !important;
+  box-shadow: var(--card-shadow) !important;
+}
+.stat-info .value {
+  color: var(--text-primary) !important;
+}
+
+/* ── Bento / Mission Cards ── */
+.bento-card-premium {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 24px !important;
+  color: var(--text-primary) !important;
+}
+
+.card-type-badge.daily {
+  background: rgba(16, 185, 129, 0.1) !important;
+  color: #34d399 !important;
+}
+.card-type-badge.weekly {
+  background: rgba(59, 130, 246, 0.1) !important;
+  color: #60a5fa !important;
+}
+.card-type-badge.one_time {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #f87171 !important;
+}
+
+/* ── Pagination & pagination text ── */
+.pagination-footer {
+  color: var(--text-secondary) !important;
+  border-color: var(--glass-border) !important;
+}
+
+/* ── Avatar glass bubbles ── */
+.avatar-glass {
+  border: 1px solid var(--glass-border) !important;
+  color: #ffffff !important;
+}
+
+/* ── Text utility overrides for dark-on-dark bug ── */
+.text-slate-800 { color: var(--text-primary) !important; }
+.text-slate-600 { color: var(--text-secondary) !important; }
+
+/* ── Sidebar text adaptive (fix text on all skin modes) ── */
+.sidebar-section-title {
+  color: var(--sb-text) !important;
+}
+.brand-name {
+  color: var(--sb-text-strong) !important;
+}
+
+/* ── Dashboard Header text ── */
+.dashboard-header h1 {
+  color: var(--text-primary) !important;
+}
+.dashboard-header .subtitle {
+  color: var(--text-secondary) !important;
+}
+
+/* ── select dropdowns background fix ── */
+select option {
+  background: var(--bg-body, #0a0f1d) !important;
+  color: var(--text-primary, #f8fafc) !important;
+}
+body.theme-light select option {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+/* ── Tooltip background ── */
+.recharts-default-tooltip {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+  border-radius: 12px !important;
+}
+.recharts-tooltip-label,
+.recharts-tooltip-item {
+  color: var(--text-primary) !important;
+}
+

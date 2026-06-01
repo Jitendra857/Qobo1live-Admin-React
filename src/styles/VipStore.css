@@ -1,25 +1,30 @@
 .vip-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 24px;
+  gap: 28px;
   margin-top: 32px;
 }
 
 .vip-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 0px;
+  background: var(--bg-surface) !important;
+  backdrop-filter: blur(24px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(140%) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 24px !important;
   padding: 32px;
   position: relative;
   overflow: hidden;
-  transition: var(--transition-smooth);
-  box-shadow: var(--card-shadow);
+  transition: var(--transition-smooth) !important;
+  box-shadow: var(--card-shadow) !important;
+  display: flex;
+  flex-direction: column;
+  z-index: 1;
 }
 
 .vip-card:hover {
-  transform: translateY(-8px);
-  box-shadow: var(--card-shadow-hover);
-  border-color: #4e73df;
+  transform: translateY(-8px) !important;
+  box-shadow: var(--card-shadow-hover) !important;
+  border-color: var(--accent-primary) !important;
 }
 
 .vip-card::before {
@@ -27,74 +32,97 @@
   position: absolute;
   top: 0;
   right: 0;
-  width: 150px;
-  height: 150px;
-  background: radial-gradient(circle at top right, rgba(78, 115, 223, 0.05), transparent 70%);
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle at top right, var(--accent-glow), transparent 75%);
   pointer-events: none;
+  z-index: -1;
+  transition: var(--transition-smooth);
 }
 
 .vip-card.active {
-  border-left: 4px solid #10b981;
+  border-left: 4px solid var(--accent-primary) !important;
+  box-shadow: var(--card-shadow-hover) !important;
 }
 
 .vip-card.inactive {
-  opacity: 0.7;
-  filter: grayscale(0.5);
-  border-left: 4px solid #94a3b8;
+  opacity: 0.55;
+  filter: grayscale(0.6);
+  border-left: 4px solid var(--text-secondary) !important;
 }
 
 .vip-badge-icon {
   width: 56px;
   height: 56px;
-  background: #f8f9fc;
-  border-radius: 0px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 24px;
-  color: #4e73df;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  color: var(--accent-primary);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  transition: var(--transition-smooth);
+}
+
+.vip-card:hover .vip-badge-icon {
+  transform: scale(1.1) rotate(5deg);
+  background: var(--accent-primary-gradient);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 8px 24px var(--accent-glow);
+}
+
+.vip-toggle {
+  position: absolute;
+  top: 32px;
+  right: 32px;
+  z-index: 2;
 }
 
 .vip-price-tag {
   display: flex;
   align-items: baseline;
-  gap: 4px;
-  margin-bottom: 8px;
+  gap: 6px;
+  margin-bottom: 12px;
 }
 
 .vip-amount {
-  font-size: 2rem;
-  font-weight: 950;
-  color: #333;
+  font-size: 2.25rem;
+  font-weight: 900;
+  color: var(--text-primary);
   letter-spacing: -0.04em;
 }
 
 .vip-currency {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 800;
-  color: #64748b;
+  color: var(--text-secondary);
   text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .tier-title {
   font-size: 1.5rem;
-  font-weight: 950;
-  margin-bottom: 8px;
+  font-weight: 850;
+  margin-bottom: 12px;
   letter-spacing: -0.02em;
-  color: #333;
+  color: var(--text-primary);
+  text-shadow: 0 2px 10px rgba(255, 255, 255, 0.01);
 }
 
 .privileges-section {
   margin-top: 24px;
+  flex-grow: 1;
 }
 
 .section-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
-  color: #4e73df;
+  color: var(--accent-primary);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   margin-bottom: 16px;
 }
 
@@ -102,31 +130,40 @@
   min-height: 120px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .benefit-pill {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 0px;
-  font-size: 0.85rem;
+  gap: 10px;
+  padding: 11px 16px;
+  background: var(--input-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  font-size: 0.88rem;
   font-weight: 700;
-  color: #4a5568;
+  color: var(--text-primary);
+  transition: var(--transition-smooth);
+}
+
+.benefit-pill:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--accent-primary);
+  transform: translateX(6px);
+  box-shadow: 0 4px 12px var(--accent-glow);
 }
 
 .benefit-pill .text-accent {
-  color: #4e73df;
+  color: var(--accent-primary);
 }
 
 .empty-privileges {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-style: italic;
-  color: #a1a1a1;
+  color: var(--text-secondary);
   opacity: 0.6;
+  padding: 12px;
 }
 
 .vip-actions {
@@ -134,39 +171,144 @@
   gap: 12px;
   margin-top: 32px;
   padding-top: 24px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--glass-border);
 }
 
 .delete-btn {
-  background: #fff1f2 !important;
-  color: #e11d48 !important;
-  border: 1px solid #fecdd3 !important;
+  background: rgba(239, 68, 68, 0.08) !important;
+  color: #ef4444 !important;
+  border: 1px solid rgba(239, 68, 68, 0.2) !important;
+  border-radius: 12px !important;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-smooth) !important;
+  cursor: pointer;
 }
 
 .delete-btn:hover {
-  background: #e11d48 !important;
-  color: #fff !important;
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4) !important;
+  transform: translateY(-2px);
 }
 
 .empty-state-card {
   grid-column: 1 / -1;
   text-align: center;
-  padding: 80px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  padding: 80px 40px;
+  background: var(--bg-surface);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
   box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .empty-state-card h2 {
-  font-weight: 950;
+  font-weight: 900;
   font-size: 2rem;
   margin-bottom: 12px;
-  color: #333;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
 }
 
 .empty-state-card p {
-  color: #64748b;
-  max-width: 400px;
+  color: var(--text-secondary);
+  max-width: 440px;
   margin: 0 auto;
   font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.empty-state-card .vip-badge-icon.large {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  color: var(--accent-primary);
+  margin-bottom: 24px;
+}
+
+/* Modal Form Styles */
+.radio-group {
+  display: flex;
+  background: var(--input-bg);
+  border: 1px solid var(--glass-border);
+  padding: 6px;
+  border-radius: 14px;
+  gap: 6px;
+}
+
+.radio-option {
+  flex: 1;
+  text-align: center;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  transition: var(--transition-smooth);
+  color: var(--text-secondary);
+}
+
+.radio-option:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.radio-option.active {
+  color: #ffffff !important;
+}
+
+.radio-option.active.active-status {
+  background: var(--accent-primary-gradient) !important;
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.radio-option.active.inactive-status {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+}
+
+.form-privileges-list {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.form-benefit-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--accent-primary-gradient);
+  color: #ffffff;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  box-shadow: 0 4px 10px var(--accent-glow);
+  transition: var(--transition-smooth);
+}
+
+.form-benefit-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px var(--accent-glow);
+}
+
+.form-benefit-pill svg {
+  transition: transform 0.2s ease;
+}
+
+.form-benefit-pill svg:hover {
+  transform: scale(1.25);
 }

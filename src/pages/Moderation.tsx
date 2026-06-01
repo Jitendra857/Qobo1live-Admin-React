@@ -161,8 +161,8 @@ const Moderation: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="inject-card">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 rounded-lg bg-red-50 text-red-500"><Target size={20} /></div>
-              <span style={{ fontWeight: 900, fontSize: '1rem' }}>Inject Signature</span>
+              <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', width: '36px', height: '36px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Target size={20} /></div>
+              <span style={{ fontWeight: 900, fontSize: '1rem', color: 'var(--text-primary)' }}>Inject Signature</span>
             </div>
             <form onSubmit={handleAddWord}>
               <div className="inject-input-wrap">
@@ -182,9 +182,9 @@ const Moderation: React.FC = () => {
             </form>
           </div>
 
-          <div className="md:col-span-2 glass-card p-8" style={{ minHeight: '400px' }}>
+          <div className="md:col-span-2 glass p-8" style={{ minHeight: '400px' }}>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-              <span style={{ fontWeight: 900, fontSize: '1.2rem' }}>Signature Database</span>
+              <span style={{ fontWeight: 900, fontSize: '1.2rem', color: 'var(--text-primary)' }}>Signature Database</span>
               <div className="search-bar compact" style={{ maxWidth: '300px' }}>
                 <Search size={18} />
                 <input 
@@ -210,7 +210,7 @@ const Moderation: React.FC = () => {
       )}
 
       {activeTab === 'reports' && (
-        <div className="glass-card mt-6">
+        <div className="glass p-6 mt-6">
           <div className="table-wrapper">
             <table className="modern-table">
               <thead>

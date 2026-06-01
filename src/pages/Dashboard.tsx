@@ -151,11 +151,18 @@ const Dashboard: React.FC = () => {
           <div style={{ height: 320, width: '100%', marginTop: 20 }}>
             <ResponsiveContainer>
               <AreaChart data={growthData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6e707e' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6e707e' }} />
-                <Tooltip />
-                <Area type="monotone" dataKey="users" stroke="#4e73df" fill="rgba(78, 115, 223, 0.05)" strokeWidth={3} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--glass-border)" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                <Tooltip 
+                  contentStyle={{ 
+                    background: 'var(--bg-surface)', 
+                    borderColor: 'var(--glass-border)', 
+                    borderRadius: '12px',
+                    color: 'var(--text-primary)'
+                  }} 
+                />
+                <Area type="monotone" dataKey="users" stroke="var(--accent-primary)" fill="var(--accent-glow)" strokeWidth={3} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -180,7 +187,14 @@ const Dashboard: React.FC = () => {
                   ))}
                 </Pie>
                 <Legend verticalAlign="bottom" iconType="circle" align="center" layout="horizontal" iconSize={12} wrapperStyle={{ paddingTop: 20, fontSize: 12 }} />
-                <Tooltip />
+                <Tooltip 
+                  contentStyle={{ 
+                    background: 'var(--bg-surface)', 
+                    borderColor: 'var(--glass-border)', 
+                    borderRadius: '12px',
+                    color: 'var(--text-primary)'
+                  }} 
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
