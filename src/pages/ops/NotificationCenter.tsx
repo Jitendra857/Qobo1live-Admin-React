@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { adminService } from '../../services/api';
 import toast from 'react-hot-toast';
 import { Bell, Send, History, Info } from 'lucide-react';
@@ -8,21 +8,43 @@ const NotificationCenter: React.FC = () => {
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
+  const [history, setHistory] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(true);
+
+  const fetchHistory = async () => {
+    try {
+      setLoadingHistory(true);
+      const res = await adminService.getNotifications();
+      setHistory(res.data.data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
 
   const handleBroadcast = async () => {
-    if (!subject || !body) { toast.error('Please fill all fields'); return; }
+    if (!subject.trim() || !body.trim()) { 
+      toast.error('Please fill all fields'); 
+      return; 
+    }
     setSending(true);
     try {
       await adminService.sendBroadcast({ subject, body });
       toast.success('Broadcast launched successfully');
       setSubject('');
       setBody('');
+      fetchHistory(); // Refresh history
     } catch (err) {
       toast.error('Broadcast failed');
     } finally {
       setSending(false);
     }
   };
+
+  useEffect(() => {
+    fetchHistory();
+  }, []);
 
   return (
     <div className="user-management fade-in">
@@ -82,15 +104,28 @@ const NotificationCenter: React.FC = () => {
             </div>
           </div>
           <div className="card-bottom">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              {[1, 2, 3].map(i => (
-                <div key={i} style={{ padding: '15px', background: 'var(--bg-secondary)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
-                  <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Welcome to Qobo1live!</div>
-                  <div style={{ fontSize: '0.8rem', opacity: 0.6, marginTop: '4px' }}>Yesterday at 14:30 • 45.2k reached</div>
-                </div>
-              ))}
-              <p style={{ textAlign: 'center', fontSize: '0.8rem', opacity: 0.5, marginTop: '10px' }}>No further history found.</p>
-            </div>
+            {loadingHistory ? (
+              <p style={{ textAlign: 'center', fontSize: '0.9rem', opacity: 0.5 }}>Syncing transmission logs...</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                {history.map((notify: any, idx: number) => (
+                  <div key={notify.id || idx} style={{ padding: '15px', background: 'var(--bg-secondary)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{notify.subject}</div>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px', marginBottom: '4px' }}>{notify.body}</p>
+                    <div style={{ fontSize: '0.75rem', opacity: 0.5, marginTop: '4px' }}>
+                      {notify.createdAt ? new Date(notify.createdAt).toLocaleString() : 'Just now'} • FCM Broadcast
+                    </div>
+                  </div>
+                ))}
+                
+                {history.length === 0 && (
+                  <div style={{ padding: '20px', textAlign: 'center', opacity: 0.5 }}>
+                    <Bell size={36} style={{ margin: '0 auto 10px', display: 'block', color: 'var(--accent-orange)' }} />
+                    <p style={{ fontSize: '0.85rem' }}>No transmission history found.<br/>Your FCM pushes will be logged here.</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

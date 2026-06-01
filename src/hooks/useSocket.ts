@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import toast from 'react-hot-toast';
+import { BACKEND_URL } from '../services/api';
 
-const SOCKET_URL = 'http://localhost:5000'; // Updated to localhost
+const SOCKET_URL = BACKEND_URL;
 
 export const useSocket = () => {
     const socketRef = useRef<Socket | null>(null);

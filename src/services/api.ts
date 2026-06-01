@@ -1,6 +1,14 @@
 import axios from 'axios';
 
-export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+// Dynamically resolve backend url: fallback to live URL when running in browser on Render/production, or use localhost in development.
+const isLocalhost = typeof window !== 'undefined' && 
+  (window.location.hostname === 'localhost' || 
+   window.location.hostname === '127.0.0.1' || 
+   window.location.hostname.startsWith('192.168.'));
+
+export const BACKEND_URL = isLocalhost 
+  ? (import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000')
+  : 'https://my-backend-api-960q.onrender.com';
 
 const api = axios.create({
   baseURL: `${BACKEND_URL}/api`,
