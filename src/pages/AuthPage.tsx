@@ -11,8 +11,9 @@ interface AuthPageProps {
 
 const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('admin@qobo1.com');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('admin@qobo1live.com');
+  const [password, setPassword] = useState('Admin@123');
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [authToast, setAuthToast] = useState<{ type: 'success' | 'error', message: string } | null>(null);
