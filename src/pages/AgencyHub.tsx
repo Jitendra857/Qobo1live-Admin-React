@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { adminService } from '../services/api';
 import toast from 'react-hot-toast';
-import { Users, Plus, ShieldCheck, CheckCircle, XCircle, AlertCircle, TrendingUp, DollarSign, Wallet, ArrowRight, Info, HelpCircle } from 'lucide-react';
+import {
+  Users, ShieldCheck, CheckCircle, XCircle, AlertCircle,
+  TrendingUp, DollarSign, Wallet, Search, RefreshCw,
+  Building2, UserCheck, Clock, ChevronDown, Edit3, Link2
+} from 'lucide-react';
 import '../styles/UserManagement.css';
 
 const AgencyHub: React.FC = () => {
   const [agencies, setAgencies] = useState<any[]>([]);
+  const [filtered, setFiltered] = useState<any[]>([]);
   const [revenue, setRevenue] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [showFlowModal, setShowFlowModal] = useState(false);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [payoutLoading, setPayoutLoading] = useState(false);
 
   const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
   const canApprove = currentUser?.role === 'super_admin';
@@ -20,583 +27,400 @@ const AgencyHub: React.FC = () => {
         adminService.getAgencies(),
         adminService.getGlobalAgencyStats()
       ]);
-      setAgencies(agenciesRes.data.data || []);
+      const list = agenciesRes.data.data || [];
+      setAgencies(list);
+      setFiltered(list);
       setRevenue(revenueRes.data.data || null);
     } catch (err) {
-      console.error(err);
+      toast.error('Failed to load agency data');
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
-  const handlePayout = async () => {
-    if (agencies.length === 0) {
-      toast.error('No agencies available to process payouts');
-      return;
+  // Live search + status filter
+  useEffect(() => {
+    let result = agencies;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(a =>
+        a.name?.toLowerCase().includes(q) ||
+        a.code?.toLowerCase().includes(q) ||
+        a.owner?.name?.toLowerCase().includes(q) ||
+        a.owner?.phone?.includes(q)
+      );
     }
-    try {
-      await adminService.payoutAgency({ agencyId: agencies[0].id });
-      toast.success('Payout processed successfully');
-      fetchData();
-    } catch (err) {
-      toast.error('Payout failed or no pending commissions');
+    if (statusFilter !== 'all') {
+      result = result.filter(a => a.status === statusFilter);
     }
-  };
+    setFiltered(result);
+  }, [search, statusFilter, agencies]);
 
   const handleApprove = async (agencyId: string, status: 'active' | 'rejected') => {
     try {
       const res = await adminService.approveAgency({ agency_id: agencyId, status });
       if (res.data.statusCode === 1) {
-        toast.success(`Agency ${status === 'active' ? 'Approved' : 'Rejected'} successfully`);
+        toast.success(`Agency ${status === 'active' ? '✅ Approved' : '❌ Rejected'}`);
         fetchData();
       } else {
         toast.error(res.data.message || 'Action failed');
       }
-    } catch (err) {
-      toast.error('Error approving agency');
+    } catch {
+      toast.error('Error processing agency action');
     }
   };
 
-  return (
-    <div className="user-management fade-in" style={{ position: 'relative' }}>
-      {/* Scoped CSS Inject for Luxury Modern Aesthetics */}
-      <style>{`
-        /* Floating & Pulse Animations */
-        @keyframes float {
-          0% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-          100% { transform: translateY(0px); }
-        }
-        @keyframes pulseGlow {
-          0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
-          70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
-          100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
-        }
+  const handlePayout = async () => {
+    setPayoutLoading(true);
+    try {
+      await adminService.payoutAgency({ agencyId: 'all' });
+      toast.success('All pending commissions processed successfully');
+      fetchData();
+    } catch {
+      toast.error('No pending commissions or payout failed');
+    } finally {
+      setPayoutLoading(false);
+    }
+  };
 
-        /* Stats Cards Overhaul */
-        .stats-deck-modern {
+  const pendingCount  = agencies.filter(a => a.status === 'pending').length;
+  const approvedCount = agencies.filter(a => a.status === 'active').length;
+
+  return (
+    <div className="user-management fade-in">
+      <style>{`
+        .agency-stats-grid {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 24px;
-          margin: 32px 0;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 20px;
+          margin-bottom: 28px;
         }
-        @media (max-width: 992px) {
-          .stats-deck-modern { grid-template-columns: 1fr; }
-        }
-        .stat-card-luxury {
+        .agency-stat-card {
           background: var(--bg-surface) !important;
-          backdrop-filter: blur(20px) saturate(120%) !important;
-          -webkit-backdrop-filter: blur(20px) saturate(120%) !important;
           border: 1px solid var(--glass-border) !important;
           border-radius: 20px;
-          padding: 28px;
+          padding: 24px 20px;
           display: flex;
           align-items: center;
-          gap: 20px;
+          gap: 16px;
           box-shadow: var(--card-shadow) !important;
-          transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: all 0.3s ease;
           position: relative;
           overflow: hidden;
         }
-        .stat-card-luxury::before {
+        .agency-stat-card::before {
           content: '';
           position: absolute;
-          top: 0; left: 0; right: 0; height: 4px;
-          background: transparent;
-          transition: all 0.3s ease;
+          top: 0; left: 0; right: 0;
+          height: 3px;
         }
-        .stat-card-luxury.blue::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
-        .stat-card-luxury.green::before { background: linear-gradient(90deg, #10b981, #34d399); }
-        .stat-card-luxury.orange::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
- 
-        .stat-card-luxury:hover {
-          transform: translateY(-5px);
-          box-shadow: var(--card-shadow-hover) !important;
-          background: var(--bg-surface) !important;
+        .agency-stat-card.blue::before  { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+        .agency-stat-card.green::before { background: linear-gradient(90deg, #10b981, #34d399); }
+        .agency-stat-card.amber::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .agency-stat-card.purple::before{ background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+        .agency-stat-card.rose::before  { background: linear-gradient(90deg, #f43f5e, #fb7185); }
+        .agency-stat-card:hover {
+          transform: translateY(-4px);
           border-color: var(--accent-primary) !important;
+          box-shadow: var(--card-shadow-hover) !important;
         }
-        .stat-icon-container {
-          width: 56px;
-          height: 56px;
-          border-radius: 16px;
+        .stat-icon-box {
+          width: 48px; height: 48px;
+          border-radius: 14px;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+        .stat-icon-box.blue   { background: rgba(59,130,246,0.1);  color: #3b82f6; }
+        .stat-icon-box.green  { background: rgba(16,185,129,0.1);  color: #10b981; }
+        .stat-icon-box.amber  { background: rgba(245,158,11,0.1);  color: #f59e0b; }
+        .stat-icon-box.purple { background: rgba(139,92,246,0.1);  color: #8b5cf6; }
+        .stat-icon-box.rose   { background: rgba(244,63,94,0.1);   color: #f43f5e; }
+        .stat-num  { font-size: 1.8rem; font-weight: 900; color: var(--text-primary)!important; line-height:1; letter-spacing:-0.03em; }
+        .stat-lbl  { font-size: 0.7rem; font-weight: 800; color: var(--text-secondary)!important; text-transform:uppercase; letter-spacing:0.08em; margin-top: 4px; }
+
+        .agency-toolbar {
           display: flex;
           align-items: center;
-          justify-content: center;
-          font-size: 1.5rem;
-          transition: transform 0.3s ease;
+          gap: 12px;
+          margin-bottom: 20px;
+          flex-wrap: wrap;
         }
-        .stat-card-luxury:hover .stat-icon-container {
-          transform: scale(1.1) rotate(5deg);
-        }
-        .stat-icon-container.blue { background: rgba(59, 130, 246, 0.1) !important; color: #3b82f6 !important; }
-        .stat-icon-container.green { background: rgba(16, 185, 129, 0.1) !important; color: #10b981 !important; }
-        .stat-icon-container.orange { background: rgba(245, 158, 11, 0.1) !important; color: #f59e0b !important; }
- 
-        .stat-meta-group { display: flex; flex-direction: column; }
-        .stat-label-modern {
-          font-size: 0.75rem;
-          font-weight: 800;
-          color: var(--text-secondary) !important;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          margin-bottom: 6px;
-        }
-        .stat-value-modern {
-          font-size: 1.85rem;
-          font-weight: 900;
-          color: var(--text-primary) !important;
-          line-height: 1.1;
-          letter-spacing: -0.02em;
-        }
- 
-        /* Beautiful Empty State */
-        .empty-state-luxury {
-          background: var(--bg-surface) !important;
-          backdrop-filter: blur(20px) saturate(120%) !important;
-          border: 1px solid var(--glass-border) !important;
-          border-radius: 24px;
-          padding: 64px 32px;
-          text-align: center;
-          box-shadow: var(--card-shadow) !important;
-          margin-top: 16px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        }
-        .empty-glow-orb {
-          width: 80px;
-          height: 80px;
-          border-radius: 28px;
-          background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.05) 100%) !important;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #3b82f6;
-          margin-bottom: 24px;
-          animation: float 4s ease-in-out infinite, pulseGlow 2.5s infinite;
-        }
-        .empty-headline {
-          font-size: 1.45rem;
-          font-weight: 900;
-          color: var(--text-primary) !important;
-          margin-bottom: 12px;
-          letter-spacing: -0.02em;
-        }
-        .empty-description {
-          font-size: 0.92rem;
-          color: var(--text-secondary) !important;
-          max-width: 480px;
-          line-height: 1.6;
-          margin-bottom: 36px;
-        }
- 
-        /* Flow Diagram Steps */
-        .flow-diagram-horizontal {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 20px;
-          margin-bottom: 40px;
-          width: 100%;
-          max-width: 800px;
-        }
-        @media (max-width: 768px) {
-          .flow-diagram-horizontal { flex-direction: column; gap: 16px; }
-          .flow-arrow-icon { transform: rotate(90deg); }
-        }
-        .flow-step-card {
+        .agency-search {
           flex: 1;
-          background: var(--bg-body) !important;
-          border: 1px solid var(--glass-border) !important;
-          border-radius: 16px;
-          padding: 20px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
-        }
-        .flow-step-num {
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          background: #3b82f6;
-          color: white;
-          font-size: 0.75rem;
-          font-weight: 900;
+          min-width: 220px;
           display: flex;
           align-items: center;
-          justify-content: center;
-          margin-bottom: 12px;
+          gap: 10px;
+          background: var(--input-bg)!important;
+          border: 1px solid var(--glass-border)!important;
+          border-radius: 12px;
+          padding: 0 16px;
+          height: 44px;
         }
-        .flow-step-title {
+        .agency-search input {
+          background: transparent; border: none; outline: none;
+          color: var(--text-primary)!important;
+          font-size: 0.88rem; font-weight: 600; width: 100%;
+        }
+        .agency-search input::placeholder { color: var(--text-secondary)!important; }
+        .filter-select {
+          background: var(--input-bg)!important;
+          border: 1px solid var(--glass-border)!important;
+          border-radius: 12px;
+          padding: 10px 14px;
+          color: var(--text-primary)!important;
           font-size: 0.85rem;
-          font-weight: 800;
-          color: var(--text-primary) !important;
-          margin-bottom: 6px;
-        }
-        .flow-step-desc {
-          font-size: 0.75rem;
-          color: var(--text-secondary) !important;
-          text-align: center;
-          line-height: 1.4;
-        }
-        .flow-arrow-icon { color: #64748b !important; }
- 
-        /* General Customizations */
-        .page-title-lux {
-          font-size: 2.2rem;
-          font-weight: 950;
-          letter-spacing: -0.04em;
-          color: var(--text-primary) !important;
-          margin-bottom: 4px;
-        }
-        .status-neon {
-          display: inline-flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          gap: 6px !important;
-          font-size: 0.72rem !important;
-          font-weight: 800 !important;
-          padding: 6px 14px !important;
-          border-radius: 8px !important;
-          text-transform: uppercase !important;
-          letter-spacing: 0.05em !important;
-          white-space: nowrap !important;
-        }
-        .status-neon.pending {
-          background: rgba(245, 158, 11, 0.1) !important;
-          color: #f59e0b !important;
-          border: 1px solid rgba(245, 158, 11, 0.2) !important;
-        }
-        .status-neon.active {
-          background: rgba(16, 185, 129, 0.1) !important;
-          color: #10b981 !important;
-          border: 1px solid rgba(16, 185, 129, 0.2) !important;
-        }
-        .status-neon.rejected {
-          background: rgba(239, 68, 68, 0.1) !important;
-          color: #ef4444 !important;
-          border: 1px solid rgba(239, 68, 68, 0.2) !important;
-        }
-        .owner-id-badge {
-          font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
-          font-size: 0.8rem;
-          color: var(--text-primary) !important;
-          background: var(--input-bg) !important;
-          padding: 6px 10px;
-          border-radius: 8px;
-          border: 1px solid var(--glass-border) !important;
           font-weight: 700;
-          display: inline-block;
-          letter-spacing: 0.5px;
+          cursor: pointer;
+          height: 44px;
+          outline: none;
         }
-        .agency-code-badge {
-          font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
-          font-size: 0.85rem;
-          color: #60a5fa !important;
-          background: rgba(59, 130, 246, 0.1) !important;
-          padding: 6px 12px;
-          border-radius: 8px;
-          border: 1px solid rgba(59, 130, 246, 0.2) !important;
-          font-weight: 800;
-          display: inline-block;
-          letter-spacing: 0.5px;
-        }
-        .commission-badge {
-          font-family: inherit;
-          font-size: 0.95rem;
-          font-weight: 800;
-          color: #34d399 !important;
-          background: rgba(16, 185, 129, 0.08) !important;
-          padding: 6px 12px;
-          border-radius: 8px;
-          border: 1px solid rgba(16, 185, 129, 0.15) !important;
-          display: inline-block;
-        }
- 
-        /* Premium Table Perfect Alignment Overrides */
-        .premium-table {
-          width: 100% !important;
-          border-collapse: separate !important;
-          border-spacing: 0 12px !important;
-          margin-top: 0 !important;
-        }
+
+        .premium-table { width:100%!important; border-collapse:separate!important; border-spacing:0 10px!important; }
         .premium-table th {
-          padding: 16px 24px !important;
-          font-size: 0.75rem !important;
-          font-weight: 800 !important;
-          text-transform: uppercase !important;
-          color: var(--text-secondary) !important;
-          letter-spacing: 0.1em !important;
-          border: none !important;
-          vertical-align: middle !important;
+          padding: 14px 20px!important;
+          font-size: 0.72rem!important; font-weight:800!important;
+          text-transform:uppercase!important; letter-spacing:0.1em!important;
+          color: var(--text-secondary)!important; border:none!important;
         }
         .premium-table td {
-          padding: 16px 24px !important;
-          background: var(--bg-surface) !important;
-          border-top: 1px solid var(--glass-border) !important;
-          border-bottom: 1px solid var(--glass-border) !important;
-          color: var(--text-primary) !important;
-          vertical-align: middle !important;
-          height: 72px !important;
+          padding: 16px 20px!important;
+          background: var(--bg-surface)!important;
+          border-top: 1px solid var(--glass-border)!important;
+          border-bottom: 1px solid var(--glass-border)!important;
+          color: var(--text-primary)!important;
+          vertical-align: middle!important;
+          height: 68px!important;
         }
-        .premium-table td:first-child {
-          border-left: 1px solid var(--glass-border) !important;
-          border-top-left-radius: 16px !important;
-          border-bottom-left-radius: 16px !important;
-        }
-        .premium-table td:last-child {
-          border-right: 1px solid var(--glass-border) !important;
-          border-top-right-radius: 16px !important;
-          border-bottom-right-radius: 16px !important;
-        }
-        .premium-table tr {
-          box-shadow: var(--card-shadow) !important;
-          transition: all 0.25s ease !important;
-        }
-        .premium-table tbody tr:hover {
-          transform: translateY(-2px) !important;
-          box-shadow: var(--card-shadow-hover) !important;
-        }
-        .premium-table tbody tr:hover td {
-          background: var(--bg-surface) !important;
-          border-color: var(--accent-primary) !important;
-        }
- 
-        /* Flow Modal Styling */
-        .flow-modal-overlay {
-          position: fixed;
-          top: 0; left: 0; right: 0; bottom: 0;
-          background: rgba(15, 23, 42, 0.7);
-          backdrop-filter: blur(10px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 2000;
-          animation: fadeIn 0.2s ease;
-        }
-        .flow-modal-box {
-          background: var(--bg-surface) !important;
-          color: var(--text-primary) !important;
-          border-radius: 24px;
-          width: 90%;
-          max-width: 600px;
-          padding: 36px;
-          box-shadow: var(--card-shadow) !important;
-          border: 1px solid var(--glass-border) !important;
-          animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
+        .premium-table td:first-child { border-left:1px solid var(--glass-border)!important; border-radius:14px 0 0 14px!important; }
+        .premium-table td:last-child  { border-right:1px solid var(--glass-border)!important; border-radius:0 14px 14px 0!important; }
+        .premium-table tbody tr { box-shadow: var(--card-shadow)!important; transition:all 0.25s!important; }
+        .premium-table tbody tr:hover { transform:translateY(-2px)!important; box-shadow: var(--card-shadow-hover)!important; }
+        .premium-table tbody tr:hover td { border-color: var(--accent-primary)!important; }
+
+        .badge-code  { font-family:monospace; font-size:0.82rem; font-weight:800; color:#60a5fa!important; background:rgba(59,130,246,0.1)!important; padding:4px 10px; border-radius:8px; border:1px solid rgba(59,130,246,0.2)!important; }
+        .badge-comm  { font-size:0.9rem; font-weight:800; color:#34d399!important; background:rgba(16,185,129,0.08)!important; padding:4px 10px; border-radius:8px; border:1px solid rgba(16,185,129,0.15)!important; }
+        .badge-hosts { font-size:0.82rem; font-weight:800; color:#a78bfa!important; background:rgba(139,92,246,0.08)!important; padding:4px 10px; border-radius:8px; border:1px solid rgba(139,92,246,0.15)!important; display:flex; align-items:center; gap:4px; }
+        .status-pill-ag { display:inline-flex; align-items:center; gap:5px; font-size:0.68rem; font-weight:800; padding:5px 10px; border-radius:8px; text-transform:uppercase; letter-spacing:0.05em; white-space:nowrap; }
+        .status-pill-ag.pending  { background:rgba(245,158,11,0.1)!important;  color:#f59e0b!important; border:1px solid rgba(245,158,11,0.2)!important; }
+        .status-pill-ag.active   { background:rgba(16,185,129,0.1)!important;  color:#10b981!important; border:1px solid rgba(16,185,129,0.2)!important; }
+        .status-pill-ag.rejected { background:rgba(239,68,68,0.1)!important;   color:#ef4444!important; border:1px solid rgba(239,68,68,0.2)!important; }
       `}</style>
- 
-      {/* Header Actions */}
-      <div className="header-actions">
+
+      {/* ── Page Header ─────────────────────────────────────────────────────── */}
+      <div className="header-actions" style={{ marginBottom: '28px' }}>
         <div>
-          <h2 className="page-title-lux">Agency Hub</h2>
-          <p style={{ color: 'var(--text-secondary)', fontWeight: 550 }}>Manage recruitment networks and commission statistics</p>
+          <h1 className="page-title">Agency Hub</h1>
+          <p style={{ color: 'var(--text-secondary)', fontWeight: 600, marginTop: '4px' }}>
+            Manage recruitment networks, host approvals and commission payouts
+          </p>
         </div>
         <div className="flex gap-3">
-          <button className="secondary flex-center gap-2" onClick={handlePayout} style={{ borderRadius: '12px', fontWeight: 700 }}>
-            <Wallet size={16} />
-            <span>Process Payouts</span>
+          <button
+            className="secondary flex items-center gap-2"
+            onClick={fetchData}
+            style={{ borderRadius: '12px', padding: '10px 18px', fontWeight: 700 }}
+          >
+            <RefreshCw size={15} /> Refresh
           </button>
-          <button className="primary flex-center gap-2" onClick={() => setShowFlowModal(true)} style={{ borderRadius: '12px' }}>
-            <Plus size={18} />
-            <span>Onboard Agency</span>
-          </button>
+          {canApprove && (
+            <button
+              className="primary flex items-center gap-2"
+              onClick={handlePayout}
+              disabled={payoutLoading}
+              style={{ borderRadius: '12px', padding: '10px 20px', fontWeight: 800 }}
+            >
+              <Wallet size={16} />
+              {payoutLoading ? 'Processing...' : 'Process Payouts'}
+            </button>
+          )}
         </div>
       </div>
- 
-      {/* Modern Stats deck */}
-      {revenue && (
-        <div className="stats-deck-modern">
-          <div className="stat-card-luxury blue">
-            <div className="stat-icon-container blue">
-              <TrendingUp size={24} />
-            </div>
-            <div className="stat-meta-group">
-              <span className="stat-label-modern">Total Volume</span>
-              <span className="stat-value-modern">₹{(revenue.totalVolume || 0).toLocaleString()}</span>
-            </div>
-          </div>
- 
-          <div className="stat-card-luxury green">
-            <div className="stat-icon-container green">
-              <DollarSign size={24} />
-            </div>
-            <div className="stat-meta-group">
-              <span className="stat-label-modern">Earned Commissions</span>
-              <span className="stat-value-modern">₹{(revenue.earnedCommissions || 0).toLocaleString()}</span>
-            </div>
-          </div>
- 
-          <div className="stat-card-luxury orange">
-            <div className="stat-icon-container orange">
-              <AlertCircle size={24} />
-            </div>
-            <div className="stat-meta-group">
-              <span className="stat-label-modern">Pending Payouts</span>
-              <span className="stat-value-modern">₹{(revenue.pendingCommissions || 0).toLocaleString()}</span>
-            </div>
+
+      {/* ── Stats Grid ──────────────────────────────────────────────────────── */}
+      <div className="agency-stats-grid">
+        <div className="agency-stat-card blue">
+          <div className="stat-icon-box blue"><Building2 size={22} /></div>
+          <div><div className="stat-num">{agencies.length}</div><div className="stat-lbl">Total Agencies</div></div>
+        </div>
+        <div className="agency-stat-card amber">
+          <div className="stat-icon-box amber"><Clock size={22} /></div>
+          <div><div className="stat-num">{pendingCount}</div><div className="stat-lbl">Pending Review</div></div>
+        </div>
+        <div className="agency-stat-card green">
+          <div className="stat-icon-box green"><CheckCircle size={22} /></div>
+          <div><div className="stat-num">{approvedCount}</div><div className="stat-lbl">Active Agencies</div></div>
+        </div>
+        <div className="agency-stat-card purple">
+          <div className="stat-icon-box purple"><UserCheck size={22} /></div>
+          <div>
+            <div className="stat-num">{revenue?.approvedHosts ?? '—'}</div>
+            <div className="stat-lbl">Approved Hosts</div>
           </div>
         </div>
-      )}
- 
-      {/* Main Table / Elegant Empty State Wrapper */}
+        <div className="agency-stat-card rose">
+          <div className="stat-icon-box rose"><DollarSign size={22} /></div>
+          <div>
+            <div className="stat-num">₹{((revenue?.pendingCommissions || 0) / 1000).toFixed(1)}k</div>
+            <div className="stat-lbl">Pending Payouts</div>
+          </div>
+        </div>
+        <div className="agency-stat-card green">
+          <div className="stat-icon-box green"><TrendingUp size={22} /></div>
+          <div>
+            <div className="stat-num">₹{((revenue?.totalVolume || 0) / 1000).toFixed(1)}k</div>
+            <div className="stat-lbl">Total Revenue</div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Toolbar ─────────────────────────────────────────────────────────── */}
+      <div className="agency-toolbar">
+        <div className="agency-search">
+          <Search size={16} style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
+          <input
+            placeholder="Search by name, code, owner..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
+        <select
+          className="filter-select"
+          value={statusFilter}
+          onChange={e => setStatusFilter(e.target.value)}
+        >
+          <option value="all">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="active">Active</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+
+      {/* ── Table ───────────────────────────────────────────────────────────── */}
       {loading ? (
-        <div className="glass flex-center" style={{ height: '300px', borderRadius: '24px', border: '1px solid var(--glass-border)' }}>
-          <div className="text-center">
-            <div className="spin" style={{ display: 'inline-block', marginBottom: '16px', color: 'var(--accent-primary)' }}>
-              <ShieldCheck size={36} />
-            </div>
-            <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Loading Agency Records...</p>
-          </div>
+        <div className="glass flex items-center justify-center" style={{ height: 280, borderRadius: 24, border: '1px solid var(--glass-border)' }}>
+          <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Loading agencies...</p>
         </div>
-      ) : agencies.length === 0 ? (
-        /* Premium Empty State & Onboarding Flow Guide */
-        <div className="empty-state-luxury fade-in">
-          <div className="empty-glow-orb">
-            <Users size={36} />
-          </div>
-          <h3 className="empty-headline">Active Recruitment Ledger is Empty</h3>
-          <p className="empty-description">
-            There are currently no active or pending agencies in the ledger. Real-time registrations happen from the mobile side and queue up here automatically.
+      ) : filtered.length === 0 ? (
+        <div className="glass flex items-center justify-center" style={{ height: 280, borderRadius: 24, border: '1px solid var(--glass-border)', flexDirection: 'column', gap: 12 }}>
+          <Users size={40} style={{ color: 'var(--text-secondary)', opacity: 0.4 }} />
+          <p style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>
+            {search || statusFilter !== 'all' ? 'No agencies match your filter' : 'No agencies registered yet'}
           </p>
- 
-          {/* Interactive Flow Diagram */}
-          <div className="flow-diagram-horizontal">
-            <div className="flow-step-card">
-              <div className="flow-step-num">1</div>
-              <span className="flow-step-title">Mobile Registration</span>
-              <p className="flow-step-desc">User registers a recruitment agency within the mobile application.</p>
-            </div>
-            <ArrowRight size={20} className="flow-arrow-icon" />
-            <div className="flow-step-card" style={{ border: '1px solid var(--glass-border)', background: 'var(--bg-body)' }}>
-              <div className="flow-step-num" style={{ background: '#f59e0b' }}>2</div>
-              <span className="flow-step-title">Verification Needed</span>
-              <p className="flow-step-desc">Application enters as "Pending". Admin verifies details for security compliance.</p>
-            </div>
-            <ArrowRight size={20} className="flow-arrow-icon" />
-            <div className="flow-step-card" style={{ border: '1px solid var(--glass-border)', background: 'var(--bg-body)' }}>
-              <div className="flow-step-num" style={{ background: '#10b981' }}>3</div>
-              <span className="flow-step-title">Ledger Onboarded</span>
-              <p className="flow-step-desc">Super admin approves the agency, generating a live recruitment link.</p>
-            </div>
-          </div>
- 
-          <button className="primary flex-center gap-2" onClick={() => setShowFlowModal(true)} style={{ padding: '14px 28px', borderRadius: '14px', fontWeight: 800 }}>
-            <Plus size={18} />
-            <span>Simulate Onboard Sequence</span>
-          </button>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', opacity: 0.7 }}>
+            Agencies are registered from the mobile app and appear here for review.
+          </p>
         </div>
       ) : (
-        /* Premium Table Grid */
-        <div className="table-wrapper glass mt-6" style={{ borderRadius: '24px', border: '1px solid var(--glass-border)', padding: '8px', overflow: 'hidden' }}>
+        <div className="glass" style={{ borderRadius: 24, border: '1px solid var(--glass-border)', padding: '8px', overflow: 'hidden' }}>
           <table className="premium-table">
             <thead>
               <tr>
-                <th style={{ textAlign: 'left', width: '25%' }}>Agency Name</th>
-                <th style={{ textAlign: 'left', width: '22%' }}>Owner Details</th>
-                <th style={{ textAlign: 'center', width: '15%' }}>Agency Code</th>
-                <th style={{ textAlign: 'center', width: '14%' }}>Commission Rate</th>
-                <th style={{ textAlign: 'center', width: '12%' }}>Status</th>
-                <th style={{ textAlign: 'right', width: '12%' }}>Actions</th>
+                <th style={{ width: '24%', textAlign: 'left' }}>Agency</th>
+                <th style={{ width: '22%', textAlign: 'left' }}>Owner</th>
+                <th style={{ width: '12%', textAlign: 'center' }}>Code</th>
+                <th style={{ width: '10%', textAlign: 'center' }}>Commission</th>
+                <th style={{ width: '12%', textAlign: 'center' }}>Hosts</th>
+                <th style={{ width: '10%', textAlign: 'center' }}>Status</th>
+                <th style={{ width: '10%', textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {agencies.map((agency) => (
+              {filtered.map(agency => (
                 <tr key={agency.id} className="row-premium">
-                  <td style={{ textAlign: 'left' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  {/* Agency Name */}
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                       <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '12px',
-                        background: 'var(--input-bg)',
-                        color: 'var(--accent-primary)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 800,
-                        fontSize: '1rem',
-                        border: '1px solid var(--glass-border)'
+                        width: 40, height: 40, borderRadius: 12,
+                        background: 'var(--input-bg)', color: 'var(--accent-primary)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: 800, fontSize: '1rem', border: '1px solid var(--glass-border)',
+                        flexShrink: 0
                       }}>
-                        {agency.name ? agency.name.charAt(0).toUpperCase() : 'A'}
+                        {(agency.name || 'A').charAt(0).toUpperCase()}
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '0.95rem', lineHeight: '1.2' }}>{agency.name}</div>
-                        <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 600, marginTop: '2px' }}>
-                          Talent Network
-                        </span>
+                      <div>
+                        <div style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '0.92rem' }}>{agency.name}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                          {new Date(agency.createdAt).toLocaleDateString()}
+                        </div>
                       </div>
                     </div>
                   </td>
-                  <td style={{ textAlign: 'left' }}>
+                  {/* Owner */}
+                  <td>
                     {agency.owner ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.88rem' }}>{agency.owner.name || 'Unnamed Owner'}</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontFamily: 'monospace', fontWeight: 550 }}>
-                          {agency.owner.phone || agency.owner.email}
+                      <div>
+                        <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.88rem' }}>
+                          {agency.owner.name || 'Unnamed'}
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontFamily: 'monospace', marginTop: 2 }}>
+                          {agency.owner.phone || agency.owner.email || '—'}
                         </div>
                       </div>
                     ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        <span className="owner-id-badge" title={agency.ownerId || 'System Assigned'}>
-                          {agency.ownerId ? `${agency.ownerId.slice(0, 8)}...` : 'System Owned'}
-                        </span>
-                      </div>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>System</span>
                     )}
                   </td>
+                  {/* Code */}
                   <td style={{ textAlign: 'center' }}>
-                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                      <span className="agency-code-badge">{agency.code}</span>
-                    </div>
+                    <span className="badge-code">{agency.code}</span>
                   </td>
+                  {/* Commission */}
                   <td style={{ textAlign: 'center' }}>
-                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                      <span className="commission-badge">{(agency.commissionRate * 100).toFixed(0)}%</span>
-                    </div>
+                    <span className="badge-comm">{((agency.commissionRate || 0) * 100).toFixed(0)}%</span>
                   </td>
+                  {/* Host Count */}
                   <td style={{ textAlign: 'center' }}>
                     <div style={{ display: 'flex', justifyContent: 'center' }}>
-                      <span className={`status-neon ${agency.status}`}>
-                        {agency.status === 'pending' ? <AlertCircle size={12} /> : <ShieldCheck size={12} />}
-                        <span>{agency.status.toUpperCase()}</span>
+                      <span className="badge-hosts">
+                        <Users size={12} />
+                        {agency.approvedCount ?? 0} / {agency.hostCount ?? 0}
                       </span>
                     </div>
                   </td>
+                  {/* Status */}
+                  <td style={{ textAlign: 'center' }}>
+                    <span className={`status-pill-ag ${agency.status}`}>
+                      {agency.status === 'pending'  && <AlertCircle size={11} />}
+                      {agency.status === 'active'   && <CheckCircle  size={11} />}
+                      {agency.status === 'rejected' && <XCircle      size={11} />}
+                      {agency.status?.toUpperCase()}
+                    </span>
+                  </td>
+                  {/* Actions */}
                   <td style={{ textAlign: 'right' }}>
-                    <div className="ops-cluster" style={{ justifyContent: 'flex-end', gap: '8px' }}>
+                    <div className="ops-cluster" style={{ justifyContent: 'flex-end', gap: 8 }}>
                       {agency.status === 'pending' && canApprove ? (
                         <>
-                          <button 
-                            className="op-btn edit" 
+                          <button
+                            className="op-btn edit"
                             onClick={() => handleApprove(agency.id, 'active')}
-                            style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.15)', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
                             title="Approve Agency"
+                            style={{ borderRadius: 10, background: 'rgba(16,185,129,0.1)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)' }}
                           >
-                            <CheckCircle size={18} />
+                            <CheckCircle size={17} />
                           </button>
-                          <button 
-                            className="op-btn delete" 
+                          <button
+                            className="op-btn delete"
                             onClick={() => handleApprove(agency.id, 'rejected')}
-                            style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.15)', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
                             title="Reject Agency"
+                            style={{ borderRadius: 10, background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }}
                           >
-                            <XCircle size={18} />
+                            <XCircle size={17} />
                           </button>
                         </>
                       ) : (
-                        <button 
-                          className="op-btn edit" 
-                          style={{ opacity: 0.4, cursor: 'not-allowed', background: 'rgba(148, 163, 184, 0.05)', color: 'var(--text-secondary)', border: '1px solid var(--glass-border)', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
-                          title="Protected Node"
+                        <button
+                          className="op-btn"
                           disabled
+                          title={agency.status === 'active' ? 'Already Active' : 'Already Processed'}
+                          style={{ borderRadius: 10, opacity: 0.35, cursor: 'not-allowed' }}
                         >
-                          <ShieldCheck size={18} />
+                          <ShieldCheck size={17} />
                         </button>
                       )}
                     </div>
@@ -605,72 +429,6 @@ const AgencyHub: React.FC = () => {
               ))}
             </tbody>
           </table>
-        </div>
-      )}
- 
-      {/* Elegant Informational & Simulation Flow Modal */}
-      {showFlowModal && (
-        <div className="flow-modal-overlay">
-          <div className="flow-modal-box">
-            <div className="flex justify-between items-center" style={{ marginBottom: '24px' }}>
-              <div className="flex items-center gap-3">
-                <div style={{ background: 'rgba(59, 130, 246, 0.1)', color: 'var(--accent-primary)', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Info size={20} />
-                </div>
-                <div>
-                  <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-primary)', margin: 0 }}>Onboarding Protocol</h3>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>How talent networks join the platform</span>
-                </div>
-              </div>
-              <button 
-                onClick={() => setShowFlowModal(false)}
-                style={{ background: 'var(--input-bg)', border: 'none', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', fontWeight: 900 }}
-              >
-                ✕
-              </button>
-            </div>
- 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '28px' }}>
-              <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: '1.6', margin: 0 }}>
-                To maintain database integrity, agencies are registered directly by mobile users using their secure user profiles. Manual creation from this dashboard is disabled to protect owner associations.
-              </p>
- 
-              <div style={{ background: 'var(--bg-body)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '20px' }}>
-                <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <HelpCircle size={16} style={{ color: 'var(--accent-primary)' }} />
-                  <span>How to Register an Agency:</span>
-                </h4>
-                <ol style={{ paddingLeft: '20px', fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '8px', margin: 0 }}>
-                  <li><strong>Mobile Register</strong>: A user submits the registration form inside the mobile app.</li>
-                  <li><strong>Verification Queue</strong>: The agency immediately registers as <span style={{ color: '#f59e0b', fontWeight: 700 }}>Pending</span> and displays here.</li>
-                  <li><strong>Verification & Live Activation</strong>: A Super Admin reviews the application and clicks <span style={{ color: '#10b981', fontWeight: 700 }}>Approve</span> to assign their recruitment code.</li>
-                </ol>
-              </div>
- 
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', background: 'rgba(59, 130, 246, 0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px 16px' }}>
-                <ShieldCheck size={18} style={{ color: 'var(--accent-primary)', flexShrink: 0 }} />
-                <span style={{ fontSize: '0.75rem', color: 'var(--accent-primary)', fontWeight: 700 }}>
-                  Role Check: Standard Admins can track agency statuses, but only Super Admins can authorize approvals.
-                </span>
-              </div>
-            </div>
- 
-            <div className="flex justify-end gap-3">
-              <button className="secondary" onClick={() => setShowFlowModal(false)} style={{ padding: '10px 20px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 700 }}>
-                Dismiss
-              </button>
-              <button 
-                className="primary" 
-                onClick={() => {
-                  setShowFlowModal(false);
-                  toast.success('Ready for mobile registration payloads.');
-                }}
-                style={{ padding: '10px 20px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 700 }}
-              >
-                Acknowledge Flow
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </div>
