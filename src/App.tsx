@@ -77,13 +77,6 @@ function AppContent() {
             {/* Protected Routes */}
             {!isAuthenticated ? (
               <Route path="*" element={<AuthPage onLogin={() => setIsAuthenticated(true)} />} />
-            ) : JSON.parse(localStorage.getItem('admin_user') || '{}')?.role === 'super_admin' ? (
-              <>
-                <Route path="/" element={<Navigate to="/agents" />} />
-                <Route path="/agents" element={<AgencyHub />} />
-                <Route path="/host-registry" element={<HostRegistry />} />
-                <Route path="*" element={<Navigate to="/agents" />} />
-              </>
             ) : (
               <>
                 <Route path="/" element={<Navigate to="/dashboard" />} />
