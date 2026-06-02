@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, Mail, ShieldCheck, Save, AlertCircle, Star, Zap, Trash2, Image as ImageIcon, Plus } from 'lucide-react';
+import { X, User, Mail, ShieldCheck, Save, AlertCircle, Star, Zap, Trash2, Image as ImageIcon, Plus, Lock } from 'lucide-react';
 import { adminService } from '../services/api';
 import toast from 'react-hot-toast';
 import '../styles/Modal.css';
@@ -22,7 +22,8 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
     level: user.level || 1,
     xp: user.xp || 0,
     pattiStyle: user.pattiStyle || 'classic',
-    displayPicture: user.displayPicture || 'default_dp.png'
+    displayPicture: user.displayPicture || 'default_dp.png',
+    password: ''
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -49,6 +50,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
       const data = new FormData();
       Object.keys(formData).forEach(key => {
         const value = (formData as any)[key];
+        if (key === 'password' && !value) return; // Skip empty password field
         if (value !== undefined && value !== null) {
           data.append(key, String(value));
         }
@@ -101,6 +103,17 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
               value={formData.email}
               onChange={e => setFormData({...formData, email: e.target.value})}
               required
+            />
+          </div>
+
+          <div className="form-group" style={{ marginBottom: '20px' }}>
+            <label><Lock size={14} /> Reset Password</label>
+            <input 
+              type="password" 
+              className="admin-input" 
+              value={formData.password}
+              onChange={e => setFormData({...formData, password: e.target.value})}
+              placeholder="Leave blank to keep current password"
             />
           </div>
 
