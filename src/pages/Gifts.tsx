@@ -411,16 +411,25 @@ const Gifts: React.FC = () => {
                                 </div>
                             </div>
 
-                            <button type="submit" className="primary-glass-submit" disabled={isSubmitting}>
-                                {isSubmitting ? (
-                                    <>Processing Assets...</>
-                                ) : (
-                                    <>
-                                        {editingGift ? 'Update Digital Asset' : 'Publish Asset to Store'}
-                                        <ArrowUpRight size={18} />
-                                    </>
-                                )}
-                            </button>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="secondary-btn"
+                                    onClick={() => setIsModalOpen(false)}
+                                >
+                                    Cancel
+                                </button>
+                                <button type="submit" className="primary-btn" disabled={isSubmitting}>
+                                    {isSubmitting ? (
+                                        <>Processing Assets...</>
+                                    ) : (
+                                        <>
+                                            {editingGift ? 'Update Digital Asset' : 'Publish Asset to Store'}
+                                            <ArrowUpRight size={18} />
+                                        </>
+                                    )}
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>

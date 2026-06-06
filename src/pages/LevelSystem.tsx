@@ -333,10 +333,19 @@ const LevelSystem: React.FC = () => {
                                 </div>
                             </div>
 
-                            <button type="submit" className="primary-glass-submit">
-                                <span>{editingLevel ? 'Save Changes' : 'Publish Milestone'}</span>
-                                <ArrowUpRight size={18} />
-                            </button>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="secondary-btn"
+                                    onClick={() => setIsModalOpen(false)}
+                                >
+                                    Cancel
+                                </button>
+                                <button type="submit" className="primary-btn">
+                                    <span>{editingLevel ? 'Save Changes' : 'Publish Milestone'}</span>
+                                    <ArrowUpRight size={18} />
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>

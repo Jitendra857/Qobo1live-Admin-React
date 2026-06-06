@@ -43,10 +43,10 @@ const CoinModal: React.FC<CoinModalProps> = ({ user, onClose, onSuccess }) => {
       <div className="modal-content glass-panel slide-up coin-modal" style={{ maxWidth: '500px' }}>
         <div className="modal-header">
           <h3>Asset Injection: {user.name}</h3>
-          <button className="close-btn" onClick={onClose}><X size={20} /></button>
+          <button className="close-btn" type="button" onClick={onClose}><X size={20} /></button>
         </div>
         
-        <div style={{ marginTop: '20px' }}>
+        <div className="modal-body">
           <div className="form-group" style={{ marginBottom: '20px' }}>
             <label><ShieldAlert size={14} /> Currency Type</label>
             <select 
@@ -71,26 +71,23 @@ const CoinModal: React.FC<CoinModalProps> = ({ user, onClose, onSuccess }) => {
             />
           </div>
 
-          <div className="warning-note" style={{ 
-            marginBottom: '28px', 
-            padding: '16px', 
-            background: 'rgba(245, 158, 11, 0.05)', 
-            borderRadius: '12px',
-            border: '1px solid rgba(245, 158, 11, 0.1)',
-            display: 'flex',
-            gap: '10px',
-            alignItems: 'center',
-            color: '#d97706',
-            fontSize: '0.9rem',
-            fontWeight: 600
-          }}>
+          <div className="warning-note">
             <ShieldAlert size={18} />
             <span>This protocol is irreversible. Assets will be credited instantly.</span>
           </div>
+        </div>
 
+        <div className="modal-footer">
+          <button 
+            type="button" 
+            className="secondary-btn" 
+            onClick={onClose}
+          >
+            Cancel
+          </button>
           <button 
             onClick={handleSubmit}
-            className="primary-btn w-full flex-center gap-2" 
+            className="primary-btn" 
             disabled={loading || amount <= 0}
           >
             <Send size={18} />

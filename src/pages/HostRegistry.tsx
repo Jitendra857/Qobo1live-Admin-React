@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import '../styles/UserManagement.css';
+import '../styles/Modal.css';
 import MediaImage from '../components/MediaImage';
 import { useLayout } from '../context/LayoutContext';
 
@@ -461,22 +462,31 @@ const HostRegistry: React.FC = () => {
             </div>
 
             {/* Action Buttons */}
-            <div style={{ display:'flex', gap:10, marginTop:8 }}>
+            <div className="modal-footer" style={{ marginTop: '24px' }}>
               <button
-                className="secondary"
+                className="secondary-btn"
                 onClick={() => setSelectedApp(null)}
-                style={{ flex:1, padding:'12px', borderRadius:12, fontWeight:700 }}
-              >Close</button>
+              >
+                Cancel
+              </button>
               {selectedApp.status?.toLowerCase() === 'pending' && canApprove && (
                 <>
                   <button
-                    onClick={() => handleAction(selectedApp.id, 'APPROVED')}
-                    style={{ flex:1, padding:'12px', borderRadius:12, fontWeight:800, background:'#10b981', color:'#fff', border:'none', cursor:'pointer' }}
-                  >✅ Approve</button>
-                  <button
+                    className="primary-btn"
                     onClick={() => handleAction(selectedApp.id, 'REJECTED')}
-                    style={{ flex:1, padding:'12px', borderRadius:12, fontWeight:800, background:'#ef4444', color:'#fff', border:'none', cursor:'pointer' }}
-                  >❌ Reject</button>
+                    style={{ background: '#ef4444' }}
+                  >
+                    <XCircle size={18} />
+                    <span>Reject</span>
+                  </button>
+                  <button
+                    className="primary-btn"
+                    onClick={() => handleAction(selectedApp.id, 'APPROVED')}
+                    style={{ background: '#10b981' }}
+                  >
+                    <CheckCircle size={18} />
+                    <span>Approve</span>
+                  </button>
                 </>
               )}
             </div>

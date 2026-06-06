@@ -187,32 +187,30 @@ const VipStore: React.FC = () => {
 
       {showModal && (
         <div className="modal-overlay">
-          <div className="modal-content glass slide-up" style={{ maxWidth: '550px', padding: '40px' }}>
+          <form onSubmit={handleSave} className="modal-content wide-modal slide-up">
             <div className="modal-header">
-              <div className="flex items-center gap-4">
-                <div className="vip-badge-icon" style={{ width: '48px', height: '48px', marginBottom: 0 }}>
-                  <ShieldCheck size={24} />
-                </div>
-                <h3 style={{ fontSize: '1.75rem', fontWeight: 950, letterSpacing: '-0.03em' }}>{selectedPackage ? 'REFINE TIER' : 'PROVISION TIER'}</h3>
+              <div className="flex items-center gap-2">
+                <ShieldCheck size={20} color="var(--accent-blue)" />
+                <h3 style={{ margin: 0 }}>{selectedPackage ? 'Refine Tier' : 'Provision Tier'}</h3>
               </div>
-              <button className="close-btn" onClick={() => setShowModal(false)}><X size={20} /></button>
+              <button className="close-btn" type="button" onClick={() => setShowModal(false)}><X size={20} /></button>
             </div>
             
-            <form onSubmit={handleSave} className="mt-8">
-              <div className="form-group mb-6">
-                <label style={{ fontSize: '0.7rem', textTransform: 'uppercase', opacity: 0.6, letterSpacing: '0.1em' }}>Tier Designation</label>
-                <input 
-                  className="admin-input" 
-                  placeholder="e.g. DIAMOND PRIVILEGE"
-                  value={formData.name} 
-                  onChange={e => setFormData({...formData, name: e.target.value})}
-                  required
-                />
-              </div>
+            <div className="modal-body">
+              <div className="modal-grid-2">
+                <div className="form-group span-2" style={{ marginBottom: '0px' }}>
+                  <label>Tier Designation</label>
+                  <input 
+                    className="admin-input" 
+                    placeholder="e.g. DIAMOND PRIVILEGE"
+                    value={formData.name} 
+                    onChange={e => setFormData({...formData, name: e.target.value})}
+                    required
+                  />
+                </div>
 
-              <div className="grid grid-cols-2 gap-6 mb-6">
-                <div className="form-group">
-                  <label style={{ fontSize: '0.7rem', textTransform: 'uppercase', opacity: 0.6, letterSpacing: '0.1em' }}>Exchange Value (₹)</label>
+                <div className="form-group" style={{ marginBottom: '0px' }}>
+                  <label>Exchange Value (₹)</label>
                   <input 
                     type="number"
                     className="admin-input" 
@@ -222,8 +220,8 @@ const VipStore: React.FC = () => {
                     required
                   />
                 </div>
-                <div className="form-group">
-                  <label style={{ fontSize: '0.7rem', textTransform: 'uppercase', opacity: 0.6, letterSpacing: '0.1em' }}>Protocol Window (Days)</label>
+                <div className="form-group" style={{ marginBottom: '0px' }}>
+                  <label>Protocol Window (Days)</label>
                   <input 
                     type="number"
                     className="admin-input" 
@@ -233,66 +231,71 @@ const VipStore: React.FC = () => {
                     required
                   />
                 </div>
-              </div>
 
-              <div className="form-group mb-6">
-                <label style={{ fontSize: '0.7rem', textTransform: 'uppercase', opacity: 0.6, letterSpacing: '0.1em' }}>Tier Status</label>
-                <div className="radio-group">
-                  <label className={`radio-option ${formData.status === 'active' ? 'active active-status' : ''}`}>
+                <div className="form-group span-2" style={{ marginBottom: '0px' }}>
+                  <label>Tier Status</label>
+                  <div className="radio-group">
+                    <label className={`radio-option ${formData.status === 'active' ? 'active active-status' : ''}`}>
+                      <input 
+                        type="radio" 
+                        name="status" 
+                        value="active"
+                        checked={formData.status === 'active'}
+                        onChange={e => setFormData({...formData, status: e.target.value})}
+                        style={{ display: 'none' }}
+                      />
+                      <span>OPERATIONAL</span>
+                    </label>
+                    <label className={`radio-option ${formData.status === 'inactive' ? 'active inactive-status' : ''}`}>
+                      <input 
+                        type="radio" 
+                        name="status" 
+                        value="inactive"
+                        checked={formData.status === 'inactive'}
+                        onChange={e => setFormData({...formData, status: e.target.value})}
+                        style={{ display: 'none' }}
+                      />
+                      <span>DEACTIVATED</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="form-group span-2" style={{ marginBottom: '0px' }}>
+                  <label>Tier Privileges</label>
+                  <div className="flex gap-2">
                     <input 
-                      type="radio" 
-                      name="status" 
-                      value="active"
-                      checked={formData.status === 'active'}
-                      onChange={e => setFormData({...formData, status: e.target.value})}
-                      style={{ display: 'none' }}
+                      className="admin-input" 
+                      placeholder="e.g. GLOBAL BROADCAST ACCESS"
+                      value={benefitInput}
+                      onChange={e => setBenefitInput(e.target.value)}
+                      onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addBenefit())}
                     />
-                    <span>OPERATIONAL</span>
-                  </label>
-                  <label className={`radio-option ${formData.status === 'inactive' ? 'active inactive-status' : ''}`}>
-                    <input 
-                      type="radio" 
-                      name="status" 
-                      value="inactive"
-                      checked={formData.status === 'inactive'}
-                      onChange={e => setFormData({...formData, status: e.target.value})}
-                      style={{ display: 'none' }}
-                    />
-                    <span>DEACTIVATED</span>
-                  </label>
+                    <button type="button" className="primary-btn" onClick={addBenefit} style={{ padding: '0 12px' }}>
+                      <Plus size={20} />
+                    </button>
+                  </div>
+                  <div className="form-privileges-list">
+                    {formData.benefits.map((b, i) => (
+                      <div key={i} className="form-benefit-pill">
+                        <span>{b}</span>
+                        <X size={14} className="cursor-pointer" onClick={() => removeBenefit(i)} />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
+            </div>
 
-              <div className="form-group mb-8">
-                <label style={{ fontSize: '0.7rem', textTransform: 'uppercase', opacity: 0.6, letterSpacing: '0.1em' }}>Tier Privileges</label>
-                <div className="flex gap-2">
-                  <input 
-                    className="admin-input" 
-                    placeholder="e.g. GLOBAL BROADCAST ACCESS"
-                    value={benefitInput}
-                    onChange={e => setBenefitInput(e.target.value)}
-                    onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addBenefit())}
-                  />
-                  <button type="button" className="primary" onClick={addBenefit} style={{ width: '56px', padding: 0, borderRadius: '12px' }}>
-                    <Plus size={24} />
-                  </button>
-                </div>
-                <div className="form-privileges-list">
-                  {formData.benefits.map((b, i) => (
-                    <div key={i} className="form-benefit-pill">
-                      <span>{b}</span>
-                      <X size={14} className="cursor-pointer" onClick={() => removeBenefit(i)} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <button type="submit" className="primary w-full flex items-center justify-center gap-3" style={{ padding: '20px', borderRadius: '16px', fontSize: '1rem', fontWeight: 950 }}>
-                <Save size={24} />
-                <span>{selectedPackage ? 'COMMIT CHANGES' : 'INITIALIZE TIER'}</span>
+            <div className="modal-footer">
+              <button type="button" className="secondary-btn" onClick={() => setShowModal(false)}>
+                Cancel
               </button>
-            </form>
-          </div>
+              <button type="submit" className="primary-btn">
+                <Save size={18} />
+                <span>{selectedPackage ? 'Save Changes' : 'Initialize Tier'}</span>
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </div>

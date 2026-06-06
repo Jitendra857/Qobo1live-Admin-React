@@ -77,88 +77,92 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
 
   return (
     <div className="modal-overlay edit-user-overlay">
-      <div className="modal-content glass-panel slide-up edit-user-modal" style={{ maxWidth: '500px' }}>
+      <form 
+        onSubmit={handleSubmit} 
+        className="modal-content glass-panel slide-up edit-user-modal" 
+        style={{ maxWidth: '500px' }}
+      >
         <div className="modal-header">
           <h3>Modify Account: {user.name}</h3>
-          <button className="close-btn" onClick={onClose}><X size={20} /></button>
+          <button className="close-btn" type="button" onClick={onClose}><X size={20} /></button>
         </div>
         
-        <form onSubmit={handleSubmit} style={{ marginTop: '20px' }}>
-          <div className="form-group" style={{ marginBottom: '20px' }}>
-            <label><User size={14} /> Name</label>
-            <input 
-              type="text" 
-              className="admin-input" 
-              value={formData.name}
-              onChange={e => setFormData({...formData, name: e.target.value})}
-              required
-            />
-          </div>
-
-          <div className="form-group" style={{ marginBottom: '20px' }}>
-            <label><Mail size={14} /> Email</label>
-            <input 
-              type="email" 
-              className="admin-input" 
-              value={formData.email}
-              onChange={e => setFormData({...formData, email: e.target.value})}
-              required
-            />
-          </div>
-
-          <div className="form-group" style={{ marginBottom: '20px' }}>
-            <label><Lock size={14} /> Reset Password</label>
-            <input 
-              type="password" 
-              className="admin-input" 
-              value={formData.password}
-              onChange={e => setFormData({...formData, password: e.target.value})}
-              placeholder="Leave blank to keep current password"
-            />
-          </div>
-
-          <div className="form-group" style={{ marginBottom: '20px' }}>
-            <label><AlertCircle size={14} /> Account Status</label>
-            <div className="radio-group">
-              <label className="radio-option">
-                <input 
-                  type="radio" 
-                  name="status" 
-                  value="active"
-                  checked={formData.status === 'active'}
-                  onChange={e => setFormData({...formData, status: e.target.value})}
-                />
-                <span>Active (1)</span>
-              </label>
-              <label className="radio-option">
-                <input 
-                  type="radio" 
-                  name="status" 
-                  value="suspended"
-                  checked={formData.status === 'suspended'}
-                  onChange={e => setFormData({...formData, status: e.target.value})}
-                />
-                <span>Inactive (0)</span>
-              </label>
+        <div className="modal-body">
+          <div className="modal-grid-2">
+            <div className="form-group" style={{ marginBottom: '0px' }}>
+              <label><User size={14} /> Name</label>
+              <input 
+                type="text" 
+                className="admin-input" 
+                value={formData.name}
+                onChange={e => setFormData({...formData, name: e.target.value})}
+                required
+              />
             </div>
-          </div>
 
-          <div className="form-group" style={{ marginBottom: '20px' }}>
-            <label><ShieldCheck size={14} /> Role</label>
-            <select 
-              className="admin-input"
-              value={formData.role}
-              onChange={e => setFormData({...formData, role: e.target.value})}
-            >
-              <option value="user">User</option>
-              <option value="host">Host</option>
-              <option value="admin">Admin</option>
-              <option value="super_admin">Super Admin</option>
-            </select>
-          </div>
+            <div className="form-group" style={{ marginBottom: '0px' }}>
+              <label><Mail size={14} /> Email</label>
+              <input 
+                type="email" 
+                className="admin-input" 
+                value={formData.email}
+                onChange={e => setFormData({...formData, email: e.target.value})}
+                required
+              />
+            </div>
 
-          <div className="grid grid-cols-2 gap-4" style={{ marginBottom: '28px' }}>
-            <div className="form-group">
+            <div className="form-group" style={{ marginBottom: '0px' }}>
+              <label><Lock size={14} /> Reset Password</label>
+              <input 
+                type="password" 
+                className="admin-input" 
+                value={formData.password}
+                onChange={e => setFormData({...formData, password: e.target.value})}
+                placeholder="Leave blank to keep current password"
+              />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '0px' }}>
+              <label><ShieldCheck size={14} /> Role</label>
+              <select 
+                className="admin-input"
+                value={formData.role}
+                onChange={e => setFormData({...formData, role: e.target.value})}
+              >
+                <option value="user">User</option>
+                <option value="host">Host</option>
+                <option value="admin">Admin</option>
+                <option value="super_admin">Super Admin</option>
+              </select>
+            </div>
+
+            <div className="form-group span-2" style={{ marginBottom: '0px' }}>
+              <label><AlertCircle size={14} /> Account Status</label>
+              <div className="radio-group">
+                <label className="radio-option">
+                  <input 
+                    type="radio" 
+                    name="status" 
+                    value="active"
+                    checked={formData.status === 'active'}
+                    onChange={e => setFormData({...formData, status: e.target.value})}
+                  />
+                  <span>Active (1)</span>
+                </label>
+                <label className="radio-option">
+                  <input 
+                    type="radio" 
+                    name="status" 
+                    value="suspended"
+                    checked={formData.status === 'suspended'}
+                    onChange={e => setFormData({...formData, status: e.target.value})}
+                  />
+                  <span>Inactive (0)</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '0px' }}>
               <label><Star size={14} /> Level</label>
               <input 
                 type="number" 
@@ -167,7 +171,8 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
                 onChange={e => setFormData({...formData, level: Number(e.target.value)})}
               />
             </div>
-            <div className="form-group">
+
+            <div className="form-group" style={{ marginBottom: '0px' }}>
               <label><Zap size={14} /> XP Points</label>
               <input 
                 type="number" 
@@ -176,74 +181,83 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
                 onChange={e => setFormData({...formData, xp: Number(e.target.value)})}
               />
             </div>
-          </div>
 
-          <div className="form-group" style={{ marginBottom: '28px' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              <ImageIcon size={14} /> Profile Identity
-            </label>
-            <div className="flex items-center gap-6 mt-4 p-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <div className="relative group">
-                <MediaImage 
-                  src={selectedFile ? URL.createObjectURL(selectedFile) : formData.displayPicture} 
-                  className="avatar-glass shadow-2xl" 
-                  style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '20px', border: '2px solid var(--accent-blue)' }}
-                  fallbackText={formData.name?.[0] || 'U'}
-                />
-                {selectedFile && (
-                  <div className="absolute -top-2 -right-2 bg-blue-500 rounded-full p-1 shadow-lg animate-bounce">
-                    <Save size={10} color="white" />
-                  </div>
-                )}
-              </div>
-              
-              <div className="flex flex-col gap-3 flex-1">
-                <div className="flex gap-2">
-                  <label 
-                    className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
-                    style={{ background: 'var(--accent-blue)', color: 'white', fontSize: '0.8rem', fontWeight: 700 }}
-                  >
-                    <Plus size={14} /> Change Photo
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={handleFileChange}
-                      className="hidden"
-                    />
-                  </label>
-                  
-                  {(selectedFile || (formData.displayPicture && formData.displayPicture !== 'default_dp.png')) && (
-                    <button 
-                      type="button" 
-                      className="p-2.5 rounded-xl transition-all hover:bg-red-500/20 hover:scale-[1.02] active:scale-[0.98]"
-                      style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)' }}
-                      onClick={() => {
-                        setSelectedFile(null);
-                        setFormData({...formData, displayPicture: 'default_dp.png'});
-                      }}
-                      title="Remove current image"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+            <div className="form-group span-2" style={{ marginBottom: '0px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <ImageIcon size={14} /> Profile Identity
+              </label>
+              <div className="flex items-center gap-6 mt-4 p-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div className="relative group">
+                  <MediaImage 
+                    src={selectedFile ? URL.createObjectURL(selectedFile) : formData.displayPicture} 
+                    className="avatar-glass shadow-2xl" 
+                    style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '20px', border: '2px solid var(--accent-blue)' }}
+                    fallbackText={formData.name?.[0] || 'U'}
+                  />
+                  {selectedFile && (
+                    <div className="absolute -top-2 -right-2 bg-blue-500 rounded-full p-1 shadow-lg animate-bounce">
+                      <Save size={10} color="white" />
+                    </div>
                   )}
                 </div>
-                <p style={{ fontSize: '0.65rem', opacity: 0.5, fontWeight: 600 }}>
-                  {selectedFile ? `New file: ${selectedFile.name}` : 'PNG, JPG or WebP. Max 5MB.'}
-                </p>
+                
+                <div className="flex flex-col gap-3 flex-1">
+                  <div className="flex gap-2">
+                    <label 
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
+                      style={{ background: 'var(--accent-blue)', color: 'white', fontSize: '0.8rem', fontWeight: 700 }}
+                    >
+                      <Plus size={14} /> Change Photo
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
+                    </label>
+                    
+                    {(selectedFile || (formData.displayPicture && formData.displayPicture !== 'default_dp.png')) && (
+                      <button 
+                        type="button" 
+                        className="p-2.5 rounded-xl transition-all hover:bg-red-500/20 hover:scale-[1.02] active:scale-[0.98]"
+                        style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)' }}
+                        onClick={() => {
+                          setSelectedFile(null);
+                          setFormData({...formData, displayPicture: 'default_dp.png'});
+                        }}
+                        title="Remove current image"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    )}
+                  </div>
+                  <p style={{ fontSize: '0.65rem', opacity: 0.5, fontWeight: 600 }}>
+                    {selectedFile ? `New file: ${selectedFile.name}` : 'PNG, JPG or WebP. Max 5MB.'}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
+        </div>
 
+        <div className="modal-footer">
+          <button 
+            type="button" 
+            className="secondary-btn" 
+            onClick={onClose}
+          >
+            Cancel
+          </button>
           <button 
             type="submit" 
-            className="primary-btn w-full flex-center gap-2" 
+            className="primary-btn" 
             disabled={loading}
           >
             <Save size={18} />
             <span>{loading ? 'Synchronizing...' : 'Save Changes'}</span>
           </button>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   );
 };

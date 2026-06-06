@@ -414,14 +414,35 @@ const AgencyHub: React.FC = () => {
                           </button>
                         </>
                       ) : (
-                        <button
-                          className="op-btn"
-                          disabled
-                          title={agency.status === 'active' ? 'Already Active' : 'Already Processed'}
-                          style={{ borderRadius: 10, opacity: 0.35, cursor: 'not-allowed' }}
-                        >
-                          <ShieldCheck size={17} />
-                        </button>
+                        agency.status === 'active' ? (
+                          <button
+                            className="op-btn edit"
+                            onClick={async () => {
+                              try {
+                                const res = await adminService.getAgencyLink(agency.id);
+                                if (res.data.statusCode === 1) {
+                                  await navigator.clipboard.writeText(res.data.data.link);
+                                  toast.success('Recruitment link copied to clipboard!');
+                                }
+                              } catch (err) {
+                                toast.error('Failed to get recruitment link');
+                              }
+                            }}
+                            title="Copy Recruitment Link"
+                            style={{ borderRadius: 10, background: 'rgba(59,130,246,0.1)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.2)' }}
+                          >
+                            <Link2 size={17} />
+                          </button>
+                        ) : (
+                          <button
+                            className="op-btn"
+                            disabled
+                            title="Already Processed"
+                            style={{ borderRadius: 10, opacity: 0.35, cursor: 'not-allowed' }}
+                          >
+                            <ShieldCheck size={17} />
+                          </button>
+                        )
                       )}
                     </div>
                   </td>

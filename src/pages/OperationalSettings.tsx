@@ -176,11 +176,11 @@ const OperationalSettings: React.FC = () => {
                 </select>
               </div>
 
-              <div style={{ display: 'flex', gap: '12px', marginTop: '10px', justifyContent: 'flex-end' }}>
-                <button type="button" className="btn-cancel" onClick={() => setIsModalOpen(false)} style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', background: 'transparent', color: '#94a3b8', cursor: 'pointer' }}>
+              <div className="modal-footer" style={{ marginTop: '24px' }}>
+                <button type="button" className="secondary-btn" onClick={() => setIsModalOpen(false)}>
                   Cancel
                 </button>
-                <button type="submit" className="primary" style={{ padding: '10px 20px', borderRadius: '8px', background: 'var(--accent-blue)', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 700 }}>
+                <button type="submit" className="primary-btn">
                   Publish Banner
                 </button>
               </div>

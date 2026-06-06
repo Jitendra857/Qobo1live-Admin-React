@@ -69,6 +69,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
       subItems: [
         { title: 'Agencies', path: '/agents' },
         { title: 'Hosts',    path: '/host-registry' },
+        { title: 'Performance Tracker', path: '/performance-tracking' },
       ],
     },
 

@@ -28,7 +28,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
   return (
     <div className="modal-overlay confirmation-overlay">
-      <div className="modal-content glass-card slide-up confirmation-modal" style={{ maxWidth: '450px' }}>
+      <div className="modal-content glass-panel slide-up confirmation-modal" style={{ maxWidth: '450px' }}>
         <div className={`alert-icon-wrap ${type}`}>
           <AlertCircle size={40} />
         </div>
@@ -36,7 +36,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         <h3>{title}</h3>
         <p>{message}</p>
         
-        <div className="modal-actions">
+        <div className="modal-footer" style={{ marginTop: '24px' }}>
           <button className="secondary-btn" onClick={onClose}>
             {cancelText}
           </button>

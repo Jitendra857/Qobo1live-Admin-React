@@ -473,43 +473,123 @@ const AudioRoomManager: React.FC = () => {
 
       {/* Create Room Tab */}
       {activeTab === 'create' && (
-        <div className="bento-card wide mt-8 fade-in">
-          <div className="card-top mb-6">
-            <h3 style={{ fontWeight: 900, fontSize: '1.3rem' }}>Create New Audio Room</h3>
-          </div>
-          <form className="grid grid-cols-2 gap-6">
-            <div className="form-group">
-              <label>Room Title</label>
-              <input className="admin-input" placeholder="Enter room title..." required />
+        <div style={{ background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)', borderRadius: '16px', padding: '32px', border: '1px solid #e2e8f0', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05)', marginTop: '30px' }} className="fade-in">
+          <div className="card-top" style={{ marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <button 
+                type="button"
+                onClick={() => setActiveTab('live')}
+                style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b', transition: 'all 0.2s' }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#e2e8f0'; e.currentTarget.style.color = '#0f172a'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#64748b'; }}
+                title="Go Back"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+              </button>
+              <div>
+                <h3 style={{ fontWeight: 900, fontSize: '1.4rem', color: '#0f172a' }}>Launch Audio Matrix</h3>
+                <p style={{ color: '#64748b', fontSize: '0.9rem', marginTop: '4px' }}>Configure new broadcasting environment</p>
+              </div>
             </div>
-            <div className="form-group">
-              <label>Max Seats</label>
-              <select className="admin-input">
-                <option value={8}>8 Seats (Standard)</option>
-                <option value={16}>16 Seats (Extended)</option>
+            <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '12px', borderRadius: '12px', color: '#3b82f6' }}>
+              <Play size={24} />
+            </div>
+          </div>
+
+          <form style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Room Title</label>
+              <input 
+                style={{ padding: '14px 16px', borderRadius: '10px', border: '1px solid #cbd5e1', background: '#fff', color: '#0f172a', fontSize: '1rem', outline: 'none', transition: 'all 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}
+                placeholder="Enter room title..." 
+                required 
+                onFocus={(e) => { e.target.style.borderColor = '#3b82f6'; e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)'; }}
+                onBlur={(e) => { e.target.style.borderColor = '#cbd5e1'; e.target.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.02)'; }}
+              />
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Max Capacity</label>
+              <select 
+                style={{ padding: '14px 16px', borderRadius: '10px', border: '1px solid #cbd5e1', background: '#fff', color: '#0f172a', fontSize: '1rem', outline: 'none', cursor: 'pointer', appearance: 'none' }}
+                onFocus={(e) => { e.target.style.borderColor = '#3b82f6'; e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)'; }}
+                onBlur={(e) => { e.target.style.borderColor = '#cbd5e1'; e.target.style.boxShadow = 'none'; }}
+              >
+                <option value={8}>8 Seats (Standard Configuration)</option>
+                <option value={16}>16 Seats (Extended Matrix)</option>
               </select>
             </div>
-            <div className="form-group">
-              <label>Room Type</label>
-              <div className="radio-group mt-2">
-                <label className="radio-option">
-                  <input type="radio" name="createRoomType" value="public" defaultChecked />
-                  <span>Public (1)</span>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Environment Type</label>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <label style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', padding: '12px', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '10px', cursor: 'pointer' }}>
+                  <input type="radio" name="createRoomType" value="public" defaultChecked style={{ width: '18px', height: '18px', accentColor: '#3b82f6' }} />
+                  <span style={{ fontWeight: 600, color: '#334155' }}>Public</span>
                 </label>
-                <label className="radio-option">
-                  <input type="radio" name="createRoomType" value="private" />
-                  <span>Private (0)</span>
+                <label style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', padding: '12px', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '10px', cursor: 'pointer' }}>
+                  <input type="radio" name="createRoomType" value="private" style={{ width: '18px', height: '18px', accentColor: '#3b82f6' }} />
+                  <span style={{ fontWeight: 600, color: '#334155' }}>Private</span>
                 </label>
               </div>
             </div>
-            <div className="form-group">
-              <label>Password (Optional)</label>
-              <input className="admin-input" type="password" placeholder="Leave empty for no password" />
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Access Key (Optional)</label>
+              <input 
+                type="password" 
+                style={{ padding: '14px 16px', borderRadius: '10px', border: '1px solid #cbd5e1', background: '#fff', color: '#0f172a', fontSize: '1rem', outline: 'none', transition: 'all 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}
+                placeholder="Leave blank for open access"
+                onFocus={(e) => { e.target.style.borderColor = '#3b82f6'; e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)'; }}
+                onBlur={(e) => { e.target.style.borderColor = '#cbd5e1'; e.target.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.02)'; }}
+              />
             </div>
-            <div className="col-span-2">
-              <button type="button" className="primary-btn w-full flex-center gap-2" style={{ padding: '16px' }}>
-                <Play size={20} />
-                Create & Launch Room
+
+            <div style={{ gridColumn: 'span 2', marginTop: '16px', display: 'flex', justifyContent: 'flex-end', gap: '16px' }}>
+              <button 
+                type="button" 
+                onClick={() => setActiveTab('live')}
+                style={{ 
+                  padding: '12px 24px', 
+                  borderRadius: '10px', 
+                  background: '#f1f5f9', 
+                  color: '#475569', 
+                  border: 'none', 
+                  fontWeight: 700, 
+                  fontSize: '1rem', 
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#e2e8f0'; e.currentTarget.style.color = '#0f172a'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#475569'; }}
+              >
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                style={{ 
+                  padding: '12px 32px', 
+                  borderRadius: '10px', 
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', 
+                  color: 'white', 
+                  border: 'none', 
+                  fontWeight: 700, 
+                  fontSize: '1rem', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '8px',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 15px -3px rgba(37, 99, 235, 0.3)',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                onClick={() => {
+                  toast.success('Audio matrix launched successfully!');
+                  setActiveTab('live');
+                }}
+              >
+                <Activity size={18} /> Launch Matrix
               </button>
             </div>
           </form>

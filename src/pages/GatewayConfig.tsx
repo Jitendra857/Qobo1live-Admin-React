@@ -269,11 +269,11 @@ const GatewayConfig: React.FC = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="modal-footer" style={{ padding: '24px 32px', background: '#f8fafc', borderTop: '1px solid #f1f5f9', display: 'flex', gap: '16px' }}>
-                            <button className="secondary flex-1" onClick={() => setIsModalOpen(false)} style={{ height: '48px', fontWeight: 800 }}>
-                                Cancel Action
+                        <div className="modal-footer" style={{ marginTop: '24px' }}>
+                            <button className="secondary-btn" onClick={() => setIsModalOpen(false)}>
+                                Cancel
                             </button>
-                            <button className="primary flex-1" onClick={handleSave} style={{ height: '48px', fontWeight: 800, background: '#4e73df' }}>
+                            <button className="primary-btn" onClick={handleSave}>
                                 Deploy Gateway
                             </button>
                         </div>

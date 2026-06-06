@@ -309,7 +309,7 @@ const Economy: React.FC = () => {
                     value={type} 
                     onChange={(e) => setType(e.target.value as 'COINS' | 'DIAMONDS')} 
                     className="admin-input"
-                    style={{ width: '100%', background: '#1e1e1e', color: '#fff' }}
+                    style={{ width: '100%' }}
                   >
                     <option value="COINS">COINS</option>
                     <option value="DIAMONDS">DIAMONDS</option>
@@ -323,7 +323,7 @@ const Economy: React.FC = () => {
                     value={status} 
                     onChange={(e) => setStatus(e.target.value)} 
                     className="admin-input"
-                    style={{ width: '100%', background: '#1e1e1e', color: '#fff' }}
+                    style={{ width: '100%' }}
                   >
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>

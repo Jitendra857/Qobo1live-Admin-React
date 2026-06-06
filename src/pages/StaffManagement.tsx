@@ -382,11 +382,11 @@ const StaffManagement: React.FC = () => {
                 </select>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t">
-                <button type="button" className="secondary" onClick={() => setIsModalOpen(false)} style={{ borderRadius: '0px' }}>
+              <div className="modal-footer" style={{ marginTop: '24px' }}>
+                <button type="button" className="secondary-btn" onClick={() => setIsModalOpen(false)}>
                   Cancel
                 </button>
-                <button type="submit" className="primary" style={{ borderRadius: '0px' }}>
+                <button type="submit" className="primary-btn">
                   {modalMode === 'create' ? 'Initialize Staff' : 'Apply Changes'}
                 </button>
               </div>
@@ -411,11 +411,11 @@ const StaffManagement: React.FC = () => {
               You are about to permanently purge the administrative credentials for <strong>{adminToDelete.name}</strong> ({adminToDelete.email}). This action is irreversible.
             </p>
 
-            <div className="flex justify-center gap-3 pt-4 border-t">
-              <button className="secondary" onClick={() => setAdminToDelete(null)} style={{ borderRadius: '0px' }}>
+            <div className="modal-footer" style={{ marginTop: '24px' }}>
+              <button className="secondary-btn" onClick={() => setAdminToDelete(null)}>
                 Retain Access
               </button>
-              <button className="primary" onClick={handleDeleteAdmin} style={{ borderRadius: '0px', background: '#ef4444', borderColor: '#ef4444' }}>
+              <button className="primary-btn" onClick={handleDeleteAdmin} style={{ background: '#ef4444', borderColor: '#ef4444' }}>
                 Revoke & Delete
               </button>
             </div>

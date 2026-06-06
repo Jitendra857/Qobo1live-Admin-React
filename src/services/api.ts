@@ -122,7 +122,8 @@ export const adminService = {
   // Agency Extensions
   getAgencyRevenue: () => api.get('/agency/revenue'),
   getGlobalAgencyStats: () => api.get('/admin/agency-stats'),
-  payoutAgency: (data: { agencyId: string }) => api.post('/agency/payout', data),
+  payoutAgency: (data: { agencyId: string }) => api.post('/admin/agency-payout', data),
+  getAgencyLink: (agencyId: string) => api.get(`/admin/agency-link?agency_id=${agencyId}`),
 
   // PK & Dating
   getPKStatus: (battleId: string) => api.get(`/pk/status?battle_id=${battleId}`),

@@ -30,6 +30,7 @@ import Localization from './pages/ops/Localization';
 import LevelSystem from './pages/LevelSystem';
 import GatewayConfig from './pages/GatewayConfig';
 import SimulationManager from './pages/SimulationManager';
+import PerformanceTracking from './pages/PerformanceTracking';
 import './styles/global.css';
 
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -90,6 +91,7 @@ function AppContent() {
                 <Route path="/coin-seller-forms" element={<SellerManager />} />
                 <Route path="/agents" element={<AgencyHub />} />
                 <Route path="/host-registry" element={<HostRegistry />} />
+                <Route path="/performance-tracking" element={<PerformanceTracking />} />
                 <Route path="/pk-battles" element={<PKBattleManager />} />
                 <Route path="/support" element={<SupportDesk />} />
                 <Route path="/withdrawals" element={<Withdrawals />} />

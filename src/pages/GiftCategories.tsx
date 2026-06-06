@@ -182,14 +182,23 @@ const GiftCategories: React.FC = () => {
                                 />
                             </div>
 
-                            <button 
-                                type="submit" 
-                                className="primary-btn w-full flex-center gap-2" 
-                                disabled={isSubmitting}
-                            >
-                                <Check size={20} />
-                                <span>{isSubmitting ? 'Synchronizing...' : (editingCategory ? 'Commit Changes' : 'Confirm Creation')}</span>
-                            </button>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="secondary-btn"
+                                    onClick={() => setIsModalOpen(false)}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="primary-btn w-full flex-center gap-2"
+                                    disabled={isSubmitting}
+                                >
+                                    <Check size={20} />
+                                    <span>{isSubmitting ? 'Synchronizing...' : (editingCategory ? 'Commit Changes' : 'Confirm Creation')}</span>
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
