@@ -145,6 +145,10 @@ export const adminService = {
   getGateways: () => api.get('/admin/gateway-list'),
   manageGateway: (action: string, data: any, id?: string) => 
     api.post(`/admin/gateway-action?action=${action}${id ? `&id=${id}` : ''}`, data),
+
+  // Tracking
+  getAgencyTracking: () => api.get('/admin/agency-tracking'),
+  getHostTracking: () => api.get('/admin/host-tracking'),
 };
 
 export default api;
