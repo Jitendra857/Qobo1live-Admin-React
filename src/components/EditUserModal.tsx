@@ -107,7 +107,6 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
                 className="admin-input" 
                 value={formData.email}
                 onChange={e => setFormData({...formData, email: e.target.value})}
-                required
               />
             </div>
 

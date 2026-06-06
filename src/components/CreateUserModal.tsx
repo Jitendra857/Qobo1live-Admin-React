@@ -99,7 +99,6 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onSuccess })
                 type="email" 
                 className="admin-input" 
                 placeholder="user@qobo1.com"
-                required
                 value={formData.email}
                 onChange={e => setFormData({...formData, email: e.target.value})}
               />
