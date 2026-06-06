@@ -6,9 +6,8 @@ const isLocalhost = typeof window !== 'undefined' &&
    window.location.hostname === '127.0.0.1' || 
    window.location.hostname.startsWith('192.168.'));
 
-export const BACKEND_URL = isLocalhost 
-  ? (import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000')
-  : 'https://my-backend-api-960q.onrender.com';
+// Always point to the live backend for testing, since local backend isn't running
+export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://my-backend-api-960q.onrender.com';
 
 const api = axios.create({
   baseURL: `${BACKEND_URL}/api`,
