@@ -93,6 +93,64 @@ const AdvancedSettings: React.FC = () => {
           </div>
         </div>
 
+        <div className="bento-card wide">
+          <div className="card-top">
+            <div className="card-label">SYSTEM CONFIGURATION (COMMISSIONS & CALL RATES)</div>
+            <div className="card-icon-wrap" style={{ color: 'var(--accent-orange)' }}>
+              <Settings size={24} />
+            </div>
+          </div>
+          <div className="card-bottom" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginTop: '10px' }}>
+            <div className="form-group">
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>GIFT COMMISSION RATE (%)</label>
+              <input type="number" value={settings.gift_commission_rate || ''} onChange={(e) => setSettings({...settings, gift_commission_rate: e.target.value})} onBlur={() => handleUpdate('gift_commission_rate', settings.gift_commission_rate)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '12px', borderRadius: '12px', color: 'var(--text-primary)' }} placeholder="e.g. 20" />
+            </div>
+            <div className="form-group">
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>CALL COIN RATE (COINS/SEC)</label>
+              <input type="number" value={settings.call_coin_per_second || ''} onChange={(e) => setSettings({...settings, call_coin_per_second: e.target.value})} onBlur={() => handleUpdate('call_coin_per_second', settings.call_coin_per_second)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '12px', borderRadius: '12px', color: 'var(--text-primary)' }} placeholder="e.g. 2" />
+            </div>
+            <div className="form-group">
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>CALL COMMISSION RATE (%)</label>
+              <input type="number" value={settings.call_commission_rate || ''} onChange={(e) => setSettings({...settings, call_commission_rate: e.target.value})} onBlur={() => handleUpdate('call_commission_rate', settings.call_commission_rate)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '12px', borderRadius: '12px', color: 'var(--text-primary)' }} placeholder="e.g. 50" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bento-card wide">
+          <div className="card-top">
+            <div className="card-label">WITHDRAWAL SYSTEM SETTINGS</div>
+            <div className="card-icon-wrap" style={{ color: 'var(--accent-green)' }}>
+              <CreditCard size={24} />
+            </div>
+          </div>
+          <div className="card-bottom" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginTop: '10px' }}>
+            <div className="form-group">
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>WITHDRAWAL TIERS (USD, JSON ARRAY)</label>
+              <input type="text" value={Array.isArray(settings.withdrawal_tiers) ? JSON.stringify(settings.withdrawal_tiers) : (settings.withdrawal_tiers || '')} onChange={(e) => setSettings({...settings, withdrawal_tiers: e.target.value})} onBlur={() => {
+                try {
+                  const val = typeof settings.withdrawal_tiers === 'string' ? JSON.parse(settings.withdrawal_tiers) : settings.withdrawal_tiers;
+                  handleUpdate('withdrawal_tiers', val);
+                } catch(err) {
+                  toast.error('Invalid JSON Array format for withdrawal tiers');
+                }
+              }} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '12px', borderRadius: '12px', color: 'var(--text-primary)' }} placeholder="e.g. [10,50,100,500]" />
+            </div>
+            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>WEEKLY CYCLE RESTRICTION</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{settings.withdrawal_weekly_only ? 'WEEKLY ONLY' : 'UNRESTRICTED'}</span>
+                <button 
+                  className="primary" 
+                  style={{ padding: '8px 16px', background: settings.withdrawal_weekly_only ? '#ef4444' : '#10b981' }}
+                  onClick={() => handleUpdate('withdrawal_weekly_only', !settings.withdrawal_weekly_only)}
+                >
+                  {settings.withdrawal_weekly_only ? 'DISABLE LIMIT' : 'ENABLE WEEKLY LIMIT'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="bento-card">
           <div className="card-top">
             <div className="card-label">MAINTENANCE</div>
