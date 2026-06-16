@@ -3,6 +3,7 @@ import { adminService } from '../services/api';
 import { Package, TrendingUp, Wallet, ArrowUpRight, History, Edit, Trash2, X, Sparkles } from 'lucide-react';
 import '../styles/UserManagement.css';
 import toast from 'react-hot-toast';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const Economy: React.FC = () => {
   const [packages, setPackages] = useState<any[]>([]);
@@ -20,6 +21,8 @@ const Economy: React.FC = () => {
   const [type, setType] = useState<'COINS' | 'DIAMONDS'>('COINS');
   const [status, setStatus] = useState('active');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
   const fetchData = async () => {
     try {
@@ -99,8 +102,12 @@ const Economy: React.FC = () => {
     }
   };
 
-  const handleDeletePackage = async (id: string) => {
-    if (!window.confirm('Are you sure you want to permanently decommission this store package?')) return;
+  const handleDeletePackage = (id: string) => {
+    setDeleteTargetId(id);
+    setShowConfirmDelete(true);
+  };
+
+  const executeDeletePackage = async (id: string) => {
     try {
       await adminService.managePackage('delete', {}, id);
       toast.success('Store package decommissioned');
@@ -240,22 +247,24 @@ const Economy: React.FC = () => {
       {/* Package Provision / configuration modal */}
       {isModalOpen && (
         <div className="modal-overlay">
-          <div className="modal-content" style={{ borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'var(--bg-glass)', backdropFilter: 'blur(20px)', padding: '30px', maxWidth: '500px', width: '90%' }}>
-            <div className="flex justify-between items-center mb-20">
-              <h3 style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Sparkles size={22} className="text-blue-400" />
+          <form 
+            onSubmit={handleFormSubmit}
+            className="modal-content glass-panel slide-up edit-user-modal" 
+            style={{ maxWidth: '500px' }}
+          >
+            <div className="modal-header">
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Sparkles size={18} className="text-blue-500" />
                 <span>{modalMode === 'create' ? 'Provision Store Package' : 'Edit Package Specs'}</span>
               </h3>
-              <button onClick={() => setIsModalOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+              <button className="close-btn" type="button" onClick={() => setIsModalOpen(false)}>
                 <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleFormSubmit}>
-              <div className="form-group mb-20">
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>
-                  Package Nomenclature
-                </label>
+            <div className="modal-body">
+              <div className="form-group" style={{ marginBottom: '0px' }}>
+                <label>Package Nomenclature</label>
                 <input 
                   type="text" 
                   value={name} 
@@ -263,15 +272,12 @@ const Economy: React.FC = () => {
                   placeholder="e.g. Premium Diamond Chest"
                   required
                   className="admin-input"
-                  style={{ width: '100%' }}
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }} className="mb-20">
-                <div className="form-group">
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>
-                    Asset Quantity
-                  </label>
+              <div className="modal-grid-2">
+                <div className="form-group" style={{ marginBottom: '0px' }}>
+                  <label>Asset Quantity</label>
                   <input 
                     type="number" 
                     value={amount || ''} 
@@ -280,13 +286,10 @@ const Economy: React.FC = () => {
                     required
                     min="1"
                     className="admin-input"
-                    style={{ width: '100%' }}
                   />
                 </div>
-                <div className="form-group">
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>
-                    Cost Price (₹ INR)
-                  </label>
+                <div className="form-group" style={{ marginBottom: '0px' }}>
+                  <label>Cost Price (₹ INR)</label>
                   <input 
                     type="number" 
                     value={price || ''} 
@@ -295,53 +298,74 @@ const Economy: React.FC = () => {
                     required
                     min="1"
                     className="admin-input"
-                    style={{ width: '100%' }}
                   />
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }} className="mb-30">
-                <div className="form-group">
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>
-                    Asset Category
-                  </label>
+              <div className="modal-grid-2">
+                <div className="form-group" style={{ marginBottom: '0px' }}>
+                  <label>Asset Category</label>
                   <select 
                     value={type} 
                     onChange={(e) => setType(e.target.value as 'COINS' | 'DIAMONDS')} 
                     className="admin-input"
-                    style={{ width: '100%' }}
                   >
                     <option value="COINS">COINS</option>
                     <option value="DIAMONDS">DIAMONDS</option>
                   </select>
                 </div>
-                <div className="form-group">
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>
-                    Status
-                  </label>
+                <div className="form-group" style={{ marginBottom: '0px' }}>
+                  <label>Status</label>
                   <select 
                     value={status} 
                     onChange={(e) => setStatus(e.target.value)} 
                     className="admin-input"
-                    style={{ width: '100%' }}
                   >
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
                   </select>
                 </div>
               </div>
+            </div>
 
-              <div className="flex gap-4 mt-30" style={{ display: 'flex', gap: '15px' }}>
-                <button type="button" className="secondary w-full" onClick={() => setIsModalOpen(false)} style={{ padding: '14px' }}>
-                  Cancel
-                </button>
-                <button type="submit" className="primary w-full" disabled={isSubmitting} style={{ padding: '14px' }}>
-                  {isSubmitting ? 'Saving Package...' : modalMode === 'create' ? 'Provision Package' : 'Save Changes'}
-                </button>
-              </div>
-            </form>
-          </div>
+            <div className="modal-footer">
+              <button 
+                type="button" 
+                className="secondary-btn" 
+                onClick={() => setIsModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                className="primary-btn" 
+                disabled={isSubmitting}
+              >
+                <span>{isSubmitting ? 'Saving...' : modalMode === 'create' ? 'Provision Package' : 'Save Changes'}</span>
+              </button>
+            </div>
+          </form>
         </div>
+      )}
+      {showConfirmDelete && (
+        <ConfirmationModal
+          title="Delete Package"
+          message="Are you sure you want to permanently delete this store package?"
+          confirmText="Delete"
+          cancelText="Cancel"
+          type="danger"
+          onConfirm={() => {
+            if (deleteTargetId) {
+              executeDeletePackage(deleteTargetId);
+            }
+            setShowConfirmDelete(false);
+            setDeleteTargetId(null);
+          }}
+          onClose={() => {
+            setShowConfirmDelete(false);
+            setDeleteTargetId(null);
+          }}
+        />
       )}
     </div>
   );

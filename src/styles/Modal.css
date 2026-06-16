@@ -30,6 +30,7 @@
   max-height: 90vh !important; /* Dynamic vertical bounds */
   display: flex !important;
   flex-direction: column !important;
+  min-height: 0 !important; /* Allow flexbox shrink */
   box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(15, 23, 42, 0.02) !important; /* Rich soft shadow */
   position: relative;
   overflow: hidden !important; /* Hide overflow to preserve card outline */
@@ -98,6 +99,7 @@
   background: #ffffff !important;
   overflow-y: auto !important; /* Enabled scroll internally if container overflows */
   flex: 1 1 auto !important;
+  min-height: 0 !important; /* Allow flex child to shrink and scroll */
   gap: 12px !important;
   display: flex !important;
   flex-direction: column !important;

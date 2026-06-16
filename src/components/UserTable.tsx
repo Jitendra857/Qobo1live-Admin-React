@@ -62,10 +62,16 @@ const UserTable: React.FC<UserTableProps> = ({ users, onAddCoins, onEdit, onDele
                   </div>
                 </td>
                 <td className="data-cell-dim">{user.phone || 'No Phone'}</td>
-                <td className="data-cell">
-                  <div className="asset-tag">
-                    <Coins size={14} />
-                    <span>{user.wallet?.coins?.toLocaleString() || 0}</span>
+                 <td className="data-cell">
+                  <div className="assets-cluster" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div className="asset-tag coins" title="Coins" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                      <Coins size={14} />
+                      <span style={{ marginLeft: '4px' }}>{user.wallet?.coins?.toLocaleString() || 0}</span>
+                    </div>
+                    <div className="asset-tag diamonds" title="Diamonds" style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(6, 182, 212, 0.15)', color: '#06b6d4', border: '1px solid rgba(6, 182, 212, 0.3)' }}>
+                      <span style={{ marginRight: '4px', fontSize: '12px' }}>💎</span>
+                      <span>{user.wallet?.diamonds?.toLocaleString() || 0}</span>
+                    </div>
                   </div>
                 </td>
                 <td className="data-cell cell-center">
