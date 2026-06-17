@@ -4,7 +4,7 @@ import CoinModal from '../components/CoinModal';
 import CreateUserModal from '../components/CreateUserModal';
 import EditUserModal from '../components/EditUserModal';
 import ConfirmationModal from '../components/ConfirmationModal';
-import { UserPlus, Search } from 'lucide-react';
+import { UserPlus, Search, Trash2 } from 'lucide-react';
 import { adminService } from '../services/api';
 import toast from 'react-hot-toast';
 import '../styles/UserManagement.css';
@@ -55,6 +55,8 @@ const UserManagement: React.FC = () => {
     setDeleteModalOpen(true);
   };
 
+  const [isClearEconomyModalOpen, setClearEconomyModalOpen] = useState(false);
+
   const confirmDelete = async () => {
     if (!selectedUser) return;
     try {
@@ -67,6 +69,22 @@ const UserManagement: React.FC = () => {
     } catch (err: any) {
       console.error('Termination failure:', err);
       toast.error(err.response?.data?.message || err.message || 'Delete failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const confirmClearEconomy = async () => {
+    try {
+      setLoading(true);
+      console.log('Initiating wipe protocol for transaction history and wallet ledger balances...');
+      const res = await adminService.clearEconomyData();
+      toast.success(res.data.message || 'Economy data wiped successfully.');
+      fetchUsers();
+      setClearEconomyModalOpen(false);
+    } catch (err: any) {
+      console.error('Wipe protocol failed:', err);
+      toast.error(err.response?.data?.message || err.message || 'Wipe failed');
     } finally {
       setLoading(false);
     }
@@ -93,6 +111,10 @@ const UserManagement: React.FC = () => {
                 }}
               />
             </div>
+            <button className="primary flex-center gap-2" style={{ background: '#ef4444' }} onClick={() => setClearEconomyModalOpen(true)}>
+              <Trash2 size={18} />
+              <span>Clear Economy Data</span>
+            </button>
             <button className="primary flex-center gap-2" onClick={() => setCreateModalOpen(true)}>
               <UserPlus size={18} />
               <span>Create User</span>
@@ -143,6 +165,18 @@ const UserManagement: React.FC = () => {
           type="danger"
           onConfirm={confirmDelete}
           onClose={() => setDeleteModalOpen(false)}
+        />
+      )}
+
+      {isClearEconomyModalOpen && (
+        <ConfirmationModal 
+          title="Wipe Economy Data"
+          message="You are about to delete all transaction history, agency commission logs, and reset all user coin and diamond balances to 0 for fresh testing. This cannot be undone."
+          confirmText="Yes, Wipe Data"
+          cancelText="Abort Wipe"
+          type="danger"
+          onConfirm={confirmClearEconomy}
+          onClose={() => setClearEconomyModalOpen(false)}
         />
       )}
     </>

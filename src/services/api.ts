@@ -148,6 +148,7 @@ export const adminService = {
   // Tracking
   getAgencyTracking: () => api.get('/admin/agency-tracking'),
   getHostTracking: () => api.get('/admin/host-tracking'),
+  clearEconomyData: () => api.get('/clean-economy-test'),
 };
 
 export default api;
