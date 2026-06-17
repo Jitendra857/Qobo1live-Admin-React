@@ -56,6 +56,29 @@ const UserManagement: React.FC = () => {
   };
 
   const [isClearEconomyModalOpen, setClearEconomyModalOpen] = useState(false);
+  const [isClearUserEconomyModalOpen, setClearUserEconomyModalOpen] = useState(false);
+
+  const handleClearUserEconomy = (user: any) => {
+    setSelectedUser(user);
+    setClearUserEconomyModalOpen(true);
+  };
+
+  const confirmClearUserEconomy = async () => {
+    if (!selectedUser) return;
+    try {
+      setLoading(true);
+      console.log(`Initiating economy wipe for user ${selectedUser.id}...`);
+      const res = await adminService.clearUserEconomyData(selectedUser.id);
+      toast.success(res.data.message || 'User economy data wiped successfully.');
+      fetchUsers();
+      setClearUserEconomyModalOpen(false);
+    } catch (err: any) {
+      console.error('User wipe failed:', err);
+      toast.error(err.response?.data?.message || err.message || 'User wipe failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const confirmDelete = async () => {
     if (!selectedUser) return;
@@ -128,6 +151,7 @@ const UserManagement: React.FC = () => {
             onAddCoins={handleAddCoins} 
             onEdit={handleEdit}
             onDelete={handleDeleteClick}
+            onClearEconomy={handleClearUserEconomy}
             loading={loading}
           />
         </div>
@@ -177,6 +201,18 @@ const UserManagement: React.FC = () => {
           type="danger"
           onConfirm={confirmClearEconomy}
           onClose={() => setClearEconomyModalOpen(false)}
+        />
+      )}
+
+      {isClearUserEconomyModalOpen && (
+        <ConfirmationModal 
+          title="Wipe User Economy Data"
+          message={`You are about to delete all transaction history, commission logs, and reset both coin and diamond balances to 0 for user ${selectedUser?.name || 'this user'}. This cannot be undone.`}
+          confirmText="Yes, Wipe User Data"
+          cancelText="Abort Wipe"
+          type="danger"
+          onConfirm={confirmClearUserEconomy}
+          onClose={() => setClearUserEconomyModalOpen(false)}
         />
       )}
     </>

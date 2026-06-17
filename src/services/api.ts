@@ -149,6 +149,7 @@ export const adminService = {
   getAgencyTracking: () => api.get('/admin/agency-tracking'),
   getHostTracking: () => api.get('/admin/host-tracking'),
   clearEconomyData: () => api.get('/clean-economy-test'),
+  clearUserEconomyData: (id: string) => api.get(`/clean-user-economy/${id}`),
 };
 
 export default api;
