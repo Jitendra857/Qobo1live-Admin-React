@@ -23,6 +23,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
     xp: user.xp || 0,
     pattiStyle: user.pattiStyle || 'classic',
     displayPicture: user.displayPicture || 'default_dp.png',
+    coinsPerSecond: user.coinsPerSecond !== undefined ? user.coinsPerSecond : 2.0,
     password: ''
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -220,6 +221,18 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
                 className="admin-input" 
                 value={formData.xp}
                 onChange={e => setFormData({...formData, xp: Number(e.target.value)})}
+              />
+            </div>
+
+            <div className="form-group span-2" style={{ marginBottom: '0px' }}>
+              <label><Zap size={14} /> Coins Per Second Calling Rate</label>
+              <input 
+                type="number" 
+                step="0.1"
+                min="0"
+                className="admin-input" 
+                value={formData.coinsPerSecond}
+                onChange={e => setFormData({...formData, coinsPerSecond: Number(e.target.value)})}
               />
             </div>
 
