@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, Mail, ShieldCheck, Save, AlertCircle, Star, Zap, Trash2, Image as ImageIcon, Plus, Lock } from 'lucide-react';
+import { X, User, Mail, ShieldCheck, Save, AlertCircle, Star, Zap, Trash2, Image as ImageIcon, Plus, Lock, Phone } from 'lucide-react';
 import { adminService } from '../services/api';
 import toast from 'react-hot-toast';
 import '../styles/Modal.css';
@@ -27,6 +27,8 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [blockGoLive, setBlockGoLive] = useState<boolean>(user.blockedFeatures?.includes('go_live') || user.blockedFeatures?.includes('live_streaming') || false);
+  const [blockMessaging, setBlockMessaging] = useState<boolean>(user.blockedFeatures?.includes('messaging') || user.blockedFeatures?.includes('chat') || false);
 
   useEffect(() => {
     scrollToModalTop();
@@ -47,6 +49,10 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
         return;
       }
 
+      const features: string[] = [];
+      if (blockGoLive) features.push('go_live');
+      if (blockMessaging) features.push('messaging');
+
       const data = new FormData();
       Object.keys(formData).forEach(key => {
         const value = (formData as any)[key];
@@ -55,6 +61,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
           data.append(key, String(value));
         }
       });
+      data.append('blockedFeatures', JSON.stringify(features));
       if (selectedFile) {
         data.append('displayPicture', selectedFile);
       }
@@ -96,6 +103,17 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
                 className="admin-input" 
                 value={formData.name}
                 onChange={e => setFormData({...formData, name: e.target.value})}
+                required
+              />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '0px' }}>
+              <label><Phone size={14} /> Phone (Connectivity)</label>
+              <input 
+                type="text" 
+                className="admin-input" 
+                value={formData.phone}
+                onChange={e => setFormData({...formData, phone: e.target.value})}
                 required
               />
             </div>
@@ -157,6 +175,30 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
                     onChange={e => setFormData({...formData, status: e.target.value})}
                   />
                   <span>Inactive (0)</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="form-group span-2" style={{ marginBottom: '0px' }}>
+              <label><ShieldCheck size={14} /> Restrict Menu Access (Mobile app)</label>
+              <div className="checkbox-group" style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
+                <label className="checkbox-option" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={blockGoLive}
+                    onChange={e => setBlockGoLive(e.target.checked)}
+                    style={{ cursor: 'pointer' }}
+                  />
+                  <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>Block Go Live Menu</span>
+                </label>
+                <label className="checkbox-option" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={blockMessaging}
+                    onChange={e => setBlockMessaging(e.target.checked)}
+                    style={{ cursor: 'pointer' }}
+                  />
+                  <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>Block Message Menu</span>
                 </label>
               </div>
             </div>
