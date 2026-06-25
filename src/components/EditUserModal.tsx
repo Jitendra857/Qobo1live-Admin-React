@@ -137,6 +137,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
                 value={formData.password}
                 onChange={e => setFormData({...formData, password: e.target.value})}
                 placeholder="Leave blank to keep current password"
+                autoComplete="new-password"
               />
             </div>
 
