@@ -249,7 +249,7 @@ const RegisterHost: React.FC = () => {
           </div>
 
           <div style={{ gridColumn: 'span 2', marginTop: '10px' }}>
-            <h3 style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: '12px', textTransform: 'uppercase', tracking: '1px', fontWeight: 'bold' }}>Required Media & Verification Docs</h3>
+            <h3 style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 'bold' }}>Required Media & Verification Docs</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
               
               <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100px', border: '2px dashed rgba(255,255,255,0.1)', borderRadius: '12px', cursor: 'pointer', background: 'rgba(255,255,255,0.02)' }}>
