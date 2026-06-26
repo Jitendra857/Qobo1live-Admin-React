@@ -112,6 +112,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
       title: 'System Settings', icon: <Settings size={17} />, iconClass: 'icon-violet',
       subItems: [
         { title: 'Admin Accounts', path: '/super-admin-forms' },
+        { title: 'Super Admin Requests', path: '/super-admin-requests' },
         { title: 'Coin Resellers', path: '/coin-seller-forms' },
         { title: 'Payment Gateways', path: '/payment-gateways' },
         { title: 'General Settings', path: '/settings' },
@@ -125,7 +126,18 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
   
   const visibleMenuItems = (() => {
-    if (currentUser?.role === 'admin' || currentUser?.role === 'super_admin') return menuItems;
+    if (currentUser?.role === 'admin') return menuItems;
+    if (currentUser?.role === 'super_admin') {
+      return [
+        {
+          title: 'Agencies & Hosts', icon: <UserCheck size={17} />, iconClass: 'icon-cyan',
+          subItems: [
+            { title: 'Agencies', path: '/agents' },
+            { title: 'Hosts',    path: '/host-registry' },
+          ],
+        }
+      ];
+    }
     return []; // For 'user' or unknown roles, leave it blank
   })();
   // ──────────────────────────────────────────────────────────────────────────

@@ -52,55 +52,74 @@ const Withdrawals: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {requests.map((req) => (
-              <tr key={req.id}>
-                <td>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div className="avatar-neon">{req.user?.name?.[0] || 'U'}</div>
-                    <div className="user-text">
-                      <span className="name-main">{req.user?.name}</span>
-                      <span className="id-sub">{req.user?.email}</span>
-                    </div>
-                  </div>
-                </td>
-                <td style={{ fontWeight: 800, color: 'var(--text-primary)' }}>₹{req.amount}</td>
-                <td style={{ fontSize: '0.85rem' }}>
-                  {req.bankDetails && typeof req.bankDetails === 'object' ? (
-                    <div style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', maxWidth: '250px' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <div><strong style={{ color: 'var(--accent-blue)' }}>Holder:</strong> {req.bankDetails.holderName || 'N/A'}</div>
-                        <div><strong style={{ color: 'var(--accent-blue)' }}>Bank:</strong> {req.bankDetails.bankName || 'N/A'}</div>
-                        <div><strong style={{ color: 'var(--accent-blue)' }}>Acc:</strong> {req.bankDetails.accountNumber || 'N/A'}</div>
-                        <div><strong style={{ color: 'var(--accent-blue)' }}>IFSC:</strong> {req.bankDetails.ifsc || 'N/A'}</div>
+            {requests.map((req) => {
+              const details = req.bankDetails || {};
+              const holder = details.holder_name || details.holderName || details.holder || 'N/A';
+              const bankName = details.bank_name || details.bankName || details.bank || 'N/A';
+              const accountNum = details.account_number || details.accountNumber || details.account || 'N/A';
+              const ifsc = details.ifsc_code || details.ifscCode || details.ifsc || 'N/A';
+              const upi = details.upi_id || details.upi || details.upiId;
+
+              // Color codes for status
+              let statusStyle = { background: 'rgba(245, 158, 11, 0.1)', color: '#d97706', border: '1px solid rgba(245, 158, 11, 0.2)' };
+              if (req.status === 'approved' || req.status === 'completed') {
+                statusStyle = { background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.2)' };
+              } else if (req.status === 'rejected' || req.status === 'failed') {
+                statusStyle = { background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)' };
+              }
+
+              return (
+                <tr key={req.id}>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div className="avatar-neon" style={{ color: '#fff' }}>{req.user?.name?.[0] || 'U'}</div>
+                      <div className="user-text">
+                        <span className="name-main" style={{ color: '#0f172a', fontWeight: 700 }}>{req.user?.name || 'Unknown'}</span>
+                        <span className="id-sub" style={{ color: '#64748b' }}>{req.user?.phone || req.user?.email || req.user?.id}</span>
                       </div>
                     </div>
-                  ) : (
-                    <div style={{ padding: '8px', background: 'var(--bg-opal)', borderRadius: '8px', maxWidth: '250px' }}>
-                      {JSON.stringify(req.bankDetails)}
+                  </td>
+                  <td style={{ fontWeight: 800, color: '#0f172a', fontSize: '1.05rem' }}>₹{req.amount}</td>
+                  <td style={{ fontSize: '0.85rem' }}>
+                    <div style={{ 
+                      padding: '10px 14px', 
+                      background: '#f8fafc', 
+                      border: '1px solid #e2e8f0', 
+                      borderRadius: '10px', 
+                      maxWidth: '280px',
+                      color: '#334155'
+                    }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div><strong style={{ color: '#2563eb' }}>Holder:</strong> {holder}</div>
+                        <div><strong style={{ color: '#2563eb' }}>Bank:</strong> {bankName}</div>
+                        <div><strong style={{ color: '#2563eb' }}>Acc:</strong> {accountNum}</div>
+                        <div><strong style={{ color: '#2563eb' }}>IFSC:</strong> {ifsc}</div>
+                        {upi && <div><strong style={{ color: '#2563eb' }}>UPI:</strong> {upi}</div>}
+                      </div>
                     </div>
-                  )}
-                </td>
-                <td>
-                  <span className={`status-neon ${req.status}`}>
-                    {req.status}
-                  </span>
-                </td>
-                <td>
-                  <div className="action-group">
-                    {req.status === 'pending' && (
-                      <>
-                        <button className="icon-btn" style={{ color: '#10b981' }} onClick={() => handleAction(req.id, 'approved')}><CheckCircle size={18} /></button>
-                        <button className="icon-btn" style={{ color: '#ef4444' }} onClick={() => handleAction(req.id, 'rejected')}><XCircle size={18} /></button>
-                      </>
-                    )}
-                    <button className="icon-btn"><Wallet size={18} /></button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td>
+                    <span className="status-neon" style={{ ...statusStyle, borderRadius: '6px', fontSize: '0.7rem', padding: '5px 12px', display: 'inline-block' }}>
+                      {req.status}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="action-group">
+                      {req.status === 'pending' && (
+                        <>
+                          <button className="icon-btn" style={{ color: '#10b981', cursor: 'pointer' }} onClick={() => handleAction(req.id, 'approved')} title="Approve Request"><CheckCircle size={18} /></button>
+                          <button className="icon-btn" style={{ color: '#ef4444', cursor: 'pointer' }} onClick={() => handleAction(req.id, 'rejected')} title="Reject Request"><XCircle size={18} /></button>
+                        </>
+                      )}
+                      <button className="icon-btn" title="View Wallet Details"><Wallet size={18}/></button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
             {requests.length === 0 && (
               <tr>
-                <td colSpan={5} style={{ textAlign: 'center', padding: '100px', color: 'var(--text-secondary)' }}>
+                <td colSpan={5} style={{ textAlign: 'center', padding: '100px', color: '#64748b' }}>
                   No active withdrawal requests.
                 </td>
               </tr>

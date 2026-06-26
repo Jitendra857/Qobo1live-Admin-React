@@ -34,6 +34,10 @@ import PerformanceTracking from './pages/PerformanceTracking';
 import './styles/global.css';
 
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import ApplySuperAdmin from './pages/ApplySuperAdmin';
+import RegisterAgency from './pages/RegisterAgency';
+import RegisterHost from './pages/RegisterHost';
+import SuperAdminRequests from './pages/SuperAdminRequests';
 
 import { Menu as MenuIcon } from 'lucide-react';
 import { useSocket } from './hooks/useSocket';
@@ -51,11 +55,13 @@ function AppContent() {
     setIsAuthenticated(false);
   };
 
+  const isStandalonePage = ['/apply-super-admin', '/register-agency', '/register-host'].includes(window.location.pathname);
+
   return (
-    <div className={`app-container ${menuPosition === 'top' ? 'top-layout' : ''} ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+    <div className={`app-container ${menuPosition === 'top' ? 'top-layout' : ''} ${isSidebarCollapsed ? 'sidebar-collapsed' : ''} ${isStandalonePage ? 'standalone-layout' : ''}`}>
       <Toaster position="top-right" reverseOrder={false} />
       
-      {isAuthenticated && (
+      {isAuthenticated && !isStandalonePage && (
         <div className="mobile-header">
           <button className="mobile-burger-btn" onClick={() => setIsMobileMenuOpen(true)}>
             <MenuIcon size={24} />
@@ -65,15 +71,18 @@ function AppContent() {
         </div>
       )}
 
-      {isAuthenticated && menuPosition === 'left' && <Sidebar onLogout={handleLogout} />}
+      {isAuthenticated && !isStandalonePage && menuPosition === 'left' && <Sidebar onLogout={handleLogout} />}
       
-      <div className="main-wrapper">
-        {isAuthenticated && menuPosition === 'top' && <TopMenu onLogout={handleLogout} />}
+      <div className={isStandalonePage ? "" : "main-wrapper"}>
+        {isAuthenticated && !isStandalonePage && menuPosition === 'top' && <TopMenu onLogout={handleLogout} />}
         
-        <main className="content">
+        <main className={isStandalonePage ? "" : "content"}>
           <Routes>
             {/* Public Routes */}
             <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/apply-super-admin" element={<ApplySuperAdmin />} />
+            <Route path="/register-agency" element={<RegisterAgency />} />
+            <Route path="/register-host" element={<RegisterHost />} />
             
             {/* Protected Routes */}
             {!isAuthenticated ? (
@@ -88,6 +97,7 @@ function AppContent() {
                 <Route path="/vip-store" element={<VipStore />} />
                 <Route path="/dynamic-tasks" element={<TaskCenter />} />
                 <Route path="/super-admin-forms" element={<StaffManagement />} />
+                <Route path="/super-admin-requests" element={<SuperAdminRequests />} />
                 <Route path="/coin-seller-forms" element={<SellerManager />} />
                 <Route path="/agents" element={<AgencyHub />} />
                 <Route path="/host-registry" element={<HostRegistry />} />
