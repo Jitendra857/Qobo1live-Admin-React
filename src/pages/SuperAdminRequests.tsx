@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { adminService, BACKEND_URL } from '../services/api';
 import { 
   ShieldCheck, Mail, Send, Eye, CheckCircle, XCircle, 
-  Search, FileText, UserPlus, MapPin, Phone, Calendar
+  Search, FileText, UserPlus, MapPin, Phone, Calendar, AlertCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import '../styles/UserManagement.css';
