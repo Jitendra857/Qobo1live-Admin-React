@@ -126,7 +126,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
   
   const visibleMenuItems: MenuItem[] = (() => {
-    if (currentUser?.role === 'admin') return menuItems;
+    if (currentUser?.email === 'admin@qobo1live.com' || currentUser?.role === 'admin') return menuItems;
     if (currentUser?.role === 'super_admin') {
       return [
         {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Sidebar from './components/Sidebar';
@@ -57,11 +57,41 @@ function AppContent() {
 
   const isStandalonePage = ['/apply-super-admin', '/register-agency', '/register-host'].includes(window.location.pathname);
 
+  useEffect(() => {
+    if (isStandalonePage) {
+      document.body.classList.add('standalone-body');
+    } else {
+      document.body.classList.remove('standalone-body');
+    }
+    return () => document.body.classList.remove('standalone-body');
+  }, [isStandalonePage]);
+
+  if (isStandalonePage) {
+    return (
+      <div className="standalone-wrapper" style={{ width: '100%', minHeight: '100vh', background: '#f8fafc' }}>
+        <style>{`
+          body.standalone-body {
+            overflow: auto !important;
+            height: auto !important;
+            min-height: 100vh;
+          }
+        `}</style>
+        <Toaster position="top-right" reverseOrder={false} />
+        <Routes>
+          <Route path="/apply-super-admin" element={<ApplySuperAdmin />} />
+          <Route path="/register-agency" element={<RegisterAgency />} />
+          <Route path="/register-host" element={<RegisterHost />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </div>
+    );
+  }
+
   return (
-    <div className={`app-container ${menuPosition === 'top' ? 'top-layout' : ''} ${isSidebarCollapsed ? 'sidebar-collapsed' : ''} ${isStandalonePage ? 'standalone-layout' : ''}`}>
+    <div className={`app-container ${menuPosition === 'top' ? 'top-layout' : ''} ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
       <Toaster position="top-right" reverseOrder={false} />
       
-      {isAuthenticated && !isStandalonePage && (
+      {isAuthenticated && (
         <div className="mobile-header">
           <button className="mobile-burger-btn" onClick={() => setIsMobileMenuOpen(true)}>
             <MenuIcon size={24} />
@@ -71,18 +101,15 @@ function AppContent() {
         </div>
       )}
 
-      {isAuthenticated && !isStandalonePage && menuPosition === 'left' && <Sidebar onLogout={handleLogout} />}
+      {isAuthenticated && menuPosition === 'left' && <Sidebar onLogout={handleLogout} />}
       
-      <div className={isStandalonePage ? "" : "main-wrapper"}>
-        {isAuthenticated && !isStandalonePage && menuPosition === 'top' && <TopMenu onLogout={handleLogout} />}
+      <div className="main-wrapper">
+        {isAuthenticated && menuPosition === 'top' && <TopMenu onLogout={handleLogout} />}
         
-        <main className={isStandalonePage ? "" : "content"}>
+        <main className="content">
           <Routes>
             {/* Public Routes */}
             <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/apply-super-admin" element={<ApplySuperAdmin />} />
-            <Route path="/register-agency" element={<RegisterAgency />} />
-            <Route path="/register-host" element={<RegisterHost />} />
             
             {/* Protected Routes */}
             {!isAuthenticated ? (
