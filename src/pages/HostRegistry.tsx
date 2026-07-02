@@ -3,7 +3,7 @@ import { adminService } from '../services/api';
 import {
   CheckCircle, XCircle, UserCheck, Eye, Phone, Mail,
   ShieldCheck, Clock, AlertCircle, Search, RefreshCw,
-  Users, Filter, Hash, Building2
+  Users, Filter, Hash, Building2, Send, Trash2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import '../styles/UserManagement.css';
@@ -18,6 +18,16 @@ const HostRegistry: React.FC = () => {
   const [selectedApp, setSelectedApp] = useState<any | null>(null);
   const [search, setSearch]       = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+
+  // Invite state
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviting, setInviting] = useState(false);
+
+  // Reject / Modal State
+  const [feedback, setFeedback] = useState('');
+  const [processing, setProcessing] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectApp, setRejectApp] = useState<any>(null);
 
   const { setMenuPosition, setSidebarCollapsed } = useLayout();
   useEffect(() => {
@@ -68,18 +78,59 @@ const HostRegistry: React.FC = () => {
   const approvedCount = apps.filter(a => a.status?.toLowerCase() === 'approved').length;
   const rejectedCount = apps.filter(a => a.status?.toLowerCase() === 'rejected').length;
 
-  const handleAction = async (id: string, status: 'APPROVED' | 'REJECTED') => {
+  const handleAction = async (id: string, status: 'APPROVED' | 'REJECTED', fb?: string) => {
     try {
-      const res = await adminService.approveHost({ application_id: id, status });
+      setProcessing(true);
+      const res = await adminService.approveHost({ application_id: id, status, feedback: fb });
       if (res.data.statusCode === 1) {
         toast.success(status === 'APPROVED' ? '✅ Host Approved' : '❌ Host Rejected');
-        fetchApps();
+        setShowRejectModal(false);
+        setFeedback('');
+        setRejectApp(null);
         setSelectedApp(null);
+        fetchApps();
       } else {
         toast.error(res.data.message || 'Operation failed');
       }
     } catch {
       toast.error('Authorization failed');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const openRejectModal = (app: any) => {
+    setRejectApp(app);
+    setFeedback('');
+    setShowRejectModal(true);
+  };
+
+  const handleDeleteHost = async (id: string) => {
+    if (!window.confirm("Are you sure you want to completely remove this host application?")) return;
+    try {
+      await adminService.deleteHostRequest(id);
+      toast.success('Host application removed successfully.');
+      setSelectedApp(null);
+      fetchApps();
+    } catch (err: any) {
+      toast.error('Failed to remove host application.');
+    }
+  };
+
+  const handleSendInvite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteEmail.trim()) return;
+
+    setInviting(true);
+    try {
+      await adminService.inviteHost({ email: inviteEmail.trim().toLowerCase() });
+      toast.success(`Invitation successfully dispatched to ${inviteEmail}`);
+      setInviteEmail('');
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.response?.data?.message || 'Failed to send invitation link.');
+    } finally {
+      setInviting(false);
     }
   };
 
@@ -228,6 +279,53 @@ const HostRegistry: React.FC = () => {
         </div>
       </div>
 
+      {/* ── Email Invite Section ────────────────────────────────────────────── */}
+      <div style={{
+        background: '#ffffff', borderRadius: '16px', padding: '24px',
+        border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
+        marginBottom: '24px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+          <div style={{ background: '#ede9fe', padding: '10px', borderRadius: '12px', color: '#8b5cf6' }}>
+            <Mail size={20} />
+          </div>
+          <div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Dispatch Host Application Link</h3>
+            <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '4px 0 0 0' }}>
+              Send an official secure email directly to a potential broadcasting host.
+            </p>
+          </div>
+        </div>
+        <form onSubmit={handleSendInvite} style={{ display: 'flex', gap: '12px', maxWidth: '600px' }}>
+          <input
+            type="email"
+            required
+            placeholder="Enter host's email address..."
+            value={inviteEmail}
+            onChange={(e) => setInviteEmail(e.target.value)}
+            style={{
+              flex: 1, padding: '12px 16px', borderRadius: '10px', border: '1px solid #cbd5e1',
+              fontSize: '0.95rem', outline: 'none', transition: 'border-color 0.2s', background: '#f8fafc'
+            }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = '#8b5cf6'; e.currentTarget.style.background = '#ffffff'; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = '#cbd5e1'; e.currentTarget.style.background = '#f8fafc'; }}
+          />
+          <button
+            type="submit"
+            disabled={inviting || !inviteEmail.trim()}
+            style={{
+              padding: '0 24px', background: '#8b5cf6', color: 'white', border: 'none', borderRadius: '10px',
+              fontWeight: 700, fontSize: '0.95rem', cursor: inviting || !inviteEmail.trim() ? 'not-allowed' : 'pointer',
+              display: 'flex', alignItems: 'center', gap: '8px', opacity: inviting || !inviteEmail.trim() ? 0.7 : 1,
+              transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(139, 92, 246, 0.2)'
+            }}
+          >
+            {inviting ? <RefreshCw size={18} className="spin" /> : <Send size={18} />}
+            {inviting ? 'Dispatching...' : 'Send Link'}
+          </button>
+        </form>
+      </div>
+
       {/* ── Toolbar ─────────────────────────────────────────────────────────── */}
       <div className="hr-toolbar">
         <div className="hr-search">
@@ -359,7 +457,7 @@ const HostRegistry: React.FC = () => {
                             ><CheckCircle size={16}/></button>
                             <button
                               className="op-btn delete"
-                              onClick={() => handleAction(app.id, 'REJECTED')}
+                              onClick={() => openRejectModal(app)}
                               title="Reject"
                               style={{ borderRadius:10, background:'rgba(239,68,68,0.1)', color:'#ef4444', border:'1px solid rgba(239,68,68,0.2)' }}
                             ><XCircle size={16}/></button>
@@ -378,6 +476,16 @@ const HostRegistry: React.FC = () => {
                           title="View Full Details"
                           style={{ borderRadius:10, background:'rgba(59,130,246,0.1)', color:'#3b82f6', border:'1px solid rgba(59,130,246,0.2)' }}
                         ><Eye size={16}/></button>
+                        {canApprove && (
+                          <button
+                            className="op-btn delete"
+                            onClick={() => handleDeleteHost(app.id)}
+                            title="Remove Application"
+                            style={{ borderRadius: 10, background: 'transparent', color: '#ef4444', border: '1px dashed #ef4444' }}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -473,7 +581,7 @@ const HostRegistry: React.FC = () => {
                 <>
                   <button
                     className="primary-btn"
-                    onClick={() => handleAction(selectedApp.id, 'REJECTED')}
+                    onClick={() => openRejectModal(selectedApp)}
                     style={{ background: '#ef4444' }}
                   >
                     <XCircle size={18} />
@@ -489,6 +597,80 @@ const HostRegistry: React.FC = () => {
                   </button>
                 </>
               )}
+              {canApprove && (
+                <button
+                  className="secondary-btn"
+                  onClick={() => handleDeleteHost(selectedApp.id)}
+                  style={{ color: '#ef4444', borderColor: '#ef4444', background: 'transparent' }}
+                >
+                  <Trash2 size={18} />
+                  <span>Remove</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Rejection Modal ─────────────────────────────────────────────────── */}
+      {showRejectModal && rejectApp && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(15, 23, 42, 0.7)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: '#fff', width: '100%', maxWidth: '440px', borderRadius: '24px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', overflow: 'hidden'
+          }} className="zoom-in">
+            <div style={{ background: '#fef2f2', padding: '24px', textAlign: 'center', borderBottom: '1px solid #fee2e2' }}>
+              <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#fee2e2', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto' }}>
+                <AlertCircle size={32} />
+              </div>
+              <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#991b1b' }}>Reject Host</h3>
+              <p style={{ margin: '8px 0 0 0', fontSize: '0.9rem', color: '#b91c1c' }}>
+                You are about to reject the application for <strong>{rejectApp.hostName}</strong>.
+              </p>
+            </div>
+            
+            <div style={{ padding: '24px' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#334155', marginBottom: '8px' }}>
+                Reason for Rejection <span style={{ color: '#ef4444' }}>*</span>
+              </label>
+              <textarea 
+                value={feedback}
+                onChange={e => setFeedback(e.target.value)}
+                placeholder="e.g. Identity documents are unclear..."
+                style={{
+                  width: '100%', padding: '12px 16px', borderRadius: '12px', border: '2px solid #e2e8f0',
+                  fontSize: '0.95rem', minHeight: '120px', resize: 'vertical', outline: 'none',
+                  transition: 'border-color 0.2s', background: '#f8fafc', color: '#0f172a', fontFamily: 'inherit'
+                }}
+                onFocus={e => e.currentTarget.style.borderColor = '#ef4444'}
+                onBlur={e => e.currentTarget.style.borderColor = '#e2e8f0'}
+              />
+              
+              <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                <button 
+                  onClick={() => setShowRejectModal(false)}
+                  style={{ flex: 1, padding: '12px', background: '#f1f5f9', border: 'none', color: '#475569', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', transition: 'background 0.2s' }}
+                  onMouseOver={e => e.currentTarget.style.background = '#e2e8f0'}
+                  onMouseOut={e => e.currentTarget.style.background = '#f1f5f9'}
+                  disabled={processing}
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => handleAction(rejectApp.id, 'REJECTED', feedback)}
+                  disabled={!feedback.trim() || processing}
+                  style={{ flex: 1, padding: '12px', background: '#ef4444', border: 'none', color: '#fff', borderRadius: '12px', fontWeight: 700, cursor: !feedback.trim() || processing ? 'not-allowed' : 'pointer', opacity: !feedback.trim() || processing ? 0.6 : 1, transition: 'background 0.2s', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                  onMouseOver={e => { if(!(!feedback.trim() || processing)) e.currentTarget.style.background = '#dc2626'; }}
+                  onMouseOut={e => { if(!(!feedback.trim() || processing)) e.currentTarget.style.background = '#ef4444'; }}
+                >
+                  {processing ? <RefreshCw size={18} className="spin" /> : 'Confirm Rejection'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

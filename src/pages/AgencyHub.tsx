@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import {
   Users, ShieldCheck, CheckCircle, XCircle, AlertCircle,
   TrendingUp, DollarSign, Wallet, Search, RefreshCw,
-  Building2, UserCheck, Clock, ChevronDown, Edit3, Link2
+  Building2, UserCheck, Clock, ChevronDown, Edit3, Link2, Trash2, Mail, Send
 } from 'lucide-react';
 import '../styles/UserManagement.css';
 
@@ -16,6 +16,16 @@ const AgencyHub: React.FC = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [payoutLoading, setPayoutLoading] = useState(false);
+
+  // Invite state
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviting, setInviting] = useState(false);
+
+  // Reject / Modal State
+  const [selectedAgency, setSelectedAgency] = useState<any>(null);
+  const [feedback, setFeedback] = useState('');
+  const [processing, setProcessing] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
 
   const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
   const canApprove = currentUser?.role === 'super_admin';
@@ -58,17 +68,57 @@ const AgencyHub: React.FC = () => {
     setFiltered(result);
   }, [search, statusFilter, agencies]);
 
-  const handleApprove = async (agencyId: string, status: 'active' | 'rejected') => {
+  const handleApprove = async (agencyId: string, status: 'active' | 'rejected', fb?: string) => {
     try {
-      const res = await adminService.approveAgency({ agency_id: agencyId, status });
+      setProcessing(true);
+      const res = await adminService.approveAgency({ agency_id: agencyId, status, feedback: fb });
       if (res.data.statusCode === 1) {
         toast.success(`Agency ${status === 'active' ? '✅ Approved' : '❌ Rejected'}`);
+        setShowRejectModal(false);
+        setFeedback('');
+        setSelectedAgency(null);
         fetchData();
       } else {
         toast.error(res.data.message || 'Action failed');
       }
     } catch {
       toast.error('Error processing agency action');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const openRejectModal = (agency: any) => {
+    setSelectedAgency(agency);
+    setFeedback('');
+    setShowRejectModal(true);
+  };
+
+  const handleDeleteAgency = async (id: string) => {
+    if (!window.confirm("Are you sure you want to completely remove this agency record?")) return;
+    try {
+      await adminService.deleteAgencyRequest(id);
+      toast.success('Agency record removed successfully.');
+      fetchData();
+    } catch (err: any) {
+      toast.error('Failed to remove agency.');
+    }
+  };
+
+  const handleSendInvite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteEmail.trim()) return;
+
+    setInviting(true);
+    try {
+      await adminService.inviteAgency({ email: inviteEmail.trim().toLowerCase() });
+      toast.success(`Invitation successfully dispatched to ${inviteEmail}`);
+      setInviteEmail('');
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.response?.data?.message || 'Failed to send invitation link.');
+    } finally {
+      setInviting(false);
     }
   };
 
@@ -276,6 +326,53 @@ const AgencyHub: React.FC = () => {
         </div>
       </div>
 
+      {/* ── Email Invite Section ────────────────────────────────────────────── */}
+      <div style={{
+        background: '#ffffff', borderRadius: '16px', padding: '24px',
+        border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
+        marginBottom: '30px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+          <div style={{ background: '#fef3c7', padding: '10px', borderRadius: '12px', color: '#d97706' }}>
+            <Mail size={20} />
+          </div>
+          <div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Dispatch Agency Application Link</h3>
+            <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '4px 0 0 0' }}>
+              Send an official secure email directly to a potential agency owner.
+            </p>
+          </div>
+        </div>
+        <form onSubmit={handleSendInvite} style={{ display: 'flex', gap: '12px', maxWidth: '600px' }}>
+          <input
+            type="email"
+            required
+            placeholder="Enter agency owner's email address..."
+            value={inviteEmail}
+            onChange={(e) => setInviteEmail(e.target.value)}
+            style={{
+              flex: 1, padding: '12px 16px', borderRadius: '10px', border: '1px solid #cbd5e1',
+              fontSize: '0.95rem', outline: 'none', transition: 'border-color 0.2s', background: '#f8fafc'
+            }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = '#f59e0b'; e.currentTarget.style.background = '#ffffff'; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = '#cbd5e1'; e.currentTarget.style.background = '#f8fafc'; }}
+          />
+          <button
+            type="submit"
+            disabled={inviting || !inviteEmail.trim()}
+            style={{
+              padding: '0 24px', background: '#f59e0b', color: 'white', border: 'none', borderRadius: '10px',
+              fontWeight: 700, fontSize: '0.95rem', cursor: inviting || !inviteEmail.trim() ? 'not-allowed' : 'pointer',
+              display: 'flex', alignItems: 'center', gap: '8px', opacity: inviting || !inviteEmail.trim() ? 0.7 : 1,
+              transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(245, 158, 11, 0.2)'
+            }}
+          >
+            {inviting ? <RefreshCw size={18} className="spin" /> : <Send size={18} />}
+            {inviting ? 'Dispatching...' : 'Send Link'}
+          </button>
+        </form>
+      </div>
+
       {/* ── Toolbar ─────────────────────────────────────────────────────────── */}
       <div className="agency-toolbar">
         <div className="agency-search">
@@ -406,7 +503,7 @@ const AgencyHub: React.FC = () => {
                           </button>
                           <button
                             className="op-btn delete"
-                            onClick={() => handleApprove(agency.id, 'rejected')}
+                            onClick={() => openRejectModal(agency)}
                             title="Reject Agency"
                             style={{ borderRadius: 10, background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }}
                           >
@@ -444,12 +541,86 @@ const AgencyHub: React.FC = () => {
                           </button>
                         )
                       )}
+                      {canApprove && (
+                        <button
+                          className="op-btn delete"
+                          onClick={() => handleDeleteAgency(agency.id)}
+                          title="Remove Agency"
+                          style={{ borderRadius: 10, background: 'transparent', color: '#ef4444', border: '1px dashed #ef4444' }}
+                        >
+                          <Trash2 size={17} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* ── Rejection Modal ─────────────────────────────────────────────────── */}
+      {showRejectModal && selectedAgency && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(15, 23, 42, 0.7)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: '#fff', width: '100%', maxWidth: '440px', borderRadius: '24px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', overflow: 'hidden'
+          }} className="zoom-in">
+            <div style={{ background: '#fef2f2', padding: '24px', textAlign: 'center', borderBottom: '1px solid #fee2e2' }}>
+              <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#fee2e2', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto' }}>
+                <AlertCircle size={32} />
+              </div>
+              <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#991b1b' }}>Reject Agency</h3>
+              <p style={{ margin: '8px 0 0 0', fontSize: '0.9rem', color: '#b91c1c' }}>
+                You are about to reject the application for <strong>{selectedAgency.name}</strong>.
+              </p>
+            </div>
+            
+            <div style={{ padding: '24px' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#334155', marginBottom: '8px' }}>
+                Reason for Rejection <span style={{ color: '#ef4444' }}>*</span>
+              </label>
+              <textarea 
+                value={feedback}
+                onChange={e => setFeedback(e.target.value)}
+                placeholder="e.g. Agency name does not meet requirements..."
+                style={{
+                  width: '100%', padding: '12px 16px', borderRadius: '12px', border: '2px solid #e2e8f0',
+                  fontSize: '0.95rem', minHeight: '120px', resize: 'vertical', outline: 'none',
+                  transition: 'border-color 0.2s', background: '#f8fafc', color: '#0f172a', fontFamily: 'inherit'
+                }}
+                onFocus={e => e.currentTarget.style.borderColor = '#ef4444'}
+                onBlur={e => e.currentTarget.style.borderColor = '#e2e8f0'}
+              />
+              
+              <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                <button 
+                  onClick={() => setShowRejectModal(false)}
+                  style={{ flex: 1, padding: '12px', background: '#f1f5f9', border: 'none', color: '#475569', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', transition: 'background 0.2s' }}
+                  onMouseOver={e => e.currentTarget.style.background = '#e2e8f0'}
+                  onMouseOut={e => e.currentTarget.style.background = '#f1f5f9'}
+                  disabled={processing}
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => handleApprove(selectedAgency.id, 'rejected', feedback)}
+                  disabled={!feedback.trim() || processing}
+                  style={{ flex: 1, padding: '12px', background: '#ef4444', border: 'none', color: '#fff', borderRadius: '12px', fontWeight: 700, cursor: !feedback.trim() || processing ? 'not-allowed' : 'pointer', opacity: !feedback.trim() || processing ? 0.6 : 1, transition: 'background 0.2s', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                  onMouseOver={e => { if(!(!feedback.trim() || processing)) e.currentTarget.style.background = '#dc2626'; }}
+                  onMouseOut={e => { if(!(!feedback.trim() || processing)) e.currentTarget.style.background = '#ef4444'; }}
+                >
+                  {processing ? <RefreshCw size={18} className="spin" /> : 'Confirm Rejection'}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

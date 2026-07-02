@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { adminService, BACKEND_URL } from '../services/api';
 import { 
   ShieldCheck, Mail, Send, Eye, CheckCircle, XCircle, 
-  Search, FileText, UserPlus, MapPin, Phone, Calendar, AlertCircle
+  Search, FileText, UserPlus, MapPin, Phone, Calendar, AlertCircle, Trash2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import '../styles/UserManagement.css';
@@ -54,6 +54,17 @@ const SuperAdminRequests: React.FC = () => {
       toast.error(err.response?.data?.message || 'Failed to send invitation link.');
     } finally {
       setInviting(false);
+    }
+  };
+
+  const handleDeleteRequest = async (id: string) => {
+    if (!window.confirm("Are you sure you want to completely remove this application record?")) return;
+    try {
+      await adminService.deleteSuperAdminRequest(id);
+      toast.success('Application removed successfully.');
+      fetchRequests();
+    } catch (err: any) {
+      toast.error('Failed to remove application.');
     }
   };
 
@@ -263,9 +274,18 @@ const SuperAdminRequests: React.FC = () => {
                   }}>
                     {req.status}
                   </span>
-                  <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600 }}>
-                    {new Date(req.createdAt).toLocaleDateString()}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600 }}>
+                      {new Date(req.createdAt).toLocaleDateString()}
+                    </span>
+                    <button
+                      onClick={() => handleDeleteRequest(req.id)}
+                      title="Remove Record"
+                      style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </div>
 
                 <h4 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: '0 0 16px 0' }}>

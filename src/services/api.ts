@@ -66,6 +66,7 @@ export const adminService = {
   inviteSuperAdmin: (data: { email: string }) => api.post('/admin/invite-super-admin', data),
   getSuperAdminRequests: () => api.get('/admin/super-admin-requests'),
   processSuperAdminRequest: (data: { id: string; status: 'approved' | 'rejected'; feedback?: string }) => api.post('/admin/super-admin-process', data),
+  deleteSuperAdminRequest: (id: string) => api.delete(`/admin/super-admin-request/${id}`),
   getTickets: () => api.get('/admin/tickets'),
   resolveTicket: (id: string) => api.put(`/admin/ticket/${id}/resolve`),
   getHelpTickets: () => api.get('/admin/help-tickets'),
@@ -107,10 +108,16 @@ export const adminService = {
 
   assignCoins: (data: { user_id: string; amount: number; type: 'coins' | 'diamonds' }) => 
     api.post('/admin/assign-coins', data),
-  approveHost: (data: { application_id: string; status: string }) => 
+  
+  approveHost: (data: { application_id: string; status: string; feedback?: string }) => 
     api.post('/admin/host-approve', data),
-  approveAgency: (data: { agency_id: string; status: string }) => 
+  inviteHost: (data: { email: string }) => api.post('/admin/invite-host', data),
+  deleteHostRequest: (id: string) => api.delete(`/admin/host-application/${id}`),
+
+  approveAgency: (data: { agency_id: string; status: string; feedback?: string }) => 
     api.post('/admin/agency-approve', data),
+  inviteAgency: (data: { email: string }) => api.post('/admin/invite-agency', data),
+  deleteAgencyRequest: (id: string) => api.delete(`/admin/agency/${id}`),
   
   // Seller Management
   listSellers: () => api.get('/admin/sellers'),
