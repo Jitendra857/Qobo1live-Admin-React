@@ -68,27 +68,37 @@ const SuperAdminRequests: React.FC = () => {
     }
   };
 
-  const handleProcessRequest = async (id: string, status: 'approved' | 'rejected') => {
-    setProcessing(true);
-    try {
-      await adminService.processSuperAdminRequest({
-        id,
-        status,
-        feedback: status === 'rejected' ? feedback : undefined
-      });
-      
-      toast.success(`Application request was successfully ${status}.`);
-      setShowRejectModal(false);
-      setSelectedReq(null);
-      setFeedback('');
-      fetchRequests();
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err.response?.data?.message || 'Failed to update application request.');
-    } finally {
-      setProcessing(false);
-    }
-  };
+    const handleProcessRequest = async (id: string, status: 'approved' | 'rejected' | 'email_dispatched') => {
+      setProcessing(true);
+      try {
+        await adminService.processSuperAdminRequest({
+          id,
+          status,
+          feedback: status === 'rejected' ? feedback : undefined
+        });
+        
+        toast.success(`Application request was successfully updated to ${status}.`);
+        setShowRejectModal(false);
+        setSelectedReq(null);
+        setFeedback('');
+        fetchRequests();
+      } catch (err: any) {
+        console.error(err);
+        toast.error(err.response?.data?.message || 'Failed to update application request.');
+      } finally {
+        setProcessing(false);
+      }
+    };
+
+    const handleDispatchFromCard = async (req: any) => {
+      try {
+        await adminService.inviteSuperAdmin({ email: req.email });
+        await handleProcessRequest(req.id, 'email_dispatched');
+        toast.success(`Application link securely dispatched to ${req.email}`);
+      } catch (err: any) {
+        toast.error(err.response?.data?.message || 'Failed to dispatch application link.');
+      }
+    };
 
   const openRejectModal = (req: any) => {
     setSelectedReq(req);
@@ -294,9 +304,15 @@ const SuperAdminRequests: React.FC = () => {
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', color: '#475569', fontSize: '0.9rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Mail size={16} color="#94a3b8"/> <strong style={{ color: '#1e293b' }}>{req.email}</strong></div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Phone size={16} color="#94a3b8"/> <strong style={{ color: '#1e293b' }}>{req.phone}</strong></div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={16} color="#94a3b8"/> <span>Born:</span> <strong style={{ color: '#1e293b' }}>{req.birthday}</strong></div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><MapPin size={16} color="#94a3b8"/> <span>Location:</span> <strong style={{ color: '#1e293b' }}>{req.state}, {req.country}</strong></div>
+                  {req.phone && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Phone size={16} color="#94a3b8"/> <strong style={{ color: '#1e293b' }}>{req.phone}</strong></div>}
+                  {req.birthday && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={16} color="#94a3b8"/> <span>Born:</span> <strong style={{ color: '#1e293b' }}>{req.birthday}</strong></div>}
+                  {(req.state || req.country) && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><MapPin size={16} color="#94a3b8"/> <span>Location:</span> <strong style={{ color: '#1e293b' }}>{req.state || ''} {req.country ? `, ${req.country}` : ''}</strong></div>}
+                  
+                  {req.status === 'mobile_requested' && (
+                    <div style={{ marginTop: '8px', padding: '6px', background: '#e0f2fe', color: '#0369a1', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 600 }}>
+                      Mobile Interest Request (Awaiting Full Form)
+                    </div>
+                  )}
                   
                   {req.feedback && (
                     <div style={{ marginTop: '12px', background: '#fef2f2', padding: '12px', borderRadius: '8px', borderLeft: '4px solid #ef4444', fontSize: '0.85rem' }}>
@@ -307,41 +323,62 @@ const SuperAdminRequests: React.FC = () => {
                 </div>
 
                 {/* Document Assets */}
-                <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
-                  <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '12px' }}>
-                    Identity Assets
+                {(req.originalPhoto || req.governmentDocument || req.aadharPanCard) && (
+                  <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '12px' }}>
+                      Identity Assets
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                      {req.originalPhoto && (
+                        <button 
+                          onClick={() => setShowDocModal({ title: 'Original Photo', url: getMediaUrl(req.originalPhoto) })}
+                          style={{ padding: '8px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', color: '#475569', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}
+                          onMouseOver={(e) => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.borderColor = '#cbd5e1'; }}
+                          onMouseOut={(e) => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
+                        >
+                          <Eye size={16} color="#6366f1" /> Photo
+                        </button>
+                      )}
+                      {req.governmentDocument && (
+                        <button 
+                          onClick={() => setShowDocModal({ title: 'Government ID', url: getMediaUrl(req.governmentDocument) })}
+                          style={{ padding: '8px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', color: '#475569', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}
+                          onMouseOver={(e) => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.borderColor = '#cbd5e1'; }}
+                          onMouseOut={(e) => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
+                        >
+                          <Eye size={16} color="#6366f1" /> Gov ID
+                        </button>
+                      )}
+                      {req.aadharPanCard && (
+                        <button 
+                          onClick={() => setShowDocModal({ title: 'Aadhar / PAN Card', url: getMediaUrl(req.aadharPanCard) })}
+                          style={{ padding: '8px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', color: '#475569', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}
+                          onMouseOver={(e) => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.borderColor = '#cbd5e1'; }}
+                          onMouseOut={(e) => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
+                        >
+                          <Eye size={16} color="#6366f1" /> KYC
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                    <button 
-                      onClick={() => setShowDocModal({ title: 'Original Photo', url: getMediaUrl(req.originalPhoto) })}
-                      style={{ padding: '8px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', color: '#475569', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}
-                      onMouseOver={(e) => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.borderColor = '#cbd5e1'; }}
-                      onMouseOut={(e) => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
-                    >
-                      <Eye size={16} color="#6366f1" /> Photo
-                    </button>
-                    <button 
-                      onClick={() => setShowDocModal({ title: 'Government ID', url: getMediaUrl(req.governmentDocument) })}
-                      style={{ padding: '8px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', color: '#475569', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}
-                      onMouseOver={(e) => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.borderColor = '#cbd5e1'; }}
-                      onMouseOut={(e) => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
-                    >
-                      <Eye size={16} color="#6366f1" /> Gov ID
-                    </button>
-                    <button 
-                      onClick={() => setShowDocModal({ title: 'Aadhar / PAN Card', url: getMediaUrl(req.aadharPanCard) })}
-                      style={{ padding: '8px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', color: '#475569', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}
-                      onMouseOver={(e) => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.borderColor = '#cbd5e1'; }}
-                      onMouseOut={(e) => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
-                    >
-                      <Eye size={16} color="#6366f1" /> KYC
-                    </button>
-                  </div>
-                </div>
+                )}
 
               </div>
 
               {/* Action Toolbar */}
+              {req.status === 'mobile_requested' && (
+                <div style={{ padding: '16px 24px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', display: 'flex', gap: '12px' }}>
+                  <button 
+                    onClick={() => handleDispatchFromCard(req)}
+                    style={{ flex: 1, padding: '10px', background: '#6366f1', border: 'none', color: '#fff', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.2)' }}
+                    onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(99, 102, 241, 0.3)'; }}
+                    onMouseOut={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.2)'; }}
+                  >
+                    <Send size={16} /> Dispatch Application Link
+                  </button>
+                </div>
+              )}
+
               {req.status === 'pending' && (
                 <div style={{ padding: '16px 24px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', display: 'flex', gap: '12px' }}>
                   <button 

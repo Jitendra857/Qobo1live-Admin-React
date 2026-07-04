@@ -3,6 +3,7 @@ import axios from 'axios';
 import { BACKEND_URL } from '../services/api';
 import { ShieldCheck, Upload, AlertCircle, CheckCircle2, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { locationData } from '../utils/locationData';
 
 const ApplySuperAdmin: React.FC = () => {
   const navigate = useNavigate();
@@ -174,12 +175,40 @@ const ApplySuperAdmin: React.FC = () => {
 
             <div>
               <label style={labelStyle}>Country</label>
-              <input type="text" value={country} onChange={(e) => setCountry(e.target.value)} required style={inputStyle} onFocus={(e) => {e.target.style.borderColor = '#6366f1'; e.target.style.background = '#fff';}} onBlur={(e) => {e.target.style.borderColor = '#cbd5e1'; e.target.style.background = '#f8fafc';}} />
+              <select 
+                value={country} 
+                onChange={(e) => {
+                  setCountry(e.target.value);
+                  setState('');
+                }} 
+                required 
+                style={{...inputStyle, cursor: 'pointer', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23475569\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 16px center' }}
+                onFocus={(e) => {e.target.style.borderColor = '#6366f1'; e.target.style.background = '#fff url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23475569\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E") no-repeat right 16px center';}} 
+                onBlur={(e) => {e.target.style.borderColor = '#cbd5e1'; e.target.style.background = '#f8fafc url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23475569\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E") no-repeat right 16px center';}}
+              >
+                <option value="">Select Country</option>
+                {Object.keys(locationData).map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
             </div>
 
             <div>
               <label style={labelStyle}>State / Region</label>
-              <input type="text" value={state} onChange={(e) => setState(e.target.value)} required style={inputStyle} onFocus={(e) => {e.target.style.borderColor = '#6366f1'; e.target.style.background = '#fff';}} onBlur={(e) => {e.target.style.borderColor = '#cbd5e1'; e.target.style.background = '#f8fafc';}} />
+              <select 
+                value={state} 
+                onChange={(e) => setState(e.target.value)} 
+                required 
+                disabled={!country}
+                style={{...inputStyle, cursor: country ? 'pointer' : 'not-allowed', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23475569\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 16px center' }}
+                onFocus={(e) => {e.target.style.borderColor = '#6366f1'; e.target.style.background = '#fff url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23475569\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E") no-repeat right 16px center';}} 
+                onBlur={(e) => {e.target.style.borderColor = '#cbd5e1'; e.target.style.background = '#f8fafc url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23475569\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E") no-repeat right 16px center';}}
+              >
+                <option value="">Select State</option>
+                {country && locationData[country]?.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
             </div>
 
             {/* Section 3: Security */}

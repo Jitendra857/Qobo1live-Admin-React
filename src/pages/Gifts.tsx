@@ -23,6 +23,7 @@ const Gifts: React.FC = () => {
         type: 'normal',
         winRate: '',
         categoryId: '',
+        animationUrl: '',
     });
     const [files, setFiles] = useState<{ [key: string]: File | null }>({
         icon: null,
@@ -97,6 +98,7 @@ const Gifts: React.FC = () => {
                 type: gift.type,
                 winRate: gift.winRate || '',
                 categoryId: gift.categoryId || '',
+                animationUrl: gift.animationUrl || '',
             });
         } else {
             setEditingGift(null);
@@ -106,6 +108,7 @@ const Gifts: React.FC = () => {
                 type: 'normal',
                 winRate: '',
                 categoryId: '',
+                animationUrl: '',
             });
         }
         setFiles({ icon: null, animation: null, sound: null });
@@ -243,13 +246,22 @@ const Gifts: React.FC = () => {
                         </div>
 
                         <div className="card-content flex flex-col items-center py-2">
-                            <div className="asset-icon-box mb-3">
-                                <MediaImage 
-                                    src={gift.icon} 
-                                    alt={gift.name} 
-                                    className="asset-icon" 
-                                    fallbackIcon={gift.type === 'luxury' ? <Gem className="text-purple-500" size={36} /> : <GiftIcon className="text-blue-500" size={36} />}
-                                />
+                            <div className="asset-icon-box mb-3" style={{ position: 'relative', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {gift.animationUrl ? (
+                                    <img 
+                                        src={gift.animationUrl} 
+                                        alt={gift.name} 
+                                        className="asset-icon" 
+                                        style={{ width: '80px', height: '80px', objectFit: 'contain' }}
+                                    />
+                                ) : (
+                                    <MediaImage 
+                                        src={gift.icon} 
+                                        alt={gift.name} 
+                                        className="asset-icon" 
+                                        fallbackIcon={gift.type === 'luxury' ? <Gem className="text-purple-500" size={36} /> : <GiftIcon className="text-blue-500" size={36} />}
+                                    />
+                                )}
                             </div>
                             <h3 className="asset-name" style={{ color: '#333', fontWeight: 800 }}>{gift.name}</h3>
                             <div className="asset-price" style={{ color: '#4e73df', fontWeight: 900, fontSize: '1.2rem' }}>₹{gift.price}</div>
@@ -263,7 +275,7 @@ const Gifts: React.FC = () => {
                         <div className="card-footer mt-auto border-t border-slate-50 pt-4 flex flex-col gap-3">
                             <div className="flex justify-between items-center w-full">
                                 <div className={`meta-pill ${gift.animationUrl ? 'active' : ''}`}>
-                                    <Layout size={12} /> <span style={{ fontSize: '10px' }}>Lottie</span>
+                                    <Layout size={12} /> <span style={{ fontSize: '10px' }}>{gift.animationUrl?.toLowerCase().includes('.gif') || gift.animationUrl?.toLowerCase().includes('giphy.com') ? 'GIF' : 'Lottie'}</span>
                                 </div>
                                 <div className={`meta-pill ${gift.soundUrl ? 'active' : ''}`}>
                                     <Music size={12} /> <span style={{ fontSize: '10px' }}>Audio</span>
@@ -384,6 +396,19 @@ const Gifts: React.FC = () => {
                                             <option key={cat.id} value={cat.id}>{cat.name}</option>
                                         ))}
                                     </select>
+                                </div>
+                            </div>
+
+                            <div className="form-section">
+                                <label className="input-label-premium">Animation URL (Optional GIF/Lottie URL)</label>
+                                <div className="input-wrapper-glass">
+                                    <input 
+                                        type="text" 
+                                        className="premium-input-field"
+                                        placeholder="E.g., https://media.giphy.com/media/.../giphy.gif"
+                                        value={formData.animationUrl}
+                                        onChange={e => setFormData({...formData, animationUrl: e.target.value})}
+                                    />
                                 </div>
                             </div>
 
