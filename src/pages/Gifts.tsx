@@ -247,7 +247,7 @@ const Gifts: React.FC = () => {
 
                         <div className="card-content flex flex-col items-center py-2">
                             <div className="asset-icon-box mb-3" style={{ position: 'relative', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                {gift.animationUrl ? (
+                                {gift.animationUrl && (gift.animationUrl.toLowerCase().endsWith('.gif') || gift.animationUrl.toLowerCase().includes('giphy.com')) ? (
                                     <img 
                                         src={gift.animationUrl} 
                                         alt={gift.name} 
@@ -277,7 +277,19 @@ const Gifts: React.FC = () => {
                                 <div className={`meta-pill ${gift.animationUrl ? 'active' : ''}`}>
                                     <Layout size={12} /> <span style={{ fontSize: '10px' }}>{gift.animationUrl?.toLowerCase().includes('.gif') || gift.animationUrl?.toLowerCase().includes('giphy.com') ? 'GIF' : 'Lottie'}</span>
                                 </div>
-                                <div className={`meta-pill ${gift.soundUrl ? 'active' : ''}`}>
+                                <div 
+                                    className={`meta-pill ${gift.soundUrl ? 'active' : ''}`}
+                                    onClick={() => {
+                                        if (gift.soundUrl) {
+                                            const audio = new Audio(gift.soundUrl);
+                                            audio.volume = 0.4;
+                                            audio.play().catch(e => console.error("Audio playback blocked:", e));
+                                            toast.success(`Playing SFX for ${gift.name}`, { id: 'sfx-play', duration: 1000 });
+                                        }
+                                    }}
+                                    style={{ cursor: gift.soundUrl ? 'pointer' : 'default' }}
+                                    title={gift.soundUrl ? "Click to play sound effect" : "No audio loaded"}
+                                >
                                     <Music size={12} /> <span style={{ fontSize: '10px' }}>Audio</span>
                                 </div>
                             </div>
