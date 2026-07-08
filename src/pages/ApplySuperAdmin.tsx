@@ -3,7 +3,6 @@ import axios from 'axios';
 import { BACKEND_URL } from '../services/api';
 import { ShieldCheck, Upload, AlertCircle, CheckCircle2, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { locationData } from '../utils/locationData';
 
 const ApplySuperAdmin: React.FC = () => {
   const navigate = useNavigate();
@@ -82,22 +81,14 @@ const ApplySuperAdmin: React.FC = () => {
     }
   };
 
-  const inputStyle = {
-    width: '100%', padding: '14px 16px', borderRadius: '8px', border: '1px solid #cbd5e1',
-    background: '#f8fafc', fontSize: '0.95rem', color: '#0f172a', transition: 'all 0.2s', outline: 'none'
-  };
-
-  const labelStyle = { display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#475569', marginBottom: '8px', textTransform: 'uppercase' as const, letterSpacing: '0.05em' };
-  const uploadBoxStyle = { display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center', height: '120px', border: '2px dashed #cbd5e1', borderRadius: '12px', cursor: 'pointer', background: '#f8fafc', transition: 'all 0.2s' };
-
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 20px', fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 16px', fontFamily: 'Inter, sans-serif' }}>
       
       {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '30px', width: '100%', maxWidth: '850px' }}>
         <img src="/logo.svg" alt="Qobo1Live Logo" style={{ height: '48px', marginBottom: '16px', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))' }} />
-        <h1 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.03em', margin: 0 }}>Super Admin Application</h1>
-        <p style={{ color: '#64748b', fontSize: '1.05rem', marginTop: '8px', fontWeight: 500 }}>
+        <h1 style={{ fontSize: '2rem', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.03em', margin: 0 }}>Super Admin Application</h1>
+        <p style={{ color: '#64748b', fontSize: '1rem', marginTop: '8px', fontWeight: 500 }}>
           Complete your onboarding to request super administrative rights.
         </p>
       </div>
@@ -108,7 +99,7 @@ const ApplySuperAdmin: React.FC = () => {
         {/* Top Accent Bar */}
         <div style={{ height: '6px', background: 'linear-gradient(90deg, #6366f1, #a855f7)' }}></div>
 
-        <div style={{ padding: '40px' }}>
+        <div style={{ padding: '24px' }} className="form-content-wrap">
           {message && (
             <div style={{ color: message.type === 'success' ? '#15803d' : '#b91c1c', background: message.type === 'success' ? '#dcfce7' : '#fee2e2', padding: '16px 20px', borderRadius: '12px', marginBottom: '30px', fontSize: '0.95rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px', border: `1px solid ${message.type === 'success' ? '#bbf7d0' : '#fecaca'}` }}>
               {message.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
@@ -116,9 +107,9 @@ const ApplySuperAdmin: React.FC = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+          <form onSubmit={handleSubmit} className="responsive-form-grid">
             
-            {/* Section 1: Profile Photo */}
+            {/* Profile Photo */}
             <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
               <label 
                 style={{ 
@@ -143,132 +134,114 @@ const ApplySuperAdmin: React.FC = () => {
               </label>
             </div>
 
-            {/* Section 2: Personal Details */}
+            {/* Section 1: Personal Details */}
             <div style={{ gridColumn: '1 / -1', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginBottom: '8px' }}>
               <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><ShieldCheck size={20} color="#6366f1" /> Personal Identity</h3>
             </div>
 
-            <div>
-              <label style={labelStyle}>Full Name</label>
-              <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required style={inputStyle} onFocus={(e) => {e.target.style.borderColor = '#6366f1'; e.target.style.background = '#fff';}} onBlur={(e) => {e.target.style.borderColor = '#cbd5e1'; e.target.style.background = '#f8fafc';}} />
+            <div className="form-item-half">
+              <label className="input-label-premium">Full Name</label>
+              <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required className="input-field-premium" />
             </div>
 
-            <div>
-              <label style={labelStyle}>Email Address</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required style={inputStyle} onFocus={(e) => {e.target.style.borderColor = '#6366f1'; e.target.style.background = '#fff';}} onBlur={(e) => {e.target.style.borderColor = '#cbd5e1'; e.target.style.background = '#f8fafc';}} />
+            <div className="form-item-half">
+              <label className="input-label-premium">Email Address</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="input-field-premium" />
             </div>
 
-            <div>
-              <label style={labelStyle}>Phone Number</label>
-              <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required style={inputStyle} onFocus={(e) => {e.target.style.borderColor = '#6366f1'; e.target.style.background = '#fff';}} onBlur={(e) => {e.target.style.borderColor = '#cbd5e1'; e.target.style.background = '#f8fafc';}} />
+            <div className="form-item-half">
+              <label className="input-label-premium">Phone Number</label>
+              <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required className="input-field-premium" />
             </div>
 
-            <div>
-              <label style={labelStyle}>Date of Birth</label>
-              <input type="date" value={birthday} onChange={(e) => setBirthday(e.target.value)} required style={inputStyle} onFocus={(e) => {e.target.style.borderColor = '#6366f1'; e.target.style.background = '#fff';}} onBlur={(e) => {e.target.style.borderColor = '#cbd5e1'; e.target.style.background = '#f8fafc';}} />
+            <div className="form-item-half">
+              <label className="input-label-premium">National ID Number</label>
+              <input type="text" value={idNumber} onChange={(e) => setIdNumber(e.target.value)} required className="input-field-premium" />
             </div>
 
-            <div style={{ gridColumn: 'span 2' }}>
-              <label style={labelStyle}>Government ID / Passport Number</label>
-              <input type="text" value={idNumber} onChange={(e) => setIdNumber(e.target.value)} required style={inputStyle} onFocus={(e) => {e.target.style.borderColor = '#6366f1'; e.target.style.background = '#fff';}} onBlur={(e) => {e.target.style.borderColor = '#cbd5e1'; e.target.style.background = '#f8fafc';}} />
+            <div className="form-item-half">
+              <label className="input-label-premium">Country</label>
+              <input type="text" value={country} onChange={(e) => setCountry(e.target.value)} required className="input-field-premium" />
             </div>
 
-            <div>
-              <label style={labelStyle}>Country</label>
-              <select 
-                value={country} 
-                onChange={(e) => {
-                  setCountry(e.target.value);
-                  setState('');
-                }} 
-                required 
-                style={{...inputStyle, cursor: 'pointer', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23475569\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 16px center' }}
-                onFocus={(e) => {e.target.style.borderColor = '#6366f1'; e.target.style.background = '#fff url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23475569\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E") no-repeat right 16px center';}} 
-                onBlur={(e) => {e.target.style.borderColor = '#cbd5e1'; e.target.style.background = '#f8fafc url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23475569\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E") no-repeat right 16px center';}}
-              >
-                <option value="">Select Country</option>
-                {Object.keys(locationData).map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
+            <div className="form-item-half">
+              <label className="input-label-premium">State / Region</label>
+              <input type="text" value={state} onChange={(e) => setState(e.target.value)} required className="input-field-premium" />
             </div>
 
-            <div>
-              <label style={labelStyle}>State / Region</label>
-              <select 
-                value={state} 
-                onChange={(e) => setState(e.target.value)} 
-                required 
-                disabled={!country}
-                style={{...inputStyle, cursor: country ? 'pointer' : 'not-allowed', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23475569\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 16px center' }}
-                onFocus={(e) => {e.target.style.borderColor = '#6366f1'; e.target.style.background = '#fff url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23475569\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E") no-repeat right 16px center';}} 
-                onBlur={(e) => {e.target.style.borderColor = '#cbd5e1'; e.target.style.background = '#f8fafc url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23475569\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E") no-repeat right 16px center';}}
-              >
-                <option value="">Select State</option>
-                {country && locationData[country]?.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
+            <div style={{ gridColumn: '1 / -1' }} className="form-item-full">
+              <label className="input-label-premium">Birthday</label>
+              <input type="date" value={birthday} onChange={(e) => setBirthday(e.target.value)} required className="input-field-premium" />
             </div>
 
-            {/* Section 3: Security */}
+            {/* Section 2: Security */}
             <div style={{ gridColumn: '1 / -1', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginTop: '10px', marginBottom: '8px' }}>
               <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Security Configuration</h3>
             </div>
 
-            <div>
-              <label style={labelStyle}>Create Password</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required style={inputStyle} onFocus={(e) => {e.target.style.borderColor = '#6366f1'; e.target.style.background = '#fff';}} onBlur={(e) => {e.target.style.borderColor = '#cbd5e1'; e.target.style.background = '#f8fafc';}} />
+            <div className="form-item-half">
+              <label className="input-label-premium">Password</label>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="input-field-premium" />
             </div>
 
-            <div>
-              <label style={labelStyle}>Confirm Password</label>
-              <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required style={inputStyle} onFocus={(e) => {e.target.style.borderColor = '#6366f1'; e.target.style.background = '#fff';}} onBlur={(e) => {e.target.style.borderColor = '#cbd5e1'; e.target.style.background = '#f8fafc';}} />
+            <div className="form-item-half">
+              <label className="input-label-premium">Confirm Password</label>
+              <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className="input-field-premium" />
             </div>
 
-            {/* Section 4: Documents */}
+            {/* Section 3: Document Uploads */}
             <div style={{ gridColumn: '1 / -1', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginTop: '10px', marginBottom: '8px' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Required Verification Documents</h3>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Verification Documents</h3>
             </div>
 
-            <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
-              <label style={uploadBoxStyle} onMouseOver={(e) => { e.currentTarget.style.borderColor = '#6366f1'; e.currentTarget.style.background = '#eff6ff'; }} onMouseOut={(e) => { e.currentTarget.style.borderColor = '#cbd5e1'; e.currentTarget.style.background = '#f8fafc'; }}>
-                <Upload size={24} color={governmentDoc ? '#10b981' : '#64748b'} style={{ marginBottom: '10px' }} />
-                <span style={{ fontSize: '0.85rem', color: governmentDoc ? '#10b981' : '#475569', fontWeight: 600, textAlign: 'center', padding: '0 10px' }}>
-                  {governmentDoc ? governmentDoc.name : 'Upload Gov ID Document'}
-                </span>
-                <input type="file" accept="image/*,application/pdf" style={{ display: 'none' }} onChange={(e) => e.target.files && setGovernmentDoc(e.target.files[0])} />
+            <div className="form-item-half">
+              <label className="input-label-premium">Government Issued ID Front</label>
+              <label className="upload-box-premium">
+                {governmentDoc ? (
+                  <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold' }}>✓ ID Selected ({governmentDoc.name.substring(0, 18)}...)</span>
+                ) : (
+                  <>
+                    <Upload size={22} color="#64748b" style={{ marginBottom: '6px' }} />
+                    <span style={{ fontSize: '0.78rem', color: '#475569', fontWeight: 700 }}>Upload Document Front</span>
+                  </>
+                )}
+                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => e.target.files && setGovernmentDoc(e.target.files[0])} />
               </label>
+            </div>
 
-              <label style={uploadBoxStyle} onMouseOver={(e) => { e.currentTarget.style.borderColor = '#6366f1'; e.currentTarget.style.background = '#eff6ff'; }} onMouseOut={(e) => { e.currentTarget.style.borderColor = '#cbd5e1'; e.currentTarget.style.background = '#f8fafc'; }}>
-                <Upload size={24} color={aadharPan ? '#10b981' : '#64748b'} style={{ marginBottom: '10px' }} />
-                <span style={{ fontSize: '0.85rem', color: aadharPan ? '#10b981' : '#475569', fontWeight: 600, textAlign: 'center', padding: '0 10px' }}>
-                  {aadharPan ? aadharPan.name : 'Upload Aadhar / PAN Card'}
-                </span>
-                <input type="file" accept="image/*,application/pdf" style={{ display: 'none' }} onChange={(e) => e.target.files && setAadharPan(e.target.files[0])} />
+            <div className="form-item-half">
+              <label className="input-label-premium">PAN Card / Aadhar Back</label>
+              <label className="upload-box-premium">
+                {aadharPan ? (
+                  <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold' }}>✓ Doc Selected ({aadharPan.name.substring(0, 18)}...)</span>
+                ) : (
+                  <>
+                    <Upload size={22} color="#64748b" style={{ marginBottom: '6px' }} />
+                    <span style={{ fontSize: '0.78rem', color: '#475569', fontWeight: 700 }}>Upload Aadhar/PAN Back</span>
+                  </>
+                )}
+                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => e.target.files && setAadharPan(e.target.files[0])} />
               </label>
             </div>
 
             {/* Actions */}
-            <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '16px', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #e2e8f0' }}>
+            <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '16px', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #e2e8f0' }} className="action-buttons-wrap">
               <button 
                 type="button" 
                 onClick={() => navigate('/')}
-                style={{ flex: 1, padding: '16px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', color: '#dc2626', fontWeight: 700, fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }}
-                onMouseOver={(e) => { e.currentTarget.style.background = '#fee2e2'; e.currentTarget.style.borderColor = '#fca5a5'; }}
-                onMouseOut={(e) => { e.currentTarget.style.background = '#fef2f2'; e.currentTarget.style.borderColor = '#fecaca'; }}
+                style={{ flex: 1, padding: '14px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', color: '#dc2626', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }}
+                onMouseOver={(e) => { e.currentTarget.style.background = '#fee2e2'; }}
+                onMouseOut={(e) => { e.currentTarget.style.background = '#fef2f2'; }}
               >
                 <X size={18} /> Cancel
               </button>
               <button 
                 type="submit" 
                 disabled={loading} 
-                style={{ flex: 2, padding: '16px', background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, fontSize: '1.05rem', cursor: loading ? 'not-allowed' : 'pointer', transition: 'all 0.3s', boxShadow: '0 10px 25px -5px rgba(99, 102, 241, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                onMouseOver={(e) => { if(!loading) e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                onMouseOut={(e) => { if(!loading) e.currentTarget.style.transform = 'none'; }}
+                style={{ flex: 2, padding: '14px', background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, fontSize: '0.95rem', cursor: loading ? 'not-allowed' : 'pointer', transition: 'all 0.3s', boxShadow: '0 10px 25px -5px rgba(99, 102, 241, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
               >
                 {loading ? (
-                  <><div className="spinner" style={{ width: '20px', height: '20px', border: '3px solid rgba(255,255,255,0.3)', borderTop: '3px solid #fff', borderRadius: '50%', animation: 'spin 1s linear infinite' }} /> Processing...</>
+                  <><div className="spinner" /> Processing...</>
                 ) : (
                   <><ShieldCheck size={20} /> Submit Application</>
                 )}
@@ -280,9 +253,47 @@ const ApplySuperAdmin: React.FC = () => {
       </div>
 
       <style>{`
+        .responsive-form-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 20px;
+        }
+        .input-field-premium {
+          width: 100%; padding: 12px 14px; borderRadius: 10px; border: 1.5px solid #cbd5e1;
+          background: #f8fafc; fontSize: 0.95rem; color: #0f172a; transition: all 0.2s; outline: none;
+        }
+        .input-field-premium:focus {
+          border-color: #6366f1; background: #fff; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+        }
+        .input-label-premium {
+          display: block; fontSize: 0.78rem; fontWeight: 800; color: #475569; marginBottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .upload-box-premium {
+          display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100px;
+          border: 2.5px dashed #cbd5e1; borderRadius: 12px; cursor: pointer; background: #f8fafc; transition: all 0.2s;
+        }
+        .upload-box-premium:hover {
+          border-color: #6366f1; background: #eff6ff;
+        }
+        .spinner {
+          width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #fff; border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        @media (max-width: 600px) {
+          .responsive-form-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+          }
+          .form-item-half {
+            grid-column: 1 / -1;
+          }
+          .action-buttons-wrap {
+            flex-direction: column-reverse;
+          }
+          .form-content-wrap {
+            padding: 16px !important;
+          }
+        }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.6; transition: 0.2s; }
-        input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
       `}</style>
     </div>
   );

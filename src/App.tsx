@@ -27,6 +27,7 @@ import HostRegistry from './pages/HostRegistry';
 import VipStore from './pages/VipStore';
 import Moderation from './pages/Moderation';
 import Localization from './pages/ops/Localization';
+import Locations from './pages/Locations';
 import LevelSystem from './pages/LevelSystem';
 import GatewayConfig from './pages/GatewayConfig';
 import SimulationManager from './pages/SimulationManager';
@@ -141,6 +142,7 @@ function AppContent() {
                 <Route path="/notifications" element={<NotificationCenter />} />
                 <Route path="/moderation" element={<Moderation />} />
                 <Route path="/localization" element={<Localization />} />
+                <Route path="/locations" element={<Locations />} />
                 <Route path="/level-system" element={<LevelSystem />} />
                 <Route path="/payment-gateways" element={<GatewayConfig />} />
                 <Route path="/simulation" element={<SimulationManager />} />

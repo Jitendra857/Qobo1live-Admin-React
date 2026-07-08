@@ -117,6 +117,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
         { title: 'Payment Gateways', path: '/payment-gateways' },
         { title: 'General Settings', path: '/settings' },
         { title: 'App Language', path: '/localization' },
+        { title: 'Manage Locations', path: '/locations' },
         { title: 'Simulator Control', path: '/simulation' },
         { title: 'Privacy Policy', path: '/privacy' },
       ],

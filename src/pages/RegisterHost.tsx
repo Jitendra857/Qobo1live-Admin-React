@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BACKEND_URL } from '../services/api';
-import { UserCheck, Upload, AlertCircle, CheckCircle2, X, FileText, Building2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { locationData } from '../utils/locationData';
+import { UserCheck, Upload, AlertCircle, CheckCircle2, X, Building2 } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const RegisterHost: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const agencyCodeParam = searchParams.get('agencyCode') || '';
+
   const [hostName, setHostName] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [gmail, setGmail] = useState('');
@@ -25,6 +27,12 @@ const RegisterHost: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; content: string } | null>(null);
+
+  useEffect(() => {
+    if (agencyCodeParam) {
+      setAgencyCode(agencyCodeParam.toUpperCase());
+    }
+  }, [agencyCodeParam]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,8 +73,9 @@ const RegisterHost: React.FC = () => {
         });
         setHostName(''); setWhatsapp(''); setGmail(''); setCategory('General');
         setHostIdNumber(''); setCountry(''); setState(''); setCity('');
-        setAddress(''); setAgencyCode(''); setRealPhoto(null);
+        setAddress(''); setRealPhoto(null);
         setDocPhotoFront(null); setDocPhotoBack(null);
+        if (!agencyCodeParam) setAgencyCode('');
       } else {
         setMessage({ type: 'error', content: res.data.message || 'Submission failed' });
       }
@@ -81,32 +90,25 @@ const RegisterHost: React.FC = () => {
     }
   };
 
-  const inputStyle = {
-    width: '100%', padding: '14px 16px', borderRadius: '8px', border: '1px solid #cbd5e1',
-    background: '#f8fafc', fontSize: '0.95rem', color: '#0f172a', transition: 'all 0.2s', outline: 'none'
-  };
-  const labelStyle = { display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#475569', marginBottom: '8px', textTransform: 'uppercase' as const, letterSpacing: '0.05em' };
-  const uploadBoxStyle = { display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center', height: '120px', border: '2px dashed #cbd5e1', borderRadius: '12px', cursor: 'pointer', background: '#f8fafc', transition: 'all 0.2s' };
-
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 20px', fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 16px', fontFamily: 'Inter, sans-serif' }}>
       
       {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '30px', width: '100%', maxWidth: '800px' }}>
         <img src="/logo.svg" alt="Qobo1Live Logo" style={{ height: '48px', marginBottom: '16px', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))' }} />
-        <h1 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.03em', margin: 0 }}>Host Application Form</h1>
-        <p style={{ color: '#64748b', fontSize: '1.05rem', marginTop: '8px', fontWeight: 500 }}>
+        <h1 style={{ fontSize: '2rem', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.03em', margin: 0 }}>Host Application</h1>
+        <p style={{ color: '#64748b', fontSize: '1rem', marginTop: '8px', fontWeight: 500 }}>
           Join an agency to unlock live streaming capabilities on Qobo1live.
         </p>
       </div>
 
       {/* Main Form Page Container */}
-      <div style={{ background: '#ffffff', width: '100%', maxWidth: '850px', borderRadius: '20px', boxShadow: '0 20px 50px -12px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+      <div style={{ background: '#ffffff', width: '100%', maxWidth: '800px', borderRadius: '20px', boxShadow: '0 20px 50px -12px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
         
         {/* Top Accent Bar */}
         <div style={{ height: '6px', background: 'linear-gradient(90deg, #ec4899, #f43f5e)' }}></div>
 
-        <div style={{ padding: '40px' }}>
+        <div style={{ padding: '24px' }} className="form-content-wrap">
           {message && (
             <div style={{ color: message.type === 'success' ? '#15803d' : '#b91c1c', background: message.type === 'success' ? '#dcfce7' : '#fee2e2', padding: '16px 20px', borderRadius: '12px', marginBottom: '30px', fontSize: '0.95rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px', border: `1px solid ${message.type === 'success' ? '#bbf7d0' : '#fecaca'}` }}>
               {message.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
@@ -114,7 +116,14 @@ const RegisterHost: React.FC = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+          {agencyCodeParam && (
+            <div style={{ color: '#86198f', background: '#fae8ff', padding: '12px 18px', borderRadius: '10px', marginBottom: '24px', fontSize: '0.88rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #f5d0fe' }}>
+              <Building2 size={16} />
+              <span>You are applying to Agency Code: <strong>{agencyCodeParam.toUpperCase()}</strong></span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="responsive-form-grid">
             
             {/* Section 1: Profile Photo */}
             <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
@@ -146,145 +155,129 @@ const RegisterHost: React.FC = () => {
               <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><Building2 size={20} color="#ec4899" /> Agency Assignment</h3>
             </div>
 
-            <div style={{ gridColumn: 'span 2' }}>
-              <label style={labelStyle}>Agency Referral Code</label>
-              <input type="text" value={agencyCode} onChange={(e) => setAgencyCode(e.target.value.toUpperCase())} placeholder="e.g. AGX100" required style={{...inputStyle, fontSize: '1.1rem', letterSpacing: '0.05em', fontWeight: 'bold'}} onFocus={(e) => {e.target.style.borderColor = '#ec4899'; e.target.style.background = '#fff';}} onBlur={(e) => {e.target.style.borderColor = '#cbd5e1'; e.target.style.background = '#f8fafc';}} />
+            <div style={{ gridColumn: '1 / -1' }} className="form-item-full">
+              <label className="input-label-premium">Agency Referral Code</label>
+              <input 
+                type="text" 
+                value={agencyCode} 
+                onChange={(e) => setAgencyCode(e.target.value)} 
+                required 
+                disabled={!!agencyCodeParam} 
+                className="input-field-premium" 
+                style={agencyCodeParam ? { background: '#f1f5f9', cursor: 'not-allowed', color: '#64748b', fontWeight: 'bold' } : {}}
+              />
             </div>
 
-            {/* Section 3: Personal Profile */}
+            {/* Section 3: Identity Details */}
             <div style={{ gridColumn: '1 / -1', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginTop: '10px', marginBottom: '8px' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><UserCheck size={20} color="#ec4899" /> Personal Profile</h3>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><UserCheck size={20} color="#ec4899" /> Host Details</h3>
             </div>
 
-            <div>
-              <label style={labelStyle}>Full Name</label>
-              <input type="text" value={hostName} onChange={(e) => setHostName(e.target.value)} required style={inputStyle} onFocus={(e) => {e.target.style.borderColor = '#ec4899'; e.target.style.background = '#fff';}} onBlur={(e) => {e.target.style.borderColor = '#cbd5e1'; e.target.style.background = '#f8fafc';}} />
+            <div className="form-item-half">
+              <label className="input-label-premium">Full Name</label>
+              <input type="text" value={hostName} onChange={(e) => setHostName(e.target.value)} required className="input-field-premium" />
             </div>
 
-            <div>
-              <label style={labelStyle}>Gmail Address</label>
-              <input type="email" value={gmail} onChange={(e) => setGmail(e.target.value)} required style={inputStyle} onFocus={(e) => {e.target.style.borderColor = '#ec4899'; e.target.style.background = '#fff';}} onBlur={(e) => {e.target.style.borderColor = '#cbd5e1'; e.target.style.background = '#f8fafc';}} />
-            </div>
-
-            <div>
-              <label style={labelStyle}>WhatsApp Number</label>
-              <input type="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} required style={inputStyle} onFocus={(e) => {e.target.style.borderColor = '#ec4899'; e.target.style.background = '#fff';}} onBlur={(e) => {e.target.style.borderColor = '#cbd5e1'; e.target.style.background = '#f8fafc';}} />
-            </div>
-
-            <div>
-              <label style={labelStyle}>Host Category</label>
-              <select value={category} onChange={(e) => setCategory(e.target.value)} required style={{...inputStyle, cursor: 'pointer', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23475569\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 16px center' }} onFocus={(e) => {e.target.style.borderColor = '#ec4899'; e.target.style.background = '#fff url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23475569\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E") no-repeat right 16px center';}} onBlur={(e) => {e.target.style.borderColor = '#cbd5e1'; e.target.style.background = '#f8fafc url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23475569\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E") no-repeat right 16px center';}}>
-                <option value="General">General Talk</option>
-                <option value="Singing">Singing / Music</option>
-                <option value="Dancing">Dancing</option>
+            <div className="form-item-half">
+              <label className="input-label-premium">Category</label>
+              <select value={category} onChange={(e) => setCategory(e.target.value)} required className="input-field-premium">
+                <option value="General">General (Just Chat)</option>
                 <option value="Gaming">Gaming</option>
-                <option value="Storytelling">Storytelling / Chatting</option>
+                <option value="Singing">Singing</option>
+                <option value="Dancing">Dancing</option>
               </select>
             </div>
 
-            <div style={{ gridColumn: 'span 2' }}>
-              <label style={labelStyle}>Government ID Number</label>
-              <input type="text" value={hostIdNumber} onChange={(e) => setHostIdNumber(e.target.value)} required style={inputStyle} onFocus={(e) => {e.target.style.borderColor = '#ec4899'; e.target.style.background = '#fff';}} onBlur={(e) => {e.target.style.borderColor = '#cbd5e1'; e.target.style.background = '#f8fafc';}} />
+            <div className="form-item-half">
+              <label className="input-label-premium">WhatsApp Number</label>
+              <input type="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} required className="input-field-premium" />
             </div>
 
-            {/* Section 4: Location */}
+            <div className="form-item-half">
+              <label className="input-label-premium">Gmail Address</label>
+              <input type="email" value={gmail} onChange={(e) => setGmail(e.target.value)} required className="input-field-premium" />
+            </div>
+
+            <div className="form-item-half">
+              <label className="input-label-premium">National ID (Aadhar/Passport)</label>
+              <input type="text" value={hostIdNumber} onChange={(e) => setHostIdNumber(e.target.value)} required className="input-field-premium" />
+            </div>
+
+            <div className="form-item-half">
+              <label className="input-label-premium">Country</label>
+              <input type="text" value={country} onChange={(e) => setCountry(e.target.value)} required className="input-field-premium" />
+            </div>
+
+            <div className="form-item-half">
+              <label className="input-label-premium">State / Region</label>
+              <input type="text" value={state} onChange={(e) => setState(e.target.value)} required className="input-field-premium" />
+            </div>
+
+            <div className="form-item-half">
+              <label className="input-label-premium">City</label>
+              <input type="text" value={city} onChange={(e) => setCity(e.target.value)} required className="input-field-premium" />
+            </div>
+
+            <div style={{ gridColumn: '1 / -1' }} className="form-item-full">
+              <label className="input-label-premium">Full Address</label>
+              <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} required className="input-field-premium" />
+            </div>
+
+            {/* Section 4: Document Uploads */}
             <div style={{ gridColumn: '1 / -1', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginTop: '10px', marginBottom: '8px' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Location Details</h3>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Required Verification Documents</h3>
             </div>
 
-            <div>
-              <label style={labelStyle}>Country</label>
-              <select 
-                value={country} 
-                onChange={(e) => {
-                  setCountry(e.target.value);
-                  setState('');
-                }} 
-                required 
-                style={{...inputStyle, cursor: 'pointer', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23475569\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 16px center' }}
-                onFocus={(e) => {e.target.style.borderColor = '#ec4899'; e.target.style.background = '#fff url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23475569\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E") no-repeat right 16px center';}} 
-                onBlur={(e) => {e.target.style.borderColor = '#cbd5e1'; e.target.style.background = '#f8fafc url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23475569\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E") no-repeat right 16px center';}}
-              >
-                <option value="">Select Country</option>
-                {Object.keys(locationData).map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label style={labelStyle}>State</label>
-              <select 
-                value={state} 
-                onChange={(e) => setState(e.target.value)} 
-                required 
-                disabled={!country}
-                style={{...inputStyle, cursor: country ? 'pointer' : 'not-allowed', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23475569\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 16px center' }}
-                onFocus={(e) => {e.target.style.borderColor = '#ec4899'; e.target.style.background = '#fff url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23475569\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E") no-repeat right 16px center';}} 
-                onBlur={(e) => {e.target.style.borderColor = '#cbd5e1'; e.target.style.background = '#f8fafc url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23475569\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E") no-repeat right 16px center';}}
-              >
-                <option value="">Select State</option>
-                {country && locationData[country]?.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label style={labelStyle}>City</label>
-              <input type="text" value={city} onChange={(e) => setCity(e.target.value)} required style={inputStyle} onFocus={(e) => {e.target.style.borderColor = '#ec4899'; e.target.style.background = '#fff';}} onBlur={(e) => {e.target.style.borderColor = '#cbd5e1'; e.target.style.background = '#f8fafc';}} />
-            </div>
-
-            <div>
-              <label style={labelStyle}>Full Address</label>
-              <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} required style={inputStyle} onFocus={(e) => {e.target.style.borderColor = '#ec4899'; e.target.style.background = '#fff';}} onBlur={(e) => {e.target.style.borderColor = '#cbd5e1'; e.target.style.background = '#f8fafc';}} />
-            </div>
-
-            {/* Section 5: Documents */}
-            <div style={{ gridColumn: '1 / -1', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginTop: '10px', marginBottom: '8px' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><FileText size={20} color="#ec4899" /> Media & Verification Docs</h3>
-            </div>
-
-            <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
-              <label style={uploadBoxStyle} onMouseOver={(e) => { e.currentTarget.style.borderColor = '#ec4899'; e.currentTarget.style.background = '#fdf2f8'; }} onMouseOut={(e) => { e.currentTarget.style.borderColor = '#cbd5e1'; e.currentTarget.style.background = '#f8fafc'; }}>
-                <Upload size={24} color={docPhotoFront ? '#10b981' : '#64748b'} style={{ marginBottom: '10px' }} />
-                <span style={{ fontSize: '0.85rem', color: docPhotoFront ? '#10b981' : '#475569', fontWeight: 600, textAlign: 'center', padding: '0 10px' }}>
-                  {docPhotoFront ? docPhotoFront.name : 'ID Document (Front)'}
-                </span>
+            <div className="form-item-half">
+              <label className="input-label-premium">ID Document Front View</label>
+              <label className="upload-box-premium">
+                {docPhotoFront ? (
+                  <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold' }}>✓ Front View Selected ({docPhotoFront.name.substring(0, 18)}...)</span>
+                ) : (
+                  <>
+                    <Upload size={22} color="#64748b" style={{ marginBottom: '6px' }} />
+                    <span style={{ fontSize: '0.78rem', color: '#475569', fontWeight: 700 }}>Upload Front Side</span>
+                  </>
+                )}
                 <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => e.target.files && setDocPhotoFront(e.target.files[0])} />
               </label>
+            </div>
 
-              <label style={uploadBoxStyle} onMouseOver={(e) => { e.currentTarget.style.borderColor = '#ec4899'; e.currentTarget.style.background = '#fdf2f8'; }} onMouseOut={(e) => { e.currentTarget.style.borderColor = '#cbd5e1'; e.currentTarget.style.background = '#f8fafc'; }}>
-                <Upload size={24} color={docPhotoBack ? '#10b981' : '#64748b'} style={{ marginBottom: '10px' }} />
-                <span style={{ fontSize: '0.85rem', color: docPhotoBack ? '#10b981' : '#475569', fontWeight: 600, textAlign: 'center', padding: '0 10px' }}>
-                  {docPhotoBack ? docPhotoBack.name : 'ID Document (Back)'}
-                </span>
+            <div className="form-item-half">
+              <label className="input-label-premium">ID Document Back View</label>
+              <label className="upload-box-premium">
+                {docPhotoBack ? (
+                  <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold' }}>✓ Back View Selected ({docPhotoBack.name.substring(0, 18)}...)</span>
+                ) : (
+                  <>
+                    <Upload size={22} color="#64748b" style={{ marginBottom: '6px' }} />
+                    <span style={{ fontSize: '0.78rem', color: '#475569', fontWeight: 700 }}>Upload Back Side</span>
+                  </>
+                )}
                 <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => e.target.files && setDocPhotoBack(e.target.files[0])} />
               </label>
             </div>
 
             {/* Actions */}
-            <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '16px', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #e2e8f0' }}>
+            <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '16px', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #e2e8f0' }} className="action-buttons-wrap">
               <button 
                 type="button" 
                 onClick={() => navigate('/')}
-                style={{ flex: 1, padding: '16px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', color: '#dc2626', fontWeight: 700, fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }}
-                onMouseOver={(e) => { e.currentTarget.style.background = '#fee2e2'; e.currentTarget.style.borderColor = '#fca5a5'; }}
-                onMouseOut={(e) => { e.currentTarget.style.background = '#fef2f2'; e.currentTarget.style.borderColor = '#fecaca'; }}
+                style={{ flex: 1, padding: '14px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', color: '#dc2626', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }}
+                onMouseOver={(e) => { e.currentTarget.style.background = '#fee2e2'; }}
+                onMouseOut={(e) => { e.currentTarget.style.background = '#fef2f2'; }}
               >
                 <X size={18} /> Cancel
               </button>
               <button 
                 type="submit" 
                 disabled={loading} 
-                style={{ flex: 2, padding: '16px', background: 'linear-gradient(135deg, #ec4899 0%, #be123c 100%)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, fontSize: '1.05rem', cursor: loading ? 'not-allowed' : 'pointer', transition: 'all 0.3s', boxShadow: '0 10px 25px -5px rgba(236, 72, 153, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                onMouseOver={(e) => { if(!loading) e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                onMouseOut={(e) => { if(!loading) e.currentTarget.style.transform = 'none'; }}
+                style={{ flex: 2, padding: '14px', background: 'linear-gradient(135deg, #ec4899 0%, #d946ef 100%)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, fontSize: '0.95rem', cursor: loading ? 'not-allowed' : 'pointer', transition: 'all 0.3s', boxShadow: '0 10px 25px -5px rgba(236, 72, 153, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
               >
                 {loading ? (
-                  <><div className="spinner" style={{ width: '20px', height: '20px', border: '3px solid rgba(255,255,255,0.3)', borderTop: '3px solid #fff', borderRadius: '50%', animation: 'spin 1s linear infinite' }} /> Processing...</>
+                  <><div className="spinner" /> Processing...</>
                 ) : (
-                  <><UserCheck size={20} /> Submit Onboarding</>
+                  <><UserCheck size={20} /> Submit Application</>
                 )}
               </button>
             </div>
@@ -294,6 +287,46 @@ const RegisterHost: React.FC = () => {
       </div>
 
       <style>{`
+        .responsive-form-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 20px;
+        }
+        .input-field-premium {
+          width: 100%; padding: 12px 14px; borderRadius: 10px; border: 1.5px solid #cbd5e1;
+          background: #f8fafc; fontSize: 0.95rem; color: #0f172a; transition: all 0.2s; outline: none;
+        }
+        .input-field-premium:focus {
+          border-color: #ec4899; background: #fff; box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.15);
+        }
+        .input-label-premium {
+          display: block; fontSize: 0.78rem; fontWeight: 800; color: #475569; marginBottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .upload-box-premium {
+          display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100px;
+          border: 2.5px dashed #cbd5e1; borderRadius: 12px; cursor: pointer; background: #f8fafc; transition: all 0.2s;
+        }
+        .upload-box-premium:hover {
+          border-color: #ec4899; background: #fdf2f8;
+        }
+        .spinner {
+          width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #fff; border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        @media (max-width: 600px) {
+          .responsive-form-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+          }
+          .form-item-half {
+            grid-column: 1 / -1;
+          }
+          .action-buttons-wrap {
+            flex-direction: column-reverse;
+          }
+          .form-content-wrap {
+            padding: 16px !important;
+          }
+        }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
       `}</style>
     </div>

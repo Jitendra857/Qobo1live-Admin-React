@@ -159,6 +159,14 @@ export const adminService = {
   getHostTracking: () => api.get('/admin/host-tracking'),
   clearEconomyData: () => api.get('/clean-economy-test'),
   clearUserEconomyData: (id: string) => api.get(`/clean-user-economy/${id}`),
+
+  // Locations Manager Endpoints
+  getCountries: () => api.get('/auth/countries'),
+  getStates: (countryId: string) => api.get(`/auth/states?countryId=${countryId}`),
+  createCountry: (data: { name: string; code: string }) => api.post('/auth/countries', data),
+  createState: (data: { name: string; countryId: string }) => api.post('/auth/states', data),
+  deleteCountry: (id: string) => api.delete(`/auth/countries/${id}`),
+  deleteState: (id: string) => api.delete(`/auth/states/${id}`),
 };
 
 export default api;

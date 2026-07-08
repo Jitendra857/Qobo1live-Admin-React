@@ -20,6 +20,8 @@ const AgencyHub: React.FC = () => {
   // Invite state
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviting, setInviting] = useState(false);
+  const [superAdmins, setSuperAdmins] = useState<any[]>([]);
+  const [selectedSuperAdmin, setSelectedSuperAdmin] = useState<string>('all');
 
   // Reject / Modal State
   const [selectedAgency, setSelectedAgency] = useState<any>(null);
@@ -33,14 +35,17 @@ const AgencyHub: React.FC = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [agenciesRes, revenueRes] = await Promise.all([
+      const [agenciesRes, revenueRes, adminsRes] = await Promise.all([
         adminService.getAgencies(),
-        adminService.getGlobalAgencyStats()
+        adminService.getGlobalAgencyStats(),
+        adminService.getAdmins()
       ]);
       const list = agenciesRes.data.data || [];
       setAgencies(list);
       setFiltered(list);
       setRevenue(revenueRes.data.data || null);
+      const adminList = adminsRes.data.data || [];
+      setSuperAdmins(adminList.filter((a: any) => a.role === 'super_admin'));
     } catch (err) {
       toast.error('Failed to load agency data');
     } finally {
@@ -65,8 +70,11 @@ const AgencyHub: React.FC = () => {
     if (statusFilter !== 'all') {
       result = result.filter(a => a.status === statusFilter);
     }
+    if (selectedSuperAdmin !== 'all') {
+      result = result.filter(a => a.owner?.email === selectedSuperAdmin);
+    }
     setFiltered(result);
-  }, [search, statusFilter, agencies]);
+  }, [search, statusFilter, selectedSuperAdmin, agencies]);
 
   const handleApprove = async (agencyId: string, status: 'active' | 'rejected', fb?: string) => {
     try {
@@ -383,6 +391,16 @@ const AgencyHub: React.FC = () => {
             onChange={e => setSearch(e.target.value)}
           />
         </div>
+        <select
+          className="filter-select"
+          value={selectedSuperAdmin}
+          onChange={e => setSelectedSuperAdmin(e.target.value)}
+        >
+          <option value="all">All Super Admins</option>
+          {superAdmins.map(sa => (
+            <option key={sa.id} value={sa.email}>{sa.name || sa.email}</option>
+          ))}
+        </select>
         <select
           className="filter-select"
           value={statusFilter}

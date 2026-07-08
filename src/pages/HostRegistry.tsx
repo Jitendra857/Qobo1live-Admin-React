@@ -22,6 +22,9 @@ const HostRegistry: React.FC = () => {
   // Invite state
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviting, setInviting] = useState(false);
+  const [superAdmins, setSuperAdmins] = useState<any[]>([]);
+  const [selectedSuperAdmin, setSelectedSuperAdmin] = useState<string>('all');
+  const [agenciesList, setAgenciesList] = useState<any[]>([]);
 
   // Reject / Modal State
   const [feedback, setFeedback] = useState('');
@@ -38,10 +41,17 @@ const HostRegistry: React.FC = () => {
   const fetchApps = async () => {
     try {
       setLoading(true);
-      const res = await adminService.getHosts();
+      const [res, adminsRes, agenciesRes] = await Promise.all([
+        adminService.getHosts(),
+        adminService.getAdmins(),
+        adminService.getAgencies()
+      ]);
       if (res.data.statusCode === 1) {
         setApps(res.data.data || []);
       }
+      const adminList = adminsRes.data.data || [];
+      setSuperAdmins(adminList.filter((a: any) => a.role === 'super_admin'));
+      setAgenciesList(agenciesRes.data.data || []);
     } catch {
       toast.error('Registry synchronization failure');
     } finally {
@@ -67,8 +77,15 @@ const HostRegistry: React.FC = () => {
         a.category?.toLowerCase().includes(q)
       );
     }
+    if (selectedSuperAdmin !== 'all') {
+      const ownedAgencyCodes = agenciesList
+        .filter(agency => agency.owner?.email === selectedSuperAdmin)
+        .map(agency => agency.code?.toLowerCase());
+      
+      result = result.filter(a => ownedAgencyCodes.includes(a.agencyCode?.toLowerCase()));
+    }
     setFiltered(result);
-  }, [search, activeTab, apps]);
+  }, [search, activeTab, selectedSuperAdmin, apps, agenciesList]);
 
   const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
   const canApprove = currentUser?.role === 'super_admin';
@@ -336,6 +353,17 @@ const HostRegistry: React.FC = () => {
             onChange={e => setSearch(e.target.value)}
           />
         </div>
+        <select
+          className="filter-select"
+          value={selectedSuperAdmin}
+          onChange={e => setSelectedSuperAdmin(e.target.value)}
+          style={{ height: '42px', border: '1px solid var(--glass-border)', borderRadius: '12px', background: 'var(--input-bg)', color: 'var(--text-primary)', fontWeight: '700', padding: '0 14px', outline: 'none' }}
+        >
+          <option value="all">All Super Admins</option>
+          {superAdmins.map(sa => (
+            <option key={sa.id} value={sa.email}>{sa.name || sa.email}</option>
+          ))}
+        </select>
         <div className="hr-tabs">
           {tabs.map(tab => (
             <button
