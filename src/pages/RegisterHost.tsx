@@ -91,7 +91,7 @@ const RegisterHost: React.FC = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 16px', fontFamily: 'Inter, sans-serif' }}>
+    <div className="public-onboarding-page" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 16px', fontFamily: 'Inter, sans-serif' }}>
       
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: '30px', width: '100%', maxWidth: '800px' }}>
@@ -328,6 +328,40 @@ const RegisterHost: React.FC = () => {
           }
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Force light theme elements on mobile/email webviews to prevent forced dark mode bugs */
+        .public-onboarding-page {
+          background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%) !important;
+          color: #0f172a !important;
+        }
+        .public-onboarding-page h1,
+        .public-onboarding-page h2,
+        .public-onboarding-page h3,
+        .public-onboarding-page h4,
+        .public-onboarding-page p,
+        .public-onboarding-page label,
+        .public-onboarding-page span {
+          color: #0f172a !important;
+        }
+        .public-onboarding-page p {
+          color: #64748b !important;
+        }
+        .public-onboarding-page .input-label-premium {
+          color: #475569 !important;
+        }
+        .public-onboarding-page input,
+        .public-onboarding-page select,
+        .public-onboarding-page textarea {
+          color: #0f172a !important;
+          background-color: #f8fafc !important;
+          border-color: #cbd5e1 !important;
+        }
+        .public-onboarding-page input:focus,
+        .public-onboarding-page select:focus,
+        .public-onboarding-page textarea:focus {
+          background-color: #ffffff !important;
+          border-color: #ec4899 !important;
+        }
       `}</style>
     </div>
   );
