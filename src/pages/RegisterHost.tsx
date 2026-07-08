@@ -4,6 +4,33 @@ import { BACKEND_URL } from '../services/api';
 import { UserCheck, Upload, AlertCircle, CheckCircle2, X, Building2 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
+const countryStateData: { [key: string]: string[] } = {
+  "India": ["Andhra Pradesh", "Delhi", "Gujarat", "Karnataka", "Maharashtra", "Punjab", "Rajasthan", "Tamil Nadu", "Uttar Pradesh", "West Bengal"],
+  "United States": ["California", "Texas", "New York", "Florida", "Illinois", "Pennsylvania", "Ohio", "Georgia", "North Carolina", "Michigan"],
+  "Pakistan": ["Punjab", "Sindh", "Khyber Pakhtunkhwa", "Balochistan", "Gilgit-Baltistan", "Azad Kashmir"],
+  "Bangladesh": ["Dhaka", "Chittagong", "Rajshahi", "Khulna", "Barisal", "Sylhet", "Rangpur", "Mymensingh"],
+  "Saudi Arabia": ["Riyadh", "Makkah", "Madinah", "Eastern Province", "Asir", "Tabuk", "Hail", "Jazan"],
+  "United Arab Emirates": ["Abu Dhabi", "Dubai", "Sharjah", "Ajman", "Umm Al Quwain", "Ras Al Khaimah", "Fujairah"],
+  "United Kingdom": ["England", "Scotland", "Wales", "Northern Ireland"],
+  "Canada": ["Ontario", "Quebec", "British Columbia", "Alberta", "Manitoba", "Nova Scotia", "Saskatchewan"],
+  "Nepal": ["Province No. 1", "Madhesh Province", "Bagmati Province", "Gandaki Province", "Lumbini Province", "Karnali Province", "Sudurpashchim Province"]
+};
+
+const countryCodes = [
+  { code: "+91", country: "India" },
+  { code: "+1", country: "USA/Canada" },
+  { code: "+92", country: "Pakistan" },
+  { code: "+880", country: "Bangladesh" },
+  { code: "+966", country: "Saudi Arabia" },
+  { code: "+971", country: "UAE" },
+  { code: "+44", country: "UK" },
+  { code: "+977", country: "Nepal" },
+  { code: "+62", country: "Indonesia" },
+  { code: "+63", country: "Philippines" },
+  { code: "+20", country: "Egypt" },
+  { code: "+234", country: "Nigeria" }
+];
+
 const RegisterHost: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -11,11 +38,17 @@ const RegisterHost: React.FC = () => {
 
   const [hostName, setHostName] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
+  const [countryCode, setCountryCode] = useState('+91');
   const [gmail, setGmail] = useState('');
   const [category, setCategory] = useState('General');
   const [hostIdNumber, setHostIdNumber] = useState('');
-  const [country, setCountry] = useState('');
-  const [state, setState] = useState('');
+
+  // Country & State Cascading
+  const [selectedCountry, setSelectedCountry] = useState('India');
+  const [customCountry, setCustomCountry] = useState('');
+  const [selectedState, setSelectedState] = useState('');
+  const [customState, setCustomState] = useState('');
+
   const [city, setCity] = useState('');
   const [address, setAddress] = useState('');
   const [agencyCode, setAgencyCode] = useState('');
@@ -34,25 +67,66 @@ const RegisterHost: React.FC = () => {
     }
   }, [agencyCodeParam]);
 
+  const triggerScrollAndFocus = (id: string, errorMessage: string) => {
+    setMessage({ type: 'error', content: errorMessage });
+    const target = document.getElementById(id);
+    if (target) {
+      target.focus();
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
 
-    if (!realPhoto || !docPhotoFront || !docPhotoBack) {
-      setMessage({ type: 'error', content: 'Please upload all required media/documents.' });
-      return;
+    // Form validations
+    if (!agencyCode.trim()) {
+      return triggerScrollAndFocus('agencyCode', 'Please enter the Agency referral code.');
+    }
+    if (!hostName.trim()) {
+      return triggerScrollAndFocus('hostName', 'Please enter your Full Name.');
+    }
+    if (!whatsapp.trim() || !/^\d+$/.test(whatsapp)) {
+      return triggerScrollAndFocus('whatsapp', 'Please enter a valid digits-only Mobile Number.');
+    }
+    if (!gmail.trim()) {
+      return triggerScrollAndFocus('gmail', 'Please enter your Gmail address.');
+    }
+    if (!hostIdNumber.trim()) {
+      return triggerScrollAndFocus('hostIdNumber', 'Please enter your National ID.');
+    }
+    if (!city.trim()) {
+      return triggerScrollAndFocus('city', 'Please enter your City.');
+    }
+    if (!address.trim()) {
+      return triggerScrollAndFocus('address', 'Please enter your Full Address.');
+    }
+
+    if (!realPhoto) {
+      return triggerScrollAndFocus('realPhotoLabel', 'Please upload your profile photo.');
+    }
+    if (!docPhotoFront) {
+      return triggerScrollAndFocus('docFrontLabel', 'Please upload ID Document Front View.');
+    }
+    if (!docPhotoBack) {
+      return triggerScrollAndFocus('docBackLabel', 'Please upload ID Document Back View.');
     }
 
     setLoading(true);
 
+    const finalCountry = selectedCountry === 'Other' ? customCountry : selectedCountry;
+    const finalState = selectedCountry === 'Other' ? customState : (selectedState === 'Other' ? customState : selectedState);
+
     const formData = new FormData();
     formData.append('hostName', hostName);
     formData.append('whatsapp', whatsapp);
+    formData.append('countryCode', countryCode);
     formData.append('gmail', gmail.toLowerCase().trim());
     formData.append('category', category);
     formData.append('hostIdNumber', hostIdNumber);
-    formData.append('country', country);
-    formData.append('state', state);
+    formData.append('country', finalCountry);
+    formData.append('state', finalState);
     formData.append('city', city);
     formData.append('address', address);
     formData.append('agencyCode', agencyCode.trim().toUpperCase());
@@ -71,13 +145,18 @@ const RegisterHost: React.FC = () => {
           type: 'success',
           content: 'Host application submitted successfully! It will be reviewed by the agency owner.'
         });
+        
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
         setHostName(''); setWhatsapp(''); setGmail(''); setCategory('General');
-        setHostIdNumber(''); setCountry(''); setState(''); setCity('');
-        setAddress(''); setRealPhoto(null);
+        setHostIdNumber(''); setCity(''); setAddress(''); setRealPhoto(null);
         setDocPhotoFront(null); setDocPhotoBack(null);
+        setCustomCountry(''); setCustomState('');
         if (!agencyCodeParam) setAgencyCode('');
       } else {
         setMessage({ type: 'error', content: res.data.message || 'Submission failed' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err: any) {
       console.error(err);
@@ -85,10 +164,22 @@ const RegisterHost: React.FC = () => {
         type: 'error',
         content: err.response?.data?.message || 'Server error occurred during submission.'
       });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setLoading(false);
     }
   };
+
+  const handleCountryChange = (c: string) => {
+    setSelectedCountry(c);
+    setSelectedState('');
+    setCustomState('');
+    if (c !== 'Other' && countryStateData[c]) {
+      setSelectedState(countryStateData[c][0]);
+    }
+  };
+
+  const states = selectedCountry !== 'Other' ? (countryStateData[selectedCountry] || []) : [];
 
   return (
     <div className="public-onboarding-page" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 16px', fontFamily: 'Inter, sans-serif' }}>
@@ -123,11 +214,12 @@ const RegisterHost: React.FC = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="responsive-form-grid">
+          <form onSubmit={handleSubmit} className="responsive-form-grid" noValidate>
             
             {/* Section 1: Profile Photo */}
             <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
               <label 
+                id="realPhotoLabel"
                 style={{ 
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
                   width: '120px', height: '120px', borderRadius: '50%', border: '3px dashed #cbd5e1', 
@@ -159,6 +251,7 @@ const RegisterHost: React.FC = () => {
               <label className="input-label-premium">Agency Referral Code</label>
               <input 
                 type="text" 
+                id="agencyCode"
                 value={agencyCode} 
                 onChange={(e) => setAgencyCode(e.target.value)} 
                 required 
@@ -175,7 +268,7 @@ const RegisterHost: React.FC = () => {
 
             <div className="form-item-half">
               <label className="input-label-premium">Full Name</label>
-              <input type="text" value={hostName} onChange={(e) => setHostName(e.target.value)} required className="input-field-premium" />
+              <input type="text" id="hostName" value={hostName} onChange={(e) => setHostName(e.target.value)} required className="input-field-premium" />
             </div>
 
             <div className="form-item-half">
@@ -190,37 +283,110 @@ const RegisterHost: React.FC = () => {
 
             <div className="form-item-half">
               <label className="input-label-premium">WhatsApp Number</label>
-              <input type="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} required className="input-field-premium" />
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <select 
+                  value={countryCode} 
+                  onChange={(e) => setCountryCode(e.target.value)} 
+                  className="input-field-premium" 
+                  style={{ width: '90px', paddingRight: '4px', flexShrink: 0 }}
+                >
+                  {countryCodes.map((item, idx) => (
+                    <option key={idx} value={item.code}>{item.code} ({item.country})</option>
+                  ))}
+                </select>
+                <input 
+                  type="text" 
+                  id="whatsapp" 
+                  value={whatsapp} 
+                  placeholder="Digits only" 
+                  onChange={(e) => setWhatsapp(e.target.value.replace(/\D/g, ''))} 
+                  required 
+                  className="input-field-premium" 
+                  style={{ flexGrow: 1 }}
+                />
+              </div>
             </div>
 
             <div className="form-item-half">
               <label className="input-label-premium">Gmail Address</label>
-              <input type="email" value={gmail} onChange={(e) => setGmail(e.target.value)} required className="input-field-premium" />
+              <input type="email" id="gmail" value={gmail} onChange={(e) => setGmail(e.target.value)} required className="input-field-premium" />
             </div>
 
             <div className="form-item-half">
               <label className="input-label-premium">National ID (Aadhar/Passport)</label>
-              <input type="text" value={hostIdNumber} onChange={(e) => setHostIdNumber(e.target.value)} required className="input-field-premium" />
+              <input type="text" id="hostIdNumber" value={hostIdNumber} onChange={(e) => setHostIdNumber(e.target.value)} required className="input-field-premium" />
             </div>
 
+            {/* Cascading Country & State */}
             <div className="form-item-half">
               <label className="input-label-premium">Country</label>
-              <input type="text" value={country} onChange={(e) => setCountry(e.target.value)} required className="input-field-premium" />
+              <select 
+                value={selectedCountry} 
+                onChange={(e) => handleCountryChange(e.target.value)} 
+                className="input-field-premium"
+              >
+                {Object.keys(countryStateData).map((c, idx) => (
+                  <option key={idx} value={c}>{c}</option>
+                ))}
+                <option value="Other">Other (Custom Write-in)</option>
+              </select>
+              {selectedCountry === 'Other' && (
+                <input 
+                  type="text" 
+                  placeholder="Type country" 
+                  value={customCountry} 
+                  onChange={(e) => setCustomCountry(e.target.value)} 
+                  required
+                  className="input-field-premium" 
+                  style={{ marginTop: '8px' }}
+                />
+              )}
             </div>
 
             <div className="form-item-half">
               <label className="input-label-premium">State / Region</label>
-              <input type="text" value={state} onChange={(e) => setState(e.target.value)} required className="input-field-premium" />
+              {selectedCountry !== 'Other' ? (
+                <select 
+                  value={selectedState} 
+                  onChange={(e) => setSelectedState(e.target.value)} 
+                  className="input-field-premium"
+                >
+                  {states.map((st, idx) => (
+                    <option key={idx} value={st}>{st}</option>
+                  ))}
+                  <option value="Other">Other (Custom Write-in)</option>
+                </select>
+              ) : (
+                <input 
+                  type="text" 
+                  placeholder="Type state/region" 
+                  value={customState} 
+                  onChange={(e) => setCustomState(e.target.value)} 
+                  required
+                  className="input-field-premium" 
+                />
+              )}
+              {selectedCountry !== 'Other' && selectedState === 'Other' && (
+                <input 
+                  type="text" 
+                  placeholder="Type state/region" 
+                  value={customState} 
+                  onChange={(e) => setCustomState(e.target.value)} 
+                  required
+                  className="input-field-premium" 
+                  style={{ marginTop: '8px' }}
+                />
+              )}
             </div>
 
             <div className="form-item-half">
               <label className="input-label-premium">City</label>
-              <input type="text" value={city} onChange={(e) => setCity(e.target.value)} required className="input-field-premium" />
+              <input type="text" id="city" value={city} onChange={(e) => setCity(e.target.value)} required className="input-field-premium" />
             </div>
 
             <div style={{ gridColumn: '1 / -1' }} className="form-item-full">
               <label className="input-label-premium">Full Address</label>
-              <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} required className="input-field-premium" />
+              <input type="text" id="address" value={address} onChange={(e) => setAddress(e.target.value)} required className="input-field-premium" />
             </div>
 
             {/* Section 4: Document Uploads */}
@@ -230,7 +396,7 @@ const RegisterHost: React.FC = () => {
 
             <div className="form-item-half">
               <label className="input-label-premium">ID Document Front View</label>
-              <label className="upload-box-premium">
+              <label id="docFrontLabel" className="upload-box-premium">
                 {docPhotoFront ? (
                   <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold' }}>✓ Front View Selected ({docPhotoFront.name.substring(0, 18)}...)</span>
                 ) : (
@@ -245,7 +411,7 @@ const RegisterHost: React.FC = () => {
 
             <div className="form-item-half">
               <label className="input-label-premium">ID Document Back View</label>
-              <label className="upload-box-premium">
+              <label id="docBackLabel" className="upload-box-premium">
                 {docPhotoBack ? (
                   <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold' }}>✓ Back View Selected ({docPhotoBack.name.substring(0, 18)}...)</span>
                 ) : (

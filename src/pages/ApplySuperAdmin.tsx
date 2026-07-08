@@ -4,14 +4,47 @@ import { BACKEND_URL } from '../services/api';
 import { ShieldCheck, Upload, AlertCircle, CheckCircle2, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+const countryStateData: { [key: string]: string[] } = {
+  "India": ["Andhra Pradesh", "Delhi", "Gujarat", "Karnataka", "Maharashtra", "Punjab", "Rajasthan", "Tamil Nadu", "Uttar Pradesh", "West Bengal"],
+  "United States": ["California", "Texas", "New York", "Florida", "Illinois", "Pennsylvania", "Ohio", "Georgia", "North Carolina", "Michigan"],
+  "Pakistan": ["Punjab", "Sindh", "Khyber Pakhtunkhwa", "Balochistan", "Gilgit-Baltistan", "Azad Kashmir"],
+  "Bangladesh": ["Dhaka", "Chittagong", "Rajshahi", "Khulna", "Barisal", "Sylhet", "Rangpur", "Mymensingh"],
+  "Saudi Arabia": ["Riyadh", "Makkah", "Madinah", "Eastern Province", "Asir", "Tabuk", "Hail", "Jazan"],
+  "United Arab Emirates": ["Abu Dhabi", "Dubai", "Sharjah", "Ajman", "Umm Al Quwain", "Ras Al Khaimah", "Fujairah"],
+  "United Kingdom": ["England", "Scotland", "Wales", "Northern Ireland"],
+  "Canada": ["Ontario", "Quebec", "British Columbia", "Alberta", "Manitoba", "Nova Scotia", "Saskatchewan"],
+  "Nepal": ["Province No. 1", "Madhesh Province", "Bagmati Province", "Gandaki Province", "Lumbini Province", "Karnali Province", "Sudurpashchim Province"]
+};
+
+const countryCodes = [
+  { code: "+91", country: "India" },
+  { code: "+1", country: "USA/Canada" },
+  { code: "+92", country: "Pakistan" },
+  { code: "+880", country: "Bangladesh" },
+  { code: "+966", country: "Saudi Arabia" },
+  { code: "+971", country: "UAE" },
+  { code: "+44", country: "UK" },
+  { code: "+977", country: "Nepal" },
+  { code: "+62", country: "Indonesia" },
+  { code: "+63", country: "Philippines" },
+  { code: "+20", country: "Egypt" },
+  { code: "+234", country: "Nigeria" }
+];
+
 const ApplySuperAdmin: React.FC = () => {
   const navigate = useNavigate();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [countryCode, setCountryCode] = useState('+91');
   const [idNumber, setIdNumber] = useState('');
-  const [country, setCountry] = useState('');
-  const [state, setState] = useState('');
+  
+  // Country & State Cascading
+  const [selectedCountry, setSelectedCountry] = useState('India');
+  const [customCountry, setCustomCountry] = useState('');
+  const [selectedState, setSelectedState] = useState('');
+  const [customState, setCustomState] = useState('');
+
   const [birthday, setBirthday] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -24,29 +57,71 @@ const ApplySuperAdmin: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; content: string } | null>(null);
 
+  // Password checks
+  const hasMinLength = password.length >= 8;
+  const hasSpecialChar = /[\!\@\#\$\%\^\&\*\(\)\_\+\-\=\[\]\{\}\;\:\'\"\,\<\>\.\?\/\~\\\|]/.test(password);
+
+  const triggerScrollAndFocus = (id: string, errorMessage: string) => {
+    setMessage({ type: 'error', content: errorMessage });
+    const target = document.getElementById(id);
+    if (target) {
+      target.focus();
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
 
-    if (password !== confirmPassword) {
-      setMessage({ type: 'error', content: 'Passwords do not match.' });
-      return;
+    // Form validations
+    if (!fullName.trim()) {
+      return triggerScrollAndFocus('fullName', 'Please enter your Full Name.');
+    }
+    if (!email.trim()) {
+      return triggerScrollAndFocus('email', 'Please enter your Email Address.');
+    }
+    if (!phone.trim() || !/^\d+$/.test(phone)) {
+      return triggerScrollAndFocus('phone', 'Please enter a valid digits-only Mobile Number.');
+    }
+    if (!idNumber.trim()) {
+      return triggerScrollAndFocus('idNumber', 'Please enter your National ID Number.');
     }
 
-    if (!originalPhoto || !governmentDoc || !aadharPan) {
-      setMessage({ type: 'error', content: 'Please upload all required documents.' });
-      return;
+    // Password validations
+    if (!hasMinLength) {
+      return triggerScrollAndFocus('password', 'Password must be at least 8 characters long.');
+    }
+    if (!hasSpecialChar) {
+      return triggerScrollAndFocus('password', 'Password must contain at least one special character.');
+    }
+    if (password !== confirmPassword) {
+      return triggerScrollAndFocus('confirmPassword', 'Passwords do not match.');
+    }
+
+    if (!originalPhoto) {
+      return triggerScrollAndFocus('originalPhotoLabel', 'Please upload your profile photo.');
+    }
+    if (!governmentDoc) {
+      return triggerScrollAndFocus('govtDocLabel', 'Please upload government ID document front side.');
+    }
+    if (!aadharPan) {
+      return triggerScrollAndFocus('aadharPanLabel', 'Please upload Aadhar/PAN back side document.');
     }
 
     setLoading(true);
+
+    const finalCountry = selectedCountry === 'Other' ? customCountry : selectedCountry;
+    const finalState = selectedCountry === 'Other' ? customState : (selectedState === 'Other' ? customState : selectedState);
 
     const formData = new FormData();
     formData.append('fullName', fullName);
     formData.append('email', email.toLowerCase().trim());
     formData.append('phone', phone);
+    formData.append('countryCode', countryCode);
     formData.append('idNumber', idNumber);
-    formData.append('country', country);
-    formData.append('state', state);
+    formData.append('country', finalCountry);
+    formData.append('state', finalState);
     formData.append('birthday', birthday);
     formData.append('password', password);
     formData.append('originalPhoto', originalPhoto);
@@ -63,12 +138,17 @@ const ApplySuperAdmin: React.FC = () => {
           type: 'success',
           content: 'Application submitted successfully! It will be reviewed by the system administrator.'
         });
+        
+        // Scroll to top on success
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
         // Clear fields
         setFullName(''); setEmail(''); setPhone(''); setIdNumber('');
-        setCountry(''); setState(''); setBirthday(''); setPassword('');
-        setConfirmPassword(''); setOriginalPhoto(null); setGovernmentDoc(null); setAadharPan(null);
+        setBirthday(''); setPassword(''); setConfirmPassword('');
+        setOriginalPhoto(null); setGovernmentDoc(null); setAadharPan(null);
       } else {
         setMessage({ type: 'error', content: res.data.message || 'Submission failed' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err: any) {
       console.error(err);
@@ -76,10 +156,22 @@ const ApplySuperAdmin: React.FC = () => {
         type: 'error',
         content: err.response?.data?.message || 'Server error occurred during submission.'
       });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setLoading(false);
     }
   };
+
+  const handleCountryChange = (c: string) => {
+    setSelectedCountry(c);
+    setSelectedState('');
+    setCustomState('');
+    if (c !== 'Other' && countryStateData[c]) {
+      setSelectedState(countryStateData[c][0]);
+    }
+  };
+
+  const states = selectedCountry !== 'Other' ? (countryStateData[selectedCountry] || []) : [];
 
   return (
     <div className="public-onboarding-page" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 16px', fontFamily: 'Inter, sans-serif' }}>
@@ -107,11 +199,12 @@ const ApplySuperAdmin: React.FC = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="responsive-form-grid">
+          <form onSubmit={handleSubmit} className="responsive-form-grid" noValidate>
             
             {/* Profile Photo */}
             <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
               <label 
+                id="originalPhotoLabel"
                 style={{ 
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
                   width: '120px', height: '120px', borderRadius: '50%', border: '3px dashed #cbd5e1', 
@@ -141,37 +234,111 @@ const ApplySuperAdmin: React.FC = () => {
 
             <div className="form-item-half">
               <label className="input-label-premium">Full Name</label>
-              <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required className="input-field-premium" />
+              <input type="text" id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} required className="input-field-premium" />
             </div>
 
             <div className="form-item-half">
               <label className="input-label-premium">Email Address</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="input-field-premium" />
+              <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="input-field-premium" />
             </div>
 
             <div className="form-item-half">
               <label className="input-label-premium">Phone Number</label>
-              <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required className="input-field-premium" />
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <select 
+                  value={countryCode} 
+                  onChange={(e) => setCountryCode(e.target.value)} 
+                  className="input-field-premium" 
+                  style={{ width: '90px', paddingRight: '4px', flexShrink: 0 }}
+                >
+                  {countryCodes.map((item, idx) => (
+                    <option key={idx} value={item.code}>{item.code} ({item.country})</option>
+                  ))}
+                </select>
+                <input 
+                  type="text" 
+                  id="phone" 
+                  value={phone} 
+                  placeholder="Digits only" 
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))} 
+                  required 
+                  className="input-field-premium" 
+                  style={{ flexGrow: 1 }}
+                />
+              </div>
             </div>
 
             <div className="form-item-half">
               <label className="input-label-premium">National ID Number</label>
-              <input type="text" value={idNumber} onChange={(e) => setIdNumber(e.target.value)} required className="input-field-premium" />
+              <input type="text" id="idNumber" value={idNumber} onChange={(e) => setIdNumber(e.target.value)} required className="input-field-premium" />
             </div>
 
+            {/* Cascading Country & State */}
             <div className="form-item-half">
               <label className="input-label-premium">Country</label>
-              <input type="text" value={country} onChange={(e) => setCountry(e.target.value)} required className="input-field-premium" />
+              <select 
+                id="countrySelect"
+                value={selectedCountry} 
+                onChange={(e) => handleCountryChange(e.target.value)} 
+                className="input-field-premium"
+              >
+                {Object.keys(countryStateData).map((c, idx) => (
+                  <option key={idx} value={c}>{c}</option>
+                ))}
+                <option value="Other">Other (Custom Write-in)</option>
+              </select>
+              {selectedCountry === 'Other' && (
+                <input 
+                  type="text" 
+                  placeholder="Type your country" 
+                  value={customCountry} 
+                  onChange={(e) => setCustomCountry(e.target.value)} 
+                  required
+                  className="input-field-premium" 
+                  style={{ marginTop: '8px' }}
+                />
+              )}
             </div>
 
             <div className="form-item-half">
               <label className="input-label-premium">State / Region</label>
-              <input type="text" value={state} onChange={(e) => setState(e.target.value)} required className="input-field-premium" />
+              {selectedCountry !== 'Other' ? (
+                <select 
+                  value={selectedState} 
+                  onChange={(e) => setSelectedState(e.target.value)} 
+                  className="input-field-premium"
+                >
+                  {states.map((st, idx) => (
+                    <option key={idx} value={st}>{st}</option>
+                  ))}
+                  <option value="Other">Other (Custom Write-in)</option>
+                </select>
+              ) : (
+                <input 
+                  type="text" 
+                  placeholder="Type state/region" 
+                  value={customState} 
+                  onChange={(e) => setCustomState(e.target.value)} 
+                  required
+                  className="input-field-premium" 
+                />
+              )}
+              {selectedCountry !== 'Other' && selectedState === 'Other' && (
+                <input 
+                  type="text" 
+                  placeholder="Type state/region" 
+                  value={customState} 
+                  onChange={(e) => setCustomState(e.target.value)} 
+                  required
+                  className="input-field-premium" 
+                  style={{ marginTop: '8px' }}
+                />
+              )}
             </div>
 
             <div style={{ gridColumn: '1 / -1' }} className="form-item-full">
               <label className="input-label-premium">Birthday</label>
-              <input type="date" value={birthday} onChange={(e) => setBirthday(e.target.value)} required className="input-field-premium" />
+              <input type="date" id="birthday" value={birthday} onChange={(e) => setBirthday(e.target.value)} required className="input-field-premium" />
             </div>
 
             {/* Section 2: Security */}
@@ -181,12 +348,22 @@ const ApplySuperAdmin: React.FC = () => {
 
             <div className="form-item-half">
               <label className="input-label-premium">Password</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="input-field-premium" />
+              <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="input-field-premium" />
+              
+              {/* Password Rule Indicators */}
+              <div style={{ marginTop: '8px', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ color: hasMinLength ? '#10b981' : '#f43f5e', fontWeight: 600 }}>
+                  {hasMinLength ? '✓' : '✗'} Minimum 8 characters
+                </span>
+                <span style={{ color: hasSpecialChar ? '#10b981' : '#f43f5e', fontWeight: 600 }}>
+                  {hasSpecialChar ? '✓' : '✗'} Contains a special character (e.g. @, #, $, !)
+                </span>
+              </div>
             </div>
 
             <div className="form-item-half">
               <label className="input-label-premium">Confirm Password</label>
-              <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className="input-field-premium" />
+              <input type="password" id="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className="input-field-premium" />
             </div>
 
             {/* Section 3: Document Uploads */}
@@ -196,7 +373,7 @@ const ApplySuperAdmin: React.FC = () => {
 
             <div className="form-item-half">
               <label className="input-label-premium">Government Issued ID Front</label>
-              <label className="upload-box-premium">
+              <label id="govtDocLabel" className="upload-box-premium">
                 {governmentDoc ? (
                   <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold' }}>✓ ID Selected ({governmentDoc.name.substring(0, 18)}...)</span>
                 ) : (
@@ -211,7 +388,7 @@ const ApplySuperAdmin: React.FC = () => {
 
             <div className="form-item-half">
               <label className="input-label-premium">PAN Card / Aadhar Back</label>
-              <label className="upload-box-premium">
+              <label id="aadharPanLabel" className="upload-box-premium">
                 {aadharPan ? (
                   <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold' }}>✓ Doc Selected ({aadharPan.name.substring(0, 18)}...)</span>
                 ) : (
