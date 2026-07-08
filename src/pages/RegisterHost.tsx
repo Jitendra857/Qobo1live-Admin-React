@@ -3,6 +3,7 @@ import axios from 'axios';
 import { BACKEND_URL } from '../services/api';
 import { UserCheck, Upload, AlertCircle, CheckCircle2, X, Building2 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const countryStateData: { [key: string]: string[] } = {
   "India": ["Andhra Pradesh", "Delhi", "Gujarat", "Karnataka", "Maharashtra", "Punjab", "Rajasthan", "Tamil Nadu", "Uttar Pradesh", "West Bengal"],
@@ -53,6 +54,9 @@ const RegisterHost: React.FC = () => {
   const [address, setAddress] = useState('');
   const [agencyCode, setAgencyCode] = useState('');
 
+  // Autofill states
+  const [isPreExistingUser, setIsPreExistingUser] = useState(false);
+
   // Files
   const [realPhoto, setRealPhoto] = useState<File | null>(null);
   const [docPhotoFront, setDocPhotoFront] = useState<File | null>(null);
@@ -73,6 +77,40 @@ const RegisterHost: React.FC = () => {
     if (target) {
       target.focus();
       target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  const checkExistingEmail = async (emailVal: string) => {
+    if (!emailVal || !emailVal.includes('@')) return;
+    try {
+      const res = await axios.get(`${BACKEND_URL}/api/auth/check-email?email=${encodeURIComponent(emailVal.trim())}`);
+      if (res.data.statusCode === 1 && res.data.data.exists) {
+        const u = res.data.data.user;
+        toast.success("Existing profile found! Auto-filling your details.");
+        
+        if (u.name) setHostName(u.name);
+        if (u.phone) setWhatsapp(u.phone.replace(/\D/g, ''));
+        if (u.countryCode) setCountryCode(u.countryCode);
+        
+        if (u.country) {
+          setSelectedCountry(u.country);
+          if (countryStateData[u.country]) {
+            if (u.state) setSelectedState(u.state);
+          } else {
+            setSelectedCountry('Other');
+            setCustomCountry(u.country);
+            setCustomState(u.state || '');
+          }
+        }
+        
+        if (u.city) setCity(u.city);
+        if (u.address) setAddress(u.address);
+        setIsPreExistingUser(true);
+      } else {
+        setIsPreExistingUser(false);
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -146,13 +184,13 @@ const RegisterHost: React.FC = () => {
           content: 'Host application submitted successfully! It will be reviewed by the agency owner.'
         });
         
-        // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         setHostName(''); setWhatsapp(''); setGmail(''); setCategory('General');
         setHostIdNumber(''); setCity(''); setAddress(''); setRealPhoto(null);
         setDocPhotoFront(null); setDocPhotoBack(null);
         setCustomCountry(''); setCustomState('');
+        setIsPreExistingUser(false);
         if (!agencyCodeParam) setAgencyCode('');
       } else {
         setMessage({ type: 'error', content: res.data.message || 'Submission failed' });
@@ -204,6 +242,13 @@ const RegisterHost: React.FC = () => {
             <div style={{ color: message.type === 'success' ? '#15803d' : '#b91c1c', background: message.type === 'success' ? '#dcfce7' : '#fee2e2', padding: '16px 20px', borderRadius: '12px', marginBottom: '30px', fontSize: '0.95rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px', border: `1px solid ${message.type === 'success' ? '#bbf7d0' : '#fecaca'}` }}>
               {message.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
               <span>{message.content}</span>
+            </div>
+          )}
+
+          {isPreExistingUser && (
+            <div style={{ color: '#16a34a', background: '#f0fdf4', padding: '12px 18px', borderRadius: '10px', marginBottom: '24px', fontSize: '0.88rem', fontWeight: 700, border: '1px solid #bbf7d0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <UserCheck size={18} />
+              <span>Registered account detected! Pre-filling profile details. Just upload documents and submit.</span>
             </div>
           )}
 
@@ -267,8 +312,21 @@ const RegisterHost: React.FC = () => {
             </div>
 
             <div className="form-item-half">
+              <label className="input-label-premium">Gmail Address</label>
+              <input 
+                type="email" 
+                id="gmail" 
+                value={gmail} 
+                onChange={(e) => setGmail(e.target.value)} 
+                onBlur={() => checkExistingEmail(gmail)}
+                required 
+                className="input-field-premium" 
+              />
+            </div>
+
+            <div className="form-item-half">
               <label className="input-label-premium">Full Name</label>
-              <input type="text" id="hostName" value={hostName} onChange={(e) => setHostName(e.target.value)} required className="input-field-premium" />
+              <input type="text" id="hostName" value={hostName} onChange={(e) => setHostName(e.target.value)} disabled={isPreExistingUser} required className="input-field-premium" />
             </div>
 
             <div className="form-item-half">
@@ -287,6 +345,7 @@ const RegisterHost: React.FC = () => {
                 <select 
                   value={countryCode} 
                   onChange={(e) => setCountryCode(e.target.value)} 
+                  disabled={isPreExistingUser}
                   className="input-field-premium" 
                   style={{ width: '90px', paddingRight: '4px', flexShrink: 0 }}
                 >
@@ -300,16 +359,12 @@ const RegisterHost: React.FC = () => {
                   value={whatsapp} 
                   placeholder="Digits only" 
                   onChange={(e) => setWhatsapp(e.target.value.replace(/\D/g, ''))} 
+                  disabled={isPreExistingUser}
                   required 
                   className="input-field-premium" 
                   style={{ flexGrow: 1 }}
                 />
               </div>
-            </div>
-
-            <div className="form-item-half">
-              <label className="input-label-premium">Gmail Address</label>
-              <input type="email" id="gmail" value={gmail} onChange={(e) => setGmail(e.target.value)} required className="input-field-premium" />
             </div>
 
             <div className="form-item-half">
@@ -323,6 +378,7 @@ const RegisterHost: React.FC = () => {
               <select 
                 value={selectedCountry} 
                 onChange={(e) => handleCountryChange(e.target.value)} 
+                disabled={isPreExistingUser}
                 className="input-field-premium"
               >
                 {Object.keys(countryStateData).map((c, idx) => (
@@ -336,6 +392,7 @@ const RegisterHost: React.FC = () => {
                   placeholder="Type country" 
                   value={customCountry} 
                   onChange={(e) => setCustomCountry(e.target.value)} 
+                  disabled={isPreExistingUser}
                   required
                   className="input-field-premium" 
                   style={{ marginTop: '8px' }}
@@ -349,6 +406,7 @@ const RegisterHost: React.FC = () => {
                 <select 
                   value={selectedState} 
                   onChange={(e) => setSelectedState(e.target.value)} 
+                  disabled={isPreExistingUser}
                   className="input-field-premium"
                 >
                   {states.map((st, idx) => (
@@ -362,6 +420,7 @@ const RegisterHost: React.FC = () => {
                   placeholder="Type state/region" 
                   value={customState} 
                   onChange={(e) => setCustomState(e.target.value)} 
+                  disabled={isPreExistingUser}
                   required
                   className="input-field-premium" 
                 />
@@ -372,6 +431,7 @@ const RegisterHost: React.FC = () => {
                   placeholder="Type state/region" 
                   value={customState} 
                   onChange={(e) => setCustomState(e.target.value)} 
+                  disabled={isPreExistingUser}
                   required
                   className="input-field-premium" 
                   style={{ marginTop: '8px' }}
@@ -381,12 +441,12 @@ const RegisterHost: React.FC = () => {
 
             <div className="form-item-half">
               <label className="input-label-premium">City</label>
-              <input type="text" id="city" value={city} onChange={(e) => setCity(e.target.value)} required className="input-field-premium" />
+              <input type="text" id="city" value={city} onChange={(e) => setCity(e.target.value)} disabled={isPreExistingUser} required className="input-field-premium" />
             </div>
 
             <div style={{ gridColumn: '1 / -1' }} className="form-item-full">
               <label className="input-label-premium">Full Address</label>
-              <input type="text" id="address" value={address} onChange={(e) => setAddress(e.target.value)} required className="input-field-premium" />
+              <input type="text" id="address" value={address} onChange={(e) => setAddress(e.target.value)} disabled={isPreExistingUser} required className="input-field-premium" />
             </div>
 
             {/* Section 4: Document Uploads */}
@@ -464,6 +524,12 @@ const RegisterHost: React.FC = () => {
         }
         .input-field-premium:focus {
           border-color: #ec4899; background: #fff; box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.15);
+        }
+        .input-field-premium:disabled {
+          background-color: #f1f5f9 !important;
+          color: #64748b !important;
+          cursor: not-allowed !important;
+          border-color: #e2e8f0 !important;
         }
         .input-label-premium {
           display: block; fontSize: 0.78rem; fontWeight: 800; color: #475569; marginBottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;

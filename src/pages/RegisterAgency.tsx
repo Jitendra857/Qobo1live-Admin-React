@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BACKEND_URL } from '../services/api';
 import { Building2, AlertCircle, CheckCircle2, X } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const countryStateData: { [key: string]: string[] } = {
   "India": ["Andhra Pradesh", "Delhi", "Gujarat", "Karnataka", "Maharashtra", "Punjab", "Rajasthan", "Tamil Nadu", "Uttar Pradesh", "West Bengal"],
@@ -51,6 +52,10 @@ const RegisterAgency: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  // Autofill states
+  const [isPreExistingUser, setIsPreExistingUser] = useState(false);
+  const [hasExistingPassword, setHasExistingPassword] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; content: string } | null>(null);
 
@@ -64,6 +69,42 @@ const RegisterAgency: React.FC = () => {
     if (target) {
       target.focus();
       target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  const checkExistingEmail = async (emailVal: string) => {
+    if (!emailVal || !emailVal.includes('@')) return;
+    try {
+      const res = await axios.get(`${BACKEND_URL}/api/auth/check-email?email=${encodeURIComponent(emailVal.trim())}`);
+      if (res.data.statusCode === 1 && res.data.data.exists) {
+        const u = res.data.data.user;
+        toast.success("Existing profile found! Auto-filling your details.");
+        
+        if (u.name) setOwnerName(u.name);
+        if (u.phone) setPhone(u.phone.replace(/\D/g, ''));
+        if (u.countryCode) setCountryCode(u.countryCode);
+        
+        if (u.country) {
+          setSelectedCountry(u.country);
+          if (countryStateData[u.country]) {
+            if (u.state) setSelectedState(u.state);
+          } else {
+            setSelectedCountry('Other');
+            setCustomCountry(u.country);
+            setCustomState(u.state || '');
+          }
+        }
+        
+        setIsPreExistingUser(true);
+        if (u.hasPassword) {
+          setHasExistingPassword(true);
+        }
+      } else {
+        setIsPreExistingUser(false);
+        setHasExistingPassword(false);
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -85,15 +126,17 @@ const RegisterAgency: React.FC = () => {
       return triggerScrollAndFocus('phone', 'Please enter a valid digits-only Phone Number.');
     }
 
-    // Password validations
-    if (!hasMinLength) {
-      return triggerScrollAndFocus('password', 'Password must be at least 8 characters long.');
-    }
-    if (!hasSpecialChar) {
-      return triggerScrollAndFocus('password', 'Password must contain at least one special character.');
-    }
-    if (password !== confirmPassword) {
-      return triggerScrollAndFocus('confirmPassword', 'Passwords do not match.');
+    // Password validations (skipped if user has existing password)
+    if (!hasExistingPassword) {
+      if (!hasMinLength) {
+        return triggerScrollAndFocus('password', 'Password must be at least 8 characters long.');
+      }
+      if (!hasSpecialChar) {
+        return triggerScrollAndFocus('password', 'Password must contain at least one special character.');
+      }
+      if (password !== confirmPassword) {
+        return triggerScrollAndFocus('confirmPassword', 'Passwords do not match.');
+      }
     }
 
     setLoading(true);
@@ -110,7 +153,7 @@ const RegisterAgency: React.FC = () => {
         countryCode,
         country: finalCountry,
         state: finalState,
-        password,
+        password: !hasExistingPassword ? password : '',
         invitedBy
       });
 
@@ -120,12 +163,12 @@ const RegisterAgency: React.FC = () => {
           content: 'Agency registered successfully! You can now log into the application.'
         });
         
-        // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         setAgencyName(''); setOwnerName(''); setEmail('');
         setPhone(''); setPassword(''); setConfirmPassword('');
         setCustomCountry(''); setCustomState('');
+        setIsPreExistingUser(false); setHasExistingPassword(false);
       } else {
         setMessage({ type: 'error', content: res.data.message || 'Registration failed' });
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -179,6 +222,13 @@ const RegisterAgency: React.FC = () => {
             </div>
           )}
 
+          {isPreExistingUser && (
+            <div style={{ color: '#16a34a', background: '#f0fdf4', padding: '12px 18px', borderRadius: '10px', marginBottom: '24px', fontSize: '0.88rem', fontWeight: 700, border: '1px solid #bbf7d0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Building2 size={18} />
+              <span>Registered account detected! Pre-filling profile details. Just enter your Agency details and submit.</span>
+            </div>
+          )}
+
           {invitedBy && (
             <div style={{ color: '#0369a1', background: '#e0f2fe', padding: '12px 18px', borderRadius: '10px', marginBottom: '24px', fontSize: '0.88rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #bae6fd' }}>
               <Building2 size={16} />
@@ -199,13 +249,21 @@ const RegisterAgency: React.FC = () => {
             </div>
 
             <div className="form-item-half">
-              <label className="input-label-premium">Owner Full Name</label>
-              <input type="text" id="ownerName" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} required className="input-field-premium" />
+              <label className="input-label-premium">Owner Email Address</label>
+              <input 
+                type="email" 
+                id="email" 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
+                onBlur={() => checkExistingEmail(email)}
+                required 
+                className="input-field-premium" 
+              />
             </div>
 
             <div className="form-item-half">
-              <label className="input-label-premium">Owner Email Address</label>
-              <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="input-field-premium" />
+              <label className="input-label-premium">Owner Full Name</label>
+              <input type="text" id="ownerName" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} disabled={isPreExistingUser} required className="input-field-premium" />
             </div>
 
             <div style={{ gridColumn: '1 / -1' }} className="form-item-full">
@@ -214,6 +272,7 @@ const RegisterAgency: React.FC = () => {
                 <select 
                   value={countryCode} 
                   onChange={(e) => setCountryCode(e.target.value)} 
+                  disabled={isPreExistingUser}
                   className="input-field-premium" 
                   style={{ width: '90px', paddingRight: '4px', flexShrink: 0 }}
                 >
@@ -227,6 +286,7 @@ const RegisterAgency: React.FC = () => {
                   value={phone} 
                   placeholder="Digits only" 
                   onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))} 
+                  disabled={isPreExistingUser}
                   required 
                   className="input-field-premium" 
                   style={{ flexGrow: 1 }}
@@ -240,6 +300,7 @@ const RegisterAgency: React.FC = () => {
               <select 
                 value={selectedCountry} 
                 onChange={(e) => handleCountryChange(e.target.value)} 
+                disabled={isPreExistingUser}
                 className="input-field-premium"
               >
                 {Object.keys(countryStateData).map((c, idx) => (
@@ -253,6 +314,7 @@ const RegisterAgency: React.FC = () => {
                   placeholder="Type country" 
                   value={customCountry} 
                   onChange={(e) => setCustomCountry(e.target.value)} 
+                  disabled={isPreExistingUser}
                   required
                   className="input-field-premium" 
                   style={{ marginTop: '8px' }}
@@ -266,6 +328,7 @@ const RegisterAgency: React.FC = () => {
                 <select 
                   value={selectedState} 
                   onChange={(e) => setSelectedState(e.target.value)} 
+                  disabled={isPreExistingUser}
                   className="input-field-premium"
                 >
                   {states.map((st, idx) => (
@@ -279,6 +342,7 @@ const RegisterAgency: React.FC = () => {
                   placeholder="Type state/region" 
                   value={customState} 
                   onChange={(e) => setCustomState(e.target.value)} 
+                  disabled={isPreExistingUser}
                   required
                   className="input-field-premium" 
                 />
@@ -289,6 +353,7 @@ const RegisterAgency: React.FC = () => {
                   placeholder="Type state/region" 
                   value={customState} 
                   onChange={(e) => setCustomState(e.target.value)} 
+                  disabled={isPreExistingUser}
                   required
                   className="input-field-premium" 
                   style={{ marginTop: '8px' }}
@@ -296,30 +361,33 @@ const RegisterAgency: React.FC = () => {
               )}
             </div>
 
-            {/* Section 2: Security */}
-            <div style={{ gridColumn: '1 / -1', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginTop: '10px', marginBottom: '8px' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Security Configuration</h3>
-            </div>
+            {/* Section 2: Security (Only visible if password needs setting) */}
+            {!hasExistingPassword && (
+              <>
+                <div style={{ gridColumn: '1 / -1', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginTop: '10px', marginBottom: '8px' }}>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Security Configuration</h3>
+                </div>
 
-            <div className="form-item-half">
-              <label className="input-label-premium">Create Password</label>
-              <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="input-field-premium" />
-              
-              {/* Password Rule Indicators */}
-              <div style={{ marginTop: '8px', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <span style={{ color: hasMinLength ? '#10b981' : '#f43f5e', fontWeight: 600 }}>
-                  {hasMinLength ? '✓' : '✗'} Minimum 8 characters
-                </span>
-                <span style={{ color: hasSpecialChar ? '#10b981' : '#f43f5e', fontWeight: 600 }}>
-                  {hasSpecialChar ? '✓' : '✗'} Contains a special character (e.g. @, #, $, !)
-                </span>
-              </div>
-            </div>
+                <div className="form-item-half">
+                  <label className="input-label-premium">Create Password</label>
+                  <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="input-field-premium" />
+                  
+                  <div style={{ marginTop: '8px', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span style={{ color: hasMinLength ? '#10b981' : '#f43f5e', fontWeight: 600 }}>
+                      {hasMinLength ? '✓' : '✗'} Minimum 8 characters
+                    </span>
+                    <span style={{ color: hasSpecialChar ? '#10b981' : '#f43f5e', fontWeight: 600 }}>
+                      {hasSpecialChar ? '✓' : '✗'} Contains a special character (e.g. @, #, $, !)
+                    </span>
+                  </div>
+                </div>
 
-            <div className="form-item-half">
-              <label className="input-label-premium">Confirm Password</label>
-              <input type="password" id="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className="input-field-premium" />
-            </div>
+                <div className="form-item-half">
+                  <label className="input-label-premium">Confirm Password</label>
+                  <input type="password" id="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className="input-field-premium" />
+                </div>
+              </>
+            )}
 
             {/* Actions */}
             <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '16px', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #e2e8f0' }} className="action-buttons-wrap">
@@ -361,6 +429,12 @@ const RegisterAgency: React.FC = () => {
         }
         .input-field-premium:focus {
           border-color: #06b6d4; background: #fff; box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.15);
+        }
+        .input-field-premium:disabled {
+          background-color: #f1f5f9 !important;
+          color: #64748b !important;
+          cursor: not-allowed !important;
+          border-color: #e2e8f0 !important;
         }
         .input-label-premium {
           display: block; fontSize: 0.78rem; fontWeight: 800; color: #475569; marginBottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;

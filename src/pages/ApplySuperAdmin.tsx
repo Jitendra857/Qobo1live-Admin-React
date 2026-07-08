@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BACKEND_URL } from '../services/api';
 import { ShieldCheck, Upload, AlertCircle, CheckCircle2, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const countryStateData: { [key: string]: string[] } = {
   "India": ["Andhra Pradesh", "Delhi", "Gujarat", "Karnataka", "Maharashtra", "Punjab", "Rajasthan", "Tamil Nadu", "Uttar Pradesh", "West Bengal"],
@@ -33,6 +34,9 @@ const countryCodes = [
 
 const ApplySuperAdmin: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const emailParam = searchParams.get('email') || '';
+
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -49,6 +53,10 @@ const ApplySuperAdmin: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
+  // Autofill states
+  const [isPreExistingUser, setIsPreExistingUser] = useState(false);
+  const [hasExistingPassword, setHasExistingPassword] = useState(false);
+
   // Files
   const [originalPhoto, setOriginalPhoto] = useState<File | null>(null);
   const [governmentDoc, setGovernmentDoc] = useState<File | null>(null);
@@ -70,6 +78,56 @@ const ApplySuperAdmin: React.FC = () => {
     }
   };
 
+  const checkExistingEmail = async (emailVal: string) => {
+    if (!emailVal || !emailVal.includes('@')) return;
+    try {
+      const res = await axios.get(`${BACKEND_URL}/api/auth/check-email?email=${encodeURIComponent(emailVal.trim())}`);
+      if (res.data.statusCode === 1 && res.data.data.exists) {
+        const u = res.data.data.user;
+        toast.success("Existing profile found! Auto-filling your details.");
+        
+        if (u.name) setFullName(u.name);
+        if (u.phone) setPhone(u.phone.replace(/\D/g, ''));
+        if (u.countryCode) setCountryCode(u.countryCode);
+        
+        if (u.country) {
+          setSelectedCountry(u.country);
+          if (countryStateData[u.country]) {
+            if (u.state) setSelectedState(u.state);
+          } else {
+            setSelectedCountry('Other');
+            setCustomCountry(u.country);
+            setCustomState(u.state || '');
+          }
+        }
+        
+        if (u.dob) {
+          const d = new Date(u.dob);
+          if (!isNaN(d.getTime())) {
+            setBirthday(d.toISOString().split('T')[0]);
+          }
+        }
+        
+        setIsPreExistingUser(true);
+        if (u.hasPassword) {
+          setHasExistingPassword(true);
+        }
+      } else {
+        setIsPreExistingUser(false);
+        setHasExistingPassword(false);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (emailParam) {
+      setEmail(emailParam);
+      checkExistingEmail(emailParam);
+    }
+  }, [emailParam]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
@@ -88,15 +146,17 @@ const ApplySuperAdmin: React.FC = () => {
       return triggerScrollAndFocus('idNumber', 'Please enter your National ID Number.');
     }
 
-    // Password validations
-    if (!hasMinLength) {
-      return triggerScrollAndFocus('password', 'Password must be at least 8 characters long.');
-    }
-    if (!hasSpecialChar) {
-      return triggerScrollAndFocus('password', 'Password must contain at least one special character.');
-    }
-    if (password !== confirmPassword) {
-      return triggerScrollAndFocus('confirmPassword', 'Passwords do not match.');
+    // Password validations (skipped if user has existing password)
+    if (!hasExistingPassword) {
+      if (!hasMinLength) {
+        return triggerScrollAndFocus('password', 'Password must be at least 8 characters long.');
+      }
+      if (!hasSpecialChar) {
+        return triggerScrollAndFocus('password', 'Password must contain at least one special character.');
+      }
+      if (password !== confirmPassword) {
+        return triggerScrollAndFocus('confirmPassword', 'Passwords do not match.');
+      }
     }
 
     if (!originalPhoto) {
@@ -123,7 +183,9 @@ const ApplySuperAdmin: React.FC = () => {
     formData.append('country', finalCountry);
     formData.append('state', finalState);
     formData.append('birthday', birthday);
-    formData.append('password', password);
+    if (!hasExistingPassword) {
+      formData.append('password', password);
+    }
     formData.append('originalPhoto', originalPhoto);
     formData.append('governmentDocument', governmentDoc);
     formData.append('aadharPanCard', aadharPan);
@@ -139,13 +201,12 @@ const ApplySuperAdmin: React.FC = () => {
           content: 'Application submitted successfully! It will be reviewed by the system administrator.'
         });
         
-        // Scroll to top on success
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
-        // Clear fields
         setFullName(''); setEmail(''); setPhone(''); setIdNumber('');
         setBirthday(''); setPassword(''); setConfirmPassword('');
         setOriginalPhoto(null); setGovernmentDoc(null); setAadharPan(null);
+        setIsPreExistingUser(false); setHasExistingPassword(false);
       } else {
         setMessage({ type: 'error', content: res.data.message || 'Submission failed' });
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -199,6 +260,13 @@ const ApplySuperAdmin: React.FC = () => {
             </div>
           )}
 
+          {isPreExistingUser && (
+            <div style={{ color: '#16a34a', background: '#f0fdf4', padding: '12px 18px', borderRadius: '10px', marginBottom: '24px', fontSize: '0.88rem', fontWeight: 700, border: '1px solid #bbf7d0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <ShieldCheck size={18} />
+              <span>Registered account detected! Pre-filling profile details. Just upload KYC files and submit.</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="responsive-form-grid" noValidate>
             
             {/* Profile Photo */}
@@ -233,13 +301,21 @@ const ApplySuperAdmin: React.FC = () => {
             </div>
 
             <div className="form-item-half">
-              <label className="input-label-premium">Full Name</label>
-              <input type="text" id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} required className="input-field-premium" />
+              <label className="input-label-premium">Email Address</label>
+              <input 
+                type="email" 
+                id="email" 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
+                onBlur={() => checkExistingEmail(email)}
+                required 
+                className="input-field-premium" 
+              />
             </div>
 
             <div className="form-item-half">
-              <label className="input-label-premium">Email Address</label>
-              <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="input-field-premium" />
+              <label className="input-label-premium">Full Name</label>
+              <input type="text" id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} disabled={isPreExistingUser} required className="input-field-premium" />
             </div>
 
             <div className="form-item-half">
@@ -248,6 +324,7 @@ const ApplySuperAdmin: React.FC = () => {
                 <select 
                   value={countryCode} 
                   onChange={(e) => setCountryCode(e.target.value)} 
+                  disabled={isPreExistingUser}
                   className="input-field-premium" 
                   style={{ width: '90px', paddingRight: '4px', flexShrink: 0 }}
                 >
@@ -261,6 +338,7 @@ const ApplySuperAdmin: React.FC = () => {
                   value={phone} 
                   placeholder="Digits only" 
                   onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))} 
+                  disabled={isPreExistingUser}
                   required 
                   className="input-field-premium" 
                   style={{ flexGrow: 1 }}
@@ -280,6 +358,7 @@ const ApplySuperAdmin: React.FC = () => {
                 id="countrySelect"
                 value={selectedCountry} 
                 onChange={(e) => handleCountryChange(e.target.value)} 
+                disabled={isPreExistingUser}
                 className="input-field-premium"
               >
                 {Object.keys(countryStateData).map((c, idx) => (
@@ -293,6 +372,7 @@ const ApplySuperAdmin: React.FC = () => {
                   placeholder="Type your country" 
                   value={customCountry} 
                   onChange={(e) => setCustomCountry(e.target.value)} 
+                  disabled={isPreExistingUser}
                   required
                   className="input-field-premium" 
                   style={{ marginTop: '8px' }}
@@ -306,6 +386,7 @@ const ApplySuperAdmin: React.FC = () => {
                 <select 
                   value={selectedState} 
                   onChange={(e) => setSelectedState(e.target.value)} 
+                  disabled={isPreExistingUser}
                   className="input-field-premium"
                 >
                   {states.map((st, idx) => (
@@ -319,6 +400,7 @@ const ApplySuperAdmin: React.FC = () => {
                   placeholder="Type state/region" 
                   value={customState} 
                   onChange={(e) => setCustomState(e.target.value)} 
+                  disabled={isPreExistingUser}
                   required
                   className="input-field-premium" 
                 />
@@ -329,6 +411,7 @@ const ApplySuperAdmin: React.FC = () => {
                   placeholder="Type state/region" 
                   value={customState} 
                   onChange={(e) => setCustomState(e.target.value)} 
+                  disabled={isPreExistingUser}
                   required
                   className="input-field-premium" 
                   style={{ marginTop: '8px' }}
@@ -338,33 +421,36 @@ const ApplySuperAdmin: React.FC = () => {
 
             <div style={{ gridColumn: '1 / -1' }} className="form-item-full">
               <label className="input-label-premium">Birthday</label>
-              <input type="date" id="birthday" value={birthday} onChange={(e) => setBirthday(e.target.value)} required className="input-field-premium" />
+              <input type="date" id="birthday" value={birthday} onChange={(e) => setBirthday(e.target.value)} disabled={isPreExistingUser} required className="input-field-premium" />
             </div>
 
-            {/* Section 2: Security */}
-            <div style={{ gridColumn: '1 / -1', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginTop: '10px', marginBottom: '8px' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Security Configuration</h3>
-            </div>
+            {/* Section 2: Security (Only visible if password needs setting) */}
+            {!hasExistingPassword && (
+              <>
+                <div style={{ gridColumn: '1 / -1', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginTop: '10px', marginBottom: '8px' }}>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Security Configuration</h3>
+                </div>
 
-            <div className="form-item-half">
-              <label className="input-label-premium">Password</label>
-              <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="input-field-premium" />
-              
-              {/* Password Rule Indicators */}
-              <div style={{ marginTop: '8px', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <span style={{ color: hasMinLength ? '#10b981' : '#f43f5e', fontWeight: 600 }}>
-                  {hasMinLength ? '✓' : '✗'} Minimum 8 characters
-                </span>
-                <span style={{ color: hasSpecialChar ? '#10b981' : '#f43f5e', fontWeight: 600 }}>
-                  {hasSpecialChar ? '✓' : '✗'} Contains a special character (e.g. @, #, $, !)
-                </span>
-              </div>
-            </div>
+                <div className="form-item-half">
+                  <label className="input-label-premium">Password</label>
+                  <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="input-field-premium" />
+                  
+                  <div style={{ marginTop: '8px', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span style={{ color: hasMinLength ? '#10b981' : '#f43f5e', fontWeight: 600 }}>
+                      {hasMinLength ? '✓' : '✗'} Minimum 8 characters
+                    </span>
+                    <span style={{ color: hasSpecialChar ? '#10b981' : '#f43f5e', fontWeight: 600 }}>
+                      {hasSpecialChar ? '✓' : '✗'} Contains a special character (e.g. @, #, $, !)
+                    </span>
+                  </div>
+                </div>
 
-            <div className="form-item-half">
-              <label className="input-label-premium">Confirm Password</label>
-              <input type="password" id="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className="input-field-premium" />
-            </div>
+                <div className="form-item-half">
+                  <label className="input-label-premium">Confirm Password</label>
+                  <input type="password" id="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className="input-field-premium" />
+                </div>
+              </>
+            )}
 
             {/* Section 3: Document Uploads */}
             <div style={{ gridColumn: '1 / -1', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginTop: '10px', marginBottom: '8px' }}>
@@ -441,6 +527,12 @@ const ApplySuperAdmin: React.FC = () => {
         }
         .input-field-premium:focus {
           border-color: #6366f1; background: #fff; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+        }
+        .input-field-premium:disabled {
+          background-color: #f1f5f9 !important;
+          color: #64748b !important;
+          cursor: not-allowed !important;
+          border-color: #e2e8f0 !important;
         }
         .input-label-premium {
           display: block; fontSize: 0.78rem; fontWeight: 800; color: #475569; marginBottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;
