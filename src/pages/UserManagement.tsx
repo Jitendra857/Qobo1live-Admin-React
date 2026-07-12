@@ -80,6 +80,8 @@ const UserManagement: React.FC = () => {
     }
   };
 
+  const [errorPopupMessage, setErrorPopupMessage] = useState<string | null>(null);
+
   const confirmDelete = async () => {
     if (!selectedUser) return;
     try {
@@ -91,7 +93,9 @@ const UserManagement: React.FC = () => {
       setDeleteModalOpen(false);
     } catch (err: any) {
       console.error('Termination failure:', err);
-      toast.error(err.response?.data?.message || err.message || 'Delete failed');
+      const errMsg = err.response?.data?.message || err.message || 'Delete failed';
+      setDeleteModalOpen(false);
+      setErrorPopupMessage(errMsg);
     } finally {
       setLoading(false);
     }
@@ -213,6 +217,17 @@ const UserManagement: React.FC = () => {
           type="danger"
           onConfirm={confirmClearUserEconomy}
           onClose={() => setClearUserEconomyModalOpen(false)}
+        />
+      )}
+
+      {errorPopupMessage && (
+        <ConfirmationModal 
+          title="Operation Failed"
+          message={errorPopupMessage}
+          confirmText="Acknowledge"
+          type="danger"
+          onConfirm={() => setErrorPopupMessage(null)}
+          onClose={() => setErrorPopupMessage(null)}
         />
       )}
     </>
