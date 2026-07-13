@@ -39,6 +39,7 @@ import ApplySuperAdmin from './pages/ApplySuperAdmin';
 import RegisterAgency from './pages/RegisterAgency';
 import RegisterHost from './pages/RegisterHost';
 import SuperAdminRequests from './pages/SuperAdminRequests';
+import AvatarFrames from './pages/AvatarFrames';
 
 import { Menu as MenuIcon } from 'lucide-react';
 import { useSocket } from './hooks/useSocket';
@@ -123,6 +124,7 @@ function AppContent() {
                 <Route path="/gifts" element={<Gifts />} />
                 <Route path="/gift-categories" element={<GiftCategories />} />
                 <Route path="/vip-store" element={<VipStore />} />
+                <Route path="/avatar-frames" element={<AvatarFrames />} />
                 <Route path="/dynamic-tasks" element={<TaskCenter />} />
                 <Route path="/super-admin-forms" element={<StaffManagement />} />
                 <Route path="/super-admin-requests" element={<SuperAdminRequests />} />

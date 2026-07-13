@@ -80,6 +80,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
         { title: 'Gifts Catalog', path: '/gifts' },
         { title: 'Gift Categories', path: '/gift-categories' },
         { title: 'VIP Packages', path: '/vip-store' },
+        { title: 'Avatar Frames', path: '/avatar-frames' },
         { title: 'User Levels', path: '/level-system' },
         { title: 'Daily Tasks', path: '/dynamic-tasks' },
       ],
