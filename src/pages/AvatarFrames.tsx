@@ -147,25 +147,23 @@ const AvatarFrames: React.FC = () => {
     };
 
     return (
-        <div className="users-page">
+        <div className="dashboard-page users-page">
             {/* Header section */}
-            <div className="page-header-row">
-                <div className="header-left">
-                    <div className="header-icon-container gradient-amber">
-                        <Sparkles className="text-white" size={20} />
-                    </div>
-                    <div>
-                        <h1 className="page-title">Avatar Frames</h1>
-                        <p className="page-subtitle">Configure frame catalog, coin pricing, validity durations, and category rules.</p>
-                    </div>
+            <div className="dashboard-header">
+                <div className="header-text-group">
+                    <h1>Avatar Frames</h1>
+                    <p className="subtitle">Configure frame catalog, coin pricing, validity durations, and category rules.</p>
                 </div>
-                <button className="btn-primary" onClick={handleOpenCreateModal}>
-                    <Plus size={16} /> Add Frame
-                </button>
+                <div className="header-actions">
+                    <button className="primary flex items-center gap-2" onClick={handleOpenCreateModal}>
+                        <Plus size={20} />
+                        <span>Add New Frame</span>
+                    </button>
+                </div>
             </div>
 
             {/* Content list */}
-            <div className="card-container">
+            <div className="table-container-premium">
                 {loading ? (
                     <div className="loading-state">
                         <div className="loading-spinner"></div>
@@ -178,83 +176,83 @@ const AvatarFrames: React.FC = () => {
                         <p>Configure avatar frames so users can buy them in the storefront.</p>
                     </div>
                 ) : (
-                    <div className="table-responsive">
-                        <table className="user-table">
-                            <thead>
-                                <tr>
-                                    <th>Frame Image</th>
-                                    <th>Frame Name</th>
-                                    <th>Category</th>
-                                    <th>Coins Price</th>
-                                    <th>Duration</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
+                    <table className="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Frame Image</th>
+                                <th>Frame Name</th>
+                                <th>Category</th>
+                                <th>Coins Price</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {frames.map((frame) => (
+                                <tr key={frame.id} className="row-premium">
+                                    <td>
+                                        <div className="avatar-wrapper" style={{ width: '56px', height: '56px', padding: '4px', border: '1px solid #e2e8f0', borderRadius: '8px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <MediaImage 
+                                                src={frame.image} 
+                                                alt={frame.name} 
+                                                style={{ width: '48px', height: '48px', objectFit: 'contain' }}
+                                                fallbackIcon={<ImageIcon size={18} className="text-slate-400" />}
+                                                fallbackText="Frame"
+                                            />
+                                        </div>
+                                    </td>
+                                    <td><strong>{frame.name}</strong></td>
+                                    <td><span className="badge badge-info">{frame.category}</span></td>
+                                    <td>
+                                        <div className="coins-value" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#b45309', fontWeight: 600 }}>
+                                            💰 {frame.price} Coins
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px' }}>
+                                            <Calendar size={14} className="text-slate-400" />
+                                            {frame.durationDays} Days
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span className={`badge ${frame.status === 'active' ? 'badge-success' : 'badge-danger'}`}>
+                                            {frame.status === 'active' ? 'Active' : 'Inactive'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div className="ops-cluster">
+                                            <button className="op-btn edit" onClick={() => handleOpenEditModal(frame)} title="Edit Frame">
+                                                <Edit size={14} />
+                                            </button>
+                                            <button className="op-btn delete" onClick={() => setShowDeleteConfirm(frame.id)} title="Delete Frame">
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {frames.map((frame) => (
-                                    <tr key={frame.id}>
-                                        <td>
-                                            <div className="avatar-wrapper" style={{ width: '56px', height: '56px', padding: '4px', border: '1px solid #e2e8f0', borderRadius: '8px', background: '#f8fafc' }}>
-                                                <MediaImage 
-                                                    src={frame.image} 
-                                                    alt={frame.name} 
-                                                    fallbackIcon={<ImageIcon size={18} />} 
-                                                />
-                                            </div>
-                                        </td>
-                                        <td><strong>{frame.name}</strong></td>
-                                        <td><span className="badge badge-info">{frame.category}</span></td>
-                                        <td>
-                                            <div className="coins-value" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#b45309', fontWeight: 600 }}>
-                                                💰 {frame.price} Coins
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px' }}>
-                                                <Calendar size={14} className="text-muted" />
-                                                {frame.durationDays} Days
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span className={`badge ${frame.status === 'active' ? 'badge-success' : 'badge-danger'}`}>
-                                                {frame.status === 'active' ? 'Active' : 'Inactive'}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div className="action-buttons-group">
-                                                <button className="action-btn edit" onClick={() => handleOpenEditModal(frame)} title="Edit Frame">
-                                                    <Edit size={14} />
-                                                </button>
-                                                <button className="action-btn delete" onClick={() => setShowDeleteConfirm(frame.id)} title="Delete Frame">
-                                                    <Trash2 size={14} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                            ))}
+                        </tbody>
+                    </table>
                 )}
             </div>
 
             {/* Modal for Create / Edit */}
             {isModalOpen && (
-                <div className="modal-backdrop">
-                    <div className="modal-content" style={{ maxWidth: '500px' }}>
+                <div className="modal-overlay">
+                    <form onSubmit={handleSubmit} className="modal-content glass-panel slide-up" style={{ maxWidth: '500px' }}>
                         <div className="modal-header">
                             <h3>{editingFrame ? 'Edit Avatar Frame' : 'Add Avatar Frame'}</h3>
-                            <button className="close-modal-btn" onClick={() => setIsModalOpen(false)}>
-                                <X size={18} />
+                            <button className="close-btn" type="button" onClick={() => setIsModalOpen(false)}>
+                                <X size={20} />
                             </button>
                         </div>
-                        <form onSubmit={handleSubmit} className="modal-body">
+                        <div className="modal-body">
                             <div className="form-group">
-                                <label className="form-label">Frame Name *</label>
+                                <label>Frame Name *</label>
                                 <input
                                     type="text"
-                                    className="form-input"
+                                    className="admin-input"
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     placeholder="e.g. VIP Gold Crown Frame"
@@ -262,12 +260,12 @@ const AvatarFrames: React.FC = () => {
                                 />
                             </div>
 
-                            <div className="form-row-2">
-                                <div className="form-group">
-                                    <label className="form-label">Price (Coins) *</label>
+                            <div className="modal-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
+                                <div className="form-group" style={{ marginBottom: '0px' }}>
+                                    <label>Price (Coins) *</label>
                                     <input
                                         type="number"
-                                        className="form-input"
+                                        className="admin-input"
                                         value={formData.price}
                                         onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                                         placeholder="e.g. 500"
@@ -275,11 +273,11 @@ const AvatarFrames: React.FC = () => {
                                         min="1"
                                     />
                                 </div>
-                                <div className="form-group">
-                                    <label className="form-label">Duration (Days)</label>
+                                <div className="form-group" style={{ marginBottom: '0px' }}>
+                                    <label>Duration (Days)</label>
                                     <input
                                         type="number"
-                                        className="form-input"
+                                        className="admin-input"
                                         value={formData.durationDays}
                                         onChange={(e) => setFormData({ ...formData, durationDays: e.target.value })}
                                         placeholder="e.g. 30"
@@ -288,11 +286,11 @@ const AvatarFrames: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="form-row-2">
-                                <div className="form-group">
-                                    <label className="form-label">Category</label>
+                            <div className="modal-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
+                                <div className="form-group" style={{ marginBottom: '0px' }}>
+                                    <label>Category</label>
                                     <select
-                                        className="form-input"
+                                        className="admin-input"
                                         value={formData.category}
                                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                     >
@@ -304,10 +302,10 @@ const AvatarFrames: React.FC = () => {
                                     </select>
                                 </div>
                                 {editingFrame && (
-                                    <div className="form-group">
-                                        <label className="form-label">Status</label>
+                                    <div className="form-group" style={{ marginBottom: '0px' }}>
+                                        <label>Status</label>
                                         <select
-                                            className="form-input"
+                                            className="admin-input"
                                             value={formData.status}
                                             onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                                         >
@@ -318,28 +316,28 @@ const AvatarFrames: React.FC = () => {
                                 )}
                             </div>
 
-                            <div className="form-group">
-                                <label className="form-label">Frame Image File (PNG recommended) *</label>
+                            <div className="form-group" style={{ marginTop: '16px' }}>
+                                <label>Frame Image File (PNG recommended) *</label>
                                 <input
                                     type="file"
                                     accept="image/*"
-                                    className="form-input"
+                                    className="admin-input"
                                     onChange={handleFileChange}
                                     required={!editingFrame}
                                 />
-                                {editingFrame && <small className="text-muted">Leave empty to keep existing frame image.</small>}
+                                {editingFrame && <small style={{ color: '#888', marginTop: '4px', display: 'block' }}>Leave empty to keep existing frame image.</small>}
                             </div>
+                        </div>
 
-                            <div className="modal-footer" style={{ marginTop: '20px' }}>
-                                <button type="button" className="btn-secondary" onClick={() => setIsModalOpen(false)}>
-                                    Cancel
-                                </button>
-                                <button type="submit" className="btn-primary" disabled={isSubmitting}>
-                                    {isSubmitting ? 'Saving...' : <><Save size={16} /> Save Frame</>}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                        <div className="modal-footer">
+                            <button type="button" className="secondary-btn" onClick={() => setIsModalOpen(false)}>
+                                Cancel
+                            </button>
+                            <button type="submit" className="primary-btn" disabled={isSubmitting}>
+                                {isSubmitting ? 'Saving...' : 'Save Frame'}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             )}
 
