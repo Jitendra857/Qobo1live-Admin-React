@@ -7,10 +7,13 @@ interface SvgaPlayerProps {
 }
 
 const SvgaPlayer: React.FC<SvgaPlayerProps> = ({ src, style, className }) => {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        if (!canvasRef.current) return;
+        if (!containerRef.current) return;
+
+        // Clear existing canvas elements inside container
+        containerRef.current.innerHTML = '';
         
         const SVGA = (window as any).SVGA;
         if (!SVGA) {
@@ -19,7 +22,7 @@ const SvgaPlayer: React.FC<SvgaPlayerProps> = ({ src, style, className }) => {
         }
 
         try {
-            const player = new SVGA.Player(canvasRef.current);
+            const player = new SVGA.Player(containerRef.current);
             const parser = new SVGA.Parser(); // Parser does not require a selector/element
 
             parser.load(
@@ -47,9 +50,9 @@ const SvgaPlayer: React.FC<SvgaPlayerProps> = ({ src, style, className }) => {
     }, [src]);
 
     return (
-        <canvas 
-            ref={canvasRef} 
-            style={{ width: '100%', height: '100%', display: 'block', ...style }} 
+        <div 
+            ref={containerRef} 
+            style={{ width: '100%', height: '100%', overflow: 'hidden', ...style }} 
             className={className}
         />
     );

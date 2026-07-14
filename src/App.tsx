@@ -40,6 +40,7 @@ import RegisterAgency from './pages/RegisterAgency';
 import RegisterHost from './pages/RegisterHost';
 import SuperAdminRequests from './pages/SuperAdminRequests';
 import AvatarFrames from './pages/AvatarFrames';
+import GiftPreview from './pages/GiftPreview';
 
 import { Menu as MenuIcon } from 'lucide-react';
 import { useSocket } from './hooks/useSocket';
@@ -57,7 +58,7 @@ function AppContent() {
     setIsAuthenticated(false);
   };
 
-  const isStandalonePage = ['/apply-super-admin', '/register-agency', '/register-host'].includes(window.location.pathname);
+  const isStandalonePage = ['/apply-super-admin', '/register-agency', '/register-host', '/gift-preview'].includes(window.location.pathname);
 
   useEffect(() => {
     if (isStandalonePage) {
@@ -70,7 +71,7 @@ function AppContent() {
 
   if (isStandalonePage) {
     return (
-      <div className="standalone-wrapper" style={{ width: '100%', minHeight: '100vh', background: '#f8fafc' }}>
+      <div className="standalone-wrapper" style={{ width: '100%', minHeight: '100vh', background: window.location.pathname === '/gift-preview' ? '#121212' : '#f8fafc' }}>
         <style>{`
           body.standalone-body {
             overflow: auto !important;
@@ -83,6 +84,7 @@ function AppContent() {
           <Route path="/apply-super-admin" element={<ApplySuperAdmin />} />
           <Route path="/register-agency" element={<RegisterAgency />} />
           <Route path="/register-host" element={<RegisterHost />} />
+          <Route path="/gift-preview" element={<GiftPreview />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>

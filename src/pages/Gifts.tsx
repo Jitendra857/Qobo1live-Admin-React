@@ -25,7 +25,6 @@ const Gifts: React.FC = () => {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [editingGift, setEditingGift] = useState<any>(null);
-    const [previewAnimationUrl, setPreviewAnimationUrl] = useState<string | null>(null);
     const [formData, setFormData] = useState<any>({
         name: '',
         price: '',
@@ -258,7 +257,11 @@ const Gifts: React.FC = () => {
                             <div 
                                 className="asset-icon-box mb-3" 
                                 style={{ position: 'relative', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: gift.animationUrl ? 'pointer' : 'default' }}
-                                onClick={() => { if (gift.animationUrl) setPreviewAnimationUrl(gift.animationUrl); }}
+                                onClick={() => { 
+                                    if (gift.animationUrl) {
+                                        window.open(`/gift-preview?url=${encodeURIComponent(gift.animationUrl)}&name=${encodeURIComponent(gift.name)}`, '_blank');
+                                    }
+                                }}
                                 title={gift.animationUrl ? "Click to preview full animation" : undefined}
                             >
                                 {isSvgaUrl(gift.animationUrl) ? (
@@ -673,37 +676,7 @@ const Gifts: React.FC = () => {
                 </div>
             )}
 
-            {/* Animation Preview Modal */}
-            {previewAnimationUrl && (
-                <div className="modal-overlay" onClick={() => setPreviewAnimationUrl(null)}>
-                    <div 
-                        className="modal-content glass-panel slide-up" 
-                        style={{ maxWidth: '550px', width: '100%', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="modal-header w-full flex justify-between items-center mb-4">
-                            <h3>Animation Preview</h3>
-                            <button className="close-btn" type="button" onClick={() => setPreviewAnimationUrl(null)}>
-                                <X size={20} />
-                            </button>
-                        </div>
-                        <div className="modal-body flex items-center justify-center" style={{ height: '450px', background: '#1a1a1a', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', width: '100%', overflow: 'hidden' }}>
-                            {isSvgaUrl(previewAnimationUrl) ? (
-                                <SvgaPlayer 
-                                    src={previewAnimationUrl} 
-                                    style={{ width: '100%', height: '100%' }}
-                                />
-                            ) : (
-                                <img 
-                                    src={previewAnimationUrl} 
-                                    alt="Preview" 
-                                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                                />
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
+
         </div>
     );
 };
