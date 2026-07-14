@@ -285,6 +285,37 @@ const Gifts: React.FC = () => {
                                         fallbackIcon={gift.type === 'luxury' ? <Gem className="text-purple-500" size={36} /> : <GiftIcon className="text-blue-500" size={36} />}
                                     />
                                 )}
+
+                                {/* Small Static Icon Badge overlayed on the bottom-right */}
+                                {gift.animationUrl && gift.icon && (
+                                    <div 
+                                        style={{ 
+                                            position: 'absolute', 
+                                            bottom: '-6px', 
+                                            right: '-6px', 
+                                            width: '28px', 
+                                            height: '28px', 
+                                            borderRadius: '50%', 
+                                            border: '2px solid #ffffff', 
+                                            boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
+                                            background: '#ffffff',
+                                            overflow: 'hidden',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            zIndex: 2
+                                        }}
+                                        title="Static Drawer Icon"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <MediaImage 
+                                            src={gift.icon} 
+                                            alt="Static Icon" 
+                                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                            fallbackIcon={<GiftIcon size={12} className="text-slate-400" />}
+                                        />
+                                    </div>
+                                )}
                             </div>
                             <h3 className="asset-name" style={{ color: '#333', fontWeight: 800 }}>{gift.name}</h3>
                             <div className="asset-price" style={{ color: '#4e73df', fontWeight: 900, fontSize: '1.2rem' }}>₹{gift.price}</div>
