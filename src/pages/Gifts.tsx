@@ -9,6 +9,13 @@ import '../styles/UserManagement.css';
 import { scrollToModalTop } from '../utils/scrollToModalTop';
 
 const Gifts: React.FC = () => {
+    const isSvgaUrl = (url: string | null | undefined): boolean => {
+        if (!url) return false;
+        const low = url.toLowerCase();
+        return low.includes('.svga') || 
+               (low.includes('/gifts/animations/') && !low.endsWith('.json') && !low.endsWith('.gif'));
+    };
+
     const [gifts, setGifts] = useState<any[]>([]);
     const [categories, setCategories] = useState<any[]>([]);
     const [stats, setStats] = useState<any[]>([]);
@@ -18,6 +25,7 @@ const Gifts: React.FC = () => {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [editingGift, setEditingGift] = useState<any>(null);
+    const [previewAnimationUrl, setPreviewAnimationUrl] = useState<string | null>(null);
     const [formData, setFormData] = useState<any>({
         name: '',
         price: '',
@@ -247,8 +255,13 @@ const Gifts: React.FC = () => {
                         </div>
 
                         <div className="card-content flex flex-col items-center py-2">
-                            <div className="asset-icon-box mb-3" style={{ position: 'relative', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                {gift.animationUrl && !gift.animationUrl.toLowerCase().endsWith('.gif') && !gift.animationUrl.toLowerCase().includes('giphy.com') && !gift.animationUrl.toLowerCase().endsWith('.json') ? (
+                            <div 
+                                className="asset-icon-box mb-3" 
+                                style={{ position: 'relative', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: gift.animationUrl ? 'pointer' : 'default' }}
+                                onClick={() => { if (gift.animationUrl) setPreviewAnimationUrl(gift.animationUrl); }}
+                                title={gift.animationUrl ? "Click to preview full animation" : undefined}
+                            >
+                                {isSvgaUrl(gift.animationUrl) ? (
                                     <SvgaPlayer 
                                         src={gift.animationUrl} 
                                         className="asset-icon" 
@@ -282,7 +295,7 @@ const Gifts: React.FC = () => {
                         <div className="card-footer mt-auto border-t border-slate-50 pt-4 flex flex-col gap-3">
                             <div className="flex justify-between items-center w-full">
                                 <div className={`meta-pill ${gift.animationUrl ? 'active' : ''}`}>
-                                    <Layout size={12} /> <span style={{ fontSize: '10px' }}>{gift.animationUrl && !gift.animationUrl.toLowerCase().endsWith('.gif') && !gift.animationUrl.toLowerCase().includes('giphy.com') && !gift.animationUrl.toLowerCase().endsWith('.json') ? 'SVGA' : (gift.animationUrl?.toLowerCase().includes('.gif') || gift.animationUrl?.toLowerCase().includes('giphy.com') ? 'GIF' : 'Lottie')}</span>
+                                    <Layout size={12} /> <span style={{ fontSize: '10px' }}>{isSvgaUrl(gift.animationUrl) ? 'SVGA' : (gift.animationUrl?.toLowerCase().includes('.gif') || gift.animationUrl?.toLowerCase().includes('giphy.com') ? 'GIF' : 'Lottie')}</span>
                                 </div>
                                 <div 
                                     className={`meta-pill ${gift.soundUrl ? 'active' : ''}`}
@@ -489,6 +502,207 @@ const Gifts: React.FC = () => {
                     onConfirm={() => handleDelete(showDeleteConfirm)}
                     onClose={() => setShowDeleteConfirm(null)}
                 />
+            )}
+
+            {/* Advanced Management Modal */}
+            {isModalOpen && (
+                <div className="modal-overlay-refined fade-in">
+                    <div className="modal-content-premium slide-up" style={{ maxWidth: '600px', width: '90%' }}>
+                        <div className="modal-header-glass">
+                            <div className="header-identity">
+                                <div className="header-icon-wrap">
+                                    {editingGift ? <Edit size={22} /> : <Plus size={22} />}
+                                </div>
+                                <div>
+                                    <h3 className="modal-headline">{editingGift ? 'Update Digital Asset' : 'Provision New Gift'}</h3>
+                                    <p className="modal-subline">Configure high-fidelity economic assets</p>
+                                </div>
+                            </div>
+                            <button className="close-circle" onClick={() => setIsModalOpen(false)}>
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="modal-body-refined">
+                            <div className="form-section">
+                                <label className="input-label-premium">Display Name</label>
+                                <div className="input-wrapper-glass">
+                                    <input 
+                                        type="text" 
+                                        className="premium-input-field"
+                                        placeholder="Enter definitive asset name..."
+                                        value={formData.name}
+                                        onChange={e => setFormData({...formData, name: e.target.value})}
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid-row-premium">
+                                <div className="form-section">
+                                    <label className="input-label-premium">Asset Price (₹)</label>
+                                    <div className="input-wrapper-glass">
+                                        <Coins size={16} className="input-prefix-icon" />
+                                        <input 
+                                            type="number" 
+                                            className="premium-input-field with-prefix"
+                                            value={formData.price}
+                                            onChange={e => setFormData({...formData, price: e.target.value})}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="form-section">
+                                    <label className="input-label-premium">Asset Tier</label>
+                                    <div className="input-wrapper-glass">
+                                        <select 
+                                            className="premium-input-field select"
+                                            value={formData.type}
+                                            onChange={e => setFormData({...formData, type: e.target.value})}
+                                        >
+                                            <option value="normal">Normal Gift</option>
+                                            <option value="lucky">Lucky Gift</option>
+                                            <option value="luxury">Luxury Asset</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {formData.type === 'lucky' && (
+                                <div className="special-banner lucky fade-in">
+                                    <div className="banner-icon"><Trophy size={18} /></div>
+                                    <div className="banner-content">
+                                        <label className="banner-label">Win Probability</label>
+                                        <input 
+                                            type="number" 
+                                            step="0.1"
+                                            className="banner-input"
+                                            placeholder="Percentage chance..."
+                                            value={formData.winRate}
+                                            onChange={e => setFormData({...formData, winRate: e.target.value})}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="form-section">
+                                <div className="flex justify-between items-center mb-2">
+                                    <label className="input-label-premium">Administrative Category</label>
+                                    <div className="flex items-center gap-3">
+                                        <button type="button" onClick={() => refreshCategories()} className="refresh-btn-minimal" title="Refresh Sync">
+                                            <Activity size={12} /> Sync
+                                        </button>
+                                        <a href="/gift-categories" className="helper-link-premium">
+                                            <Plus size={10} /> Expand Categories
+                                        </a>
+                                    </div>
+                                </div>
+                                <div className="input-wrapper-glass">
+                                    <select 
+                                        className="premium-input-field select"
+                                        value={formData.categoryId}
+                                        onChange={e => setFormData({...formData, categoryId: e.target.value})}
+                                    >
+                                        <option value="">Uncategorized (Legacy Default)</option>
+                                        {categories.map(cat => (
+                                            <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="form-section">
+                                <label className="input-label-premium">Animation URL (Optional GIF/Lottie URL)</label>
+                                <div className="input-wrapper-glass">
+                                    <input 
+                                        type="text" 
+                                        className="premium-input-field"
+                                        placeholder="E.g., https://media.giphy.com/media/.../giphy.gif"
+                                        value={formData.animationUrl}
+                                        onChange={e => setFormData({...formData, animationUrl: e.target.value})}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="file-upload-grid-premium">
+                                <div className="upload-unit">
+                                    <span className="unit-label">Icon</span>
+                                    <input type="file" className="hidden" id="icon-up" onChange={e => handleFileChange(e, 'icon')} />
+                                    <label htmlFor="icon-up" className={`unit-box ${files.icon ? 'done' : ''}`}>
+                                        {files.icon ? <Check size={20} /> : <GiftIcon size={24} />}
+                                    </label>
+                                </div>
+                                <div className="upload-unit">
+                                    <span className="unit-label">Anim</span>
+                                    <input type="file" className="hidden" id="lottie-up" onChange={e => handleFileChange(e, 'animation')} />
+                                    <label htmlFor="lottie-up" className={`unit-box ${files.animation ? 'done' : ''}`}>
+                                        {files.animation ? <Check size={20} /> : <Layout size={24} />}
+                                    </label>
+                                </div>
+                                <div className="upload-unit">
+                                    <span className="unit-label">Audio</span>
+                                    <input type="file" className="hidden" id="sound-up" onChange={e => handleFileChange(e, 'sound')} />
+                                    <label htmlFor="sound-up" className={`unit-box ${files.sound ? 'done' : ''}`}>
+                                        {files.sound ? <Check size={20} /> : <Music size={24} />}
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="secondary-btn"
+                                    onClick={() => setIsModalOpen(false)}
+                                >
+                                    Cancel
+                                </button>
+                                <button type="submit" className="primary-btn" disabled={isSubmitting}>
+                                    {isSubmitting ? (
+                                        <>Processing Assets...</>
+                                    ) : (
+                                        <>
+                                            {editingGift ? 'Update Digital Asset' : 'Publish Asset to Store'}
+                                            <ArrowUpRight size={18} />
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Animation Preview Modal */}
+            {previewAnimationUrl && (
+                <div className="modal-overlay" onClick={() => setPreviewAnimationUrl(null)}>
+                    <div 
+                        className="modal-content glass-panel slide-up" 
+                        style={{ maxWidth: '550px', width: '100%', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="modal-header w-full flex justify-between items-center mb-4">
+                            <h3>Animation Preview</h3>
+                            <button className="close-btn" type="button" onClick={() => setPreviewAnimationUrl(null)}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="modal-body flex items-center justify-center" style={{ height: '450px', background: '#1a1a1a', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', width: '100%', overflow: 'hidden' }}>
+                            {isSvgaUrl(previewAnimationUrl) ? (
+                                <SvgaPlayer 
+                                    src={previewAnimationUrl} 
+                                    style={{ width: '100%', height: '100%' }}
+                                />
+                            ) : (
+                                <img 
+                                    src={previewAnimationUrl} 
+                                    alt="Preview" 
+                                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                />
+                            )}
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
