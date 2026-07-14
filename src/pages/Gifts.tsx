@@ -4,6 +4,7 @@ import { toast, Toaster } from 'react-hot-toast';
 import { Gift as GiftIcon, Plus, Trash2, Edit, Trophy, TrendingUp, Music, Layout, X, Check, Save, Gem, Coins, PieChart, AlertCircle, Archive, ArrowUpRight, Activity } from 'lucide-react';
 import ConfirmationModal from '../components/ConfirmationModal';
 import MediaImage from '../components/MediaImage';
+import SvgaPlayer from '../components/SvgaPlayer';
 import '../styles/UserManagement.css';
 import { scrollToModalTop } from '../utils/scrollToModalTop';
 
@@ -247,7 +248,13 @@ const Gifts: React.FC = () => {
 
                         <div className="card-content flex flex-col items-center py-2">
                             <div className="asset-icon-box mb-3" style={{ position: 'relative', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                {gift.animationUrl && (gift.animationUrl.toLowerCase().endsWith('.gif') || gift.animationUrl.toLowerCase().includes('giphy.com')) ? (
+                                {gift.animationUrl && gift.animationUrl.toLowerCase().includes('.svga') ? (
+                                    <SvgaPlayer 
+                                        src={gift.animationUrl} 
+                                        className="asset-icon" 
+                                        style={{ width: '80px', height: '80px', objectFit: 'contain' }}
+                                    />
+                                ) : gift.animationUrl && (gift.animationUrl.toLowerCase().endsWith('.gif') || gift.animationUrl.toLowerCase().includes('giphy.com')) ? (
                                     <img 
                                         src={gift.animationUrl} 
                                         alt={gift.name} 
@@ -275,7 +282,7 @@ const Gifts: React.FC = () => {
                         <div className="card-footer mt-auto border-t border-slate-50 pt-4 flex flex-col gap-3">
                             <div className="flex justify-between items-center w-full">
                                 <div className={`meta-pill ${gift.animationUrl ? 'active' : ''}`}>
-                                    <Layout size={12} /> <span style={{ fontSize: '10px' }}>{gift.animationUrl?.toLowerCase().includes('.gif') || gift.animationUrl?.toLowerCase().includes('giphy.com') ? 'GIF' : 'Lottie'}</span>
+                                    <Layout size={12} /> <span style={{ fontSize: '10px' }}>{gift.animationUrl?.toLowerCase().includes('.svga') ? 'SVGA' : (gift.animationUrl?.toLowerCase().includes('.gif') || gift.animationUrl?.toLowerCase().includes('giphy.com') ? 'GIF' : 'Lottie')}</span>
                                 </div>
                                 <div 
                                     className={`meta-pill ${gift.soundUrl ? 'active' : ''}`}
