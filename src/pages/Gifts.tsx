@@ -248,7 +248,7 @@ const Gifts: React.FC = () => {
 
                         <div className="card-content flex flex-col items-center py-2">
                             <div className="asset-icon-box mb-3" style={{ position: 'relative', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                {gift.animationUrl && gift.animationUrl.toLowerCase().includes('.svga') ? (
+                                {gift.animationUrl && !gift.animationUrl.toLowerCase().endsWith('.gif') && !gift.animationUrl.toLowerCase().includes('giphy.com') && !gift.animationUrl.toLowerCase().endsWith('.json') ? (
                                     <SvgaPlayer 
                                         src={gift.animationUrl} 
                                         className="asset-icon" 
@@ -282,7 +282,7 @@ const Gifts: React.FC = () => {
                         <div className="card-footer mt-auto border-t border-slate-50 pt-4 flex flex-col gap-3">
                             <div className="flex justify-between items-center w-full">
                                 <div className={`meta-pill ${gift.animationUrl ? 'active' : ''}`}>
-                                    <Layout size={12} /> <span style={{ fontSize: '10px' }}>{gift.animationUrl?.toLowerCase().includes('.svga') ? 'SVGA' : (gift.animationUrl?.toLowerCase().includes('.gif') || gift.animationUrl?.toLowerCase().includes('giphy.com') ? 'GIF' : 'Lottie')}</span>
+                                    <Layout size={12} /> <span style={{ fontSize: '10px' }}>{gift.animationUrl && !gift.animationUrl.toLowerCase().endsWith('.gif') && !gift.animationUrl.toLowerCase().includes('giphy.com') && !gift.animationUrl.toLowerCase().endsWith('.json') ? 'SVGA' : (gift.animationUrl?.toLowerCase().includes('.gif') || gift.animationUrl?.toLowerCase().includes('giphy.com') ? 'GIF' : 'Lottie')}</span>
                                 </div>
                                 <div 
                                     className={`meta-pill ${gift.soundUrl ? 'active' : ''}`}
