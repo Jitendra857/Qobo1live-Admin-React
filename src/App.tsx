@@ -40,6 +40,7 @@ import RegisterAgency from './pages/RegisterAgency';
 import RegisterHost from './pages/RegisterHost';
 import SuperAdminRequests from './pages/SuperAdminRequests';
 import AvatarFrames from './pages/AvatarFrames';
+import ProfileBackgrounds from './pages/ProfileBackgrounds';
 import GiftPreview from './pages/GiftPreview';
 
 import { Menu as MenuIcon } from 'lucide-react';
@@ -127,6 +128,7 @@ function AppContent() {
                 <Route path="/gift-categories" element={<GiftCategories />} />
                 <Route path="/vip-store" element={<VipStore />} />
                 <Route path="/avatar-frames" element={<AvatarFrames />} />
+                <Route path="/profile-backgrounds" element={<ProfileBackgrounds />} />
                 <Route path="/dynamic-tasks" element={<TaskCenter />} />
                 <Route path="/super-admin-forms" element={<StaffManagement />} />
                 <Route path="/super-admin-requests" element={<SuperAdminRequests />} />

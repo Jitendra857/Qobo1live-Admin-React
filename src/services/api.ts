@@ -99,6 +99,8 @@ export const adminService = {
   updateRoomConfig: (data: any) => api.put('/admin/rooms/config', data),
   getFrames: () => api.get('/frame/admin/list'),
   manageFrame: (action: string, data: any) => api.post('/frame/admin/action', data),
+  getBackgroundsList: () => api.get('/background/admin/list'),
+  manageBackground: (action: string, data: any) => api.post('/background/admin/action', data),
 
   // Notifications
   getNotifications: () => api.get('/admin/notifications'),
