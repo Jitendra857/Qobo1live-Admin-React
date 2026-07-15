@@ -94,6 +94,19 @@ const Gifts: React.FC = () => {
 
     useEffect(() => {
         fetchGifts();
+        
+        // Mute Howler globally on this catalog page to prevent automatic sound playback
+        const Howler = (window as any).Howler;
+        if (Howler) {
+            Howler.mute(true);
+        }
+
+        return () => {
+            // Unmute when leaving the page so other pages or tabs are not muted
+            if (Howler) {
+                Howler.mute(false);
+            }
+        };
     }, []);
 
     const handleOpenModal = (gift: any = null) => {
