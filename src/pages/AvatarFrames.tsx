@@ -4,7 +4,14 @@ import { toast } from 'react-hot-toast';
 import { Sparkles, Plus, Trash2, Edit, X, Check, Save, Image as ImageIcon, ShieldAlert, Calendar } from 'lucide-react';
 import ConfirmationModal from '../components/ConfirmationModal';
 import MediaImage from '../components/MediaImage';
+import SvgaPlayer from '../components/SvgaPlayer';
 import '../styles/UserManagement.css';
+
+const isSvgaFrame = (url?: string) => {
+    if (!url) return false;
+    const lower = url.toLowerCase();
+    return lower.endsWith('.svga') || (lower.includes('/raw/upload/') && lower.includes('/frames/'));
+};
 
 const AvatarFrames: React.FC = () => {
     const [frames, setFrames] = useState<any[]>([]);
@@ -193,13 +200,20 @@ const AvatarFrames: React.FC = () => {
                                 <tr key={frame.id} className="row-premium">
                                     <td>
                                         <div className="avatar-wrapper" style={{ width: '56px', height: '56px', padding: '4px', border: '1px solid #e2e8f0', borderRadius: '8px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <MediaImage 
-                                                src={frame.image} 
-                                                alt={frame.name} 
-                                                style={{ width: '48px', height: '48px', objectFit: 'contain' }}
-                                                fallbackIcon={<ImageIcon size={18} className="text-slate-400" />}
-                                                fallbackText="Frame"
-                                            />
+                                            {isSvgaFrame(frame.image) ? (
+                                                <SvgaPlayer 
+                                                    src={frame.image} 
+                                                    style={{ width: '48px', height: '48px', objectFit: 'contain' }}
+                                                />
+                                            ) : (
+                                                <MediaImage 
+                                                    src={frame.image} 
+                                                    alt={frame.name} 
+                                                    style={{ width: '48px', height: '48px', objectFit: 'contain' }}
+                                                    fallbackIcon={<ImageIcon size={18} className="text-slate-400" />}
+                                                    fallbackText="Frame"
+                                                />
+                                            )}
                                         </div>
                                     </td>
                                     <td><strong>{frame.name}</strong></td>
@@ -317,15 +331,15 @@ const AvatarFrames: React.FC = () => {
                             </div>
 
                             <div className="form-group" style={{ marginTop: '16px' }}>
-                                <label>Frame Image File (PNG recommended) *</label>
+                                <label>Frame File (PNG or SVGA animated frame) *</label>
                                 <input
                                     type="file"
-                                    accept="image/*"
+                                    accept="image/*,.svga"
                                     className="admin-input"
                                     onChange={handleFileChange}
                                     required={!editingFrame}
                                 />
-                                {editingFrame && <small style={{ color: '#888', marginTop: '4px', display: 'block' }}>Leave empty to keep existing frame image.</small>}
+                                {editingFrame && <small style={{ color: '#888', marginTop: '4px', display: 'block' }}>Leave empty to keep existing frame file.</small>}
                             </div>
                         </div>
 
