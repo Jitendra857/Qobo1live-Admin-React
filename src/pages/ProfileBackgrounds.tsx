@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { adminService, BACKEND_URL } from '../services/api';
+import { adminService } from '../services/api';
 import { toast } from 'react-hot-toast';
-import { Sparkles, Plus, Trash2, Edit, X, Check, Save, Image as ImageIcon, ShieldAlert, Calendar } from 'lucide-react';
+import { Sparkles, Plus, Trash2, Edit, X, Image as ImageIcon, ShieldAlert, Calendar } from 'lucide-react';
 import ConfirmationModal from '../components/ConfirmationModal';
 import MediaImage from '../components/MediaImage';
 import SvgaPlayer from '../components/SvgaPlayer';
@@ -130,12 +130,13 @@ const ProfileBackgrounds: React.FC = () => {
         }
     };
 
-    const handleDelete = async (id: string) => {
+    const handleDelete = async () => {
+        if (!showDeleteConfirm) return;
         try {
             setIsDeleting(true);
             const data = new FormData();
             data.append('action', 'delete');
-            data.append('id', id);
+            data.append('id', showDeleteConfirm);
 
             const res = await adminService.manageBackground('delete', data);
             if (res.data && res.data.statusCode === 1) {
@@ -154,48 +155,52 @@ const ProfileBackgrounds: React.FC = () => {
     };
 
     return (
-        <div className="users-container pb-8">
-            <div className="flex justify-between items-center mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                        <Sparkles className="text-violet-600" /> Profile Backgrounds
-                    </h1>
-                    <p className="text-slate-500 text-sm mt-1">Configure and manage profile background skins catalog</p>
+        <div className="dashboard-page users-page">
+            {/* Header section */}
+            <div className="dashboard-header">
+                <div className="header-text-group">
+                    <h1>Profile Backgrounds</h1>
+                    <p className="subtitle">Configure and manage profile background skins catalog.</p>
                 </div>
-                <button className="btn-primary flex items-center gap-2" onClick={handleOpenCreateModal}>
-                    <Plus size={16} /> Add New Background
-                </button>
+                <div className="header-actions">
+                    <button className="primary flex items-center gap-2" onClick={handleOpenCreateModal}>
+                        <Plus size={20} />
+                        <span>Add New Background</span>
+                    </button>
+                </div>
             </div>
 
-            {loading ? (
-                <div className="flex justify-center items-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
-                </div>
-            ) : backgrounds.length === 0 ? (
-                <div className="card flex flex-col items-center justify-center py-16 text-slate-500">
-                    <ImageIcon size={48} className="mb-4 text-slate-300" />
-                    <p className="text-base font-semibold">No profile backgrounds found</p>
-                    <p className="text-sm text-slate-400 mt-1">Get started by creating your first profile background</p>
-                </div>
-            ) : (
-                <div className="card overflow-hidden">
-                    <table className="w-full text-left border-collapse">
+            {/* Content list */}
+            <div className="table-container-premium">
+                {loading ? (
+                    <div className="loading-state">
+                        <div className="loading-spinner"></div>
+                        <p>Syncing profile backgrounds catalog...</p>
+                    </div>
+                ) : backgrounds.length === 0 ? (
+                    <div className="empty-state">
+                        <ShieldAlert size={48} className="text-muted" />
+                        <h3>No Profile Backgrounds Configured</h3>
+                        <p>Configure profile backgrounds so users can buy them in the storefront.</p>
+                    </div>
+                ) : (
+                    <table className="modern-table">
                         <thead>
-                            <tr className="border-b border-slate-100 text-slate-600 text-sm font-semibold">
-                                <th className="p-4">Visual Skin</th>
-                                <th className="p-4">Background Name</th>
-                                <th className="p-4">Price (Coins)</th>
-                                <th className="p-4">Duration (Days)</th>
-                                <th className="p-4">Category</th>
-                                <th className="p-4">Status</th>
-                                <th className="p-4">Actions</th>
+                            <tr>
+                                <th>Visual Skin</th>
+                                <th>Background Name</th>
+                                <th>Category</th>
+                                <th>Price (Coins)</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {backgrounds.map((bg) => (
                                 <tr key={bg.id} className="row-premium">
                                     <td>
-                                        <div className="avatar-wrapper" style={{ width: '80px', height: '56px', padding: '2px', border: '1px solid #e2e8f0', borderRadius: '6px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <div className="avatar-wrapper" style={{ width: '80px', height: '56px', padding: '4px', border: '1px solid #e2e8f0', borderRadius: '8px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                             {isSvgaBg(bg.image) ? (
                                                 <SvgaPlayer 
                                                     src={bg.image} 
@@ -212,22 +217,16 @@ const ProfileBackgrounds: React.FC = () => {
                                             )}
                                         </div>
                                     </td>
+                                    <td><strong>{bg.name}</strong></td>
+                                    <td><span className="badge badge-info">{bg.category}</span></td>
+                                    <td><strong style={{ color: '#ff3366' }}>{bg.price}</strong></td>
                                     <td>
-                                        <span className="font-semibold text-slate-800 block">{bg.name}</span>
-                                    </td>
-                                    <td>
-                                        <span className="text-violet-600 font-extrabold">₹{bg.price}</span>
-                                    </td>
-                                    <td>
-                                        <span className="text-slate-600 flex items-center gap-1 font-semibold">
-                                            <Calendar size={14} className="text-slate-400" /> {bg.durationDays} Days
+                                        <span className="flex items-center gap-1">
+                                            <Calendar size={14} /> {bg.durationDays} Days
                                         </span>
                                     </td>
                                     <td>
-                                        <span className="badge-purple">{bg.category}</span>
-                                    </td>
-                                    <td>
-                                        <span className={bg.status === 'active' ? 'badge-green' : 'badge-red'}>
+                                        <span className={`badge ${bg.status === 'active' ? 'badge-success' : 'badge-danger'}`}>
                                             {bg.status === 'active' ? 'Active' : 'Inactive'}
                                         </span>
                                     </td>
@@ -245,127 +244,121 @@ const ProfileBackgrounds: React.FC = () => {
                             ))}
                         </tbody>
                     </table>
-                </div>
-            )}
+                )}
+            </div>
 
             {/* Create/Edit Modal */}
             {isModalOpen && (
                 <div className="modal-overlay">
-                    <div className="modal-content max-w-md w-full">
-                        <div className="modal-header flex justify-between items-center pb-4 border-b border-slate-100">
-                            <h2 className="text-lg font-bold text-slate-800">
-                                {editingBg ? 'Edit Profile Background' : 'Add New Profile Background'}
-                            </h2>
-                            <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                    <form className="modal-content glass-panel" onSubmit={handleSubmit} style={{ maxWidth: '500px' }}>
+                        <div className="modal-header">
+                            <h3>{editingBg ? 'Edit Profile Background' : 'Add New Profile Background'}</h3>
+                            <button type="button" className="close-btn" onClick={() => setIsModalOpen(false)}>
                                 <X size={20} />
                             </button>
                         </div>
-                        <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-4">
-                            <div>
-                                <label className="label-form block mb-1">BACKGROUND NAME *</label>
+
+                        <div className="modal-body">
+                            <div className="form-group">
+                                <label>Background Name *</label>
                                 <input
                                     type="text"
-                                    className="input-premium w-full"
+                                    className="admin-input"
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    placeholder="e.g. Neon Horizon Theme"
                                     required
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="label-form block mb-1">PRICE (COINS) *</label>
+                            <div className="modal-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
+                                <div className="form-group" style={{ marginBottom: '0px' }}>
+                                    <label>Price (Coins) *</label>
                                     <input
                                         type="number"
-                                        className="input-premium w-full"
+                                        className="admin-input"
                                         value={formData.price}
                                         onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                                        placeholder="e.g. 500"
                                         required
+                                        min="1"
                                     />
                                 </div>
-                                <div>
-                                    <label className="label-form block mb-1">DURATION (DAYS)</label>
+                                <div className="form-group" style={{ marginBottom: '0px' }}>
+                                    <label>Duration (Days)</label>
                                     <input
                                         type="number"
-                                        className="input-premium w-full"
+                                        className="admin-input"
                                         value={formData.durationDays}
                                         onChange={(e) => setFormData({ ...formData, durationDays: e.target.value })}
+                                        placeholder="e.g. 30"
+                                        min="1"
                                     />
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="label-form block mb-1">CATEGORY</label>
-                                    <input
-                                        type="text"
-                                        className="input-premium w-full"
+                            <div className="modal-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
+                                <div className="form-group" style={{ marginBottom: '0px' }}>
+                                    <label>Category</label>
+                                    <select
+                                        className="admin-input"
                                         value={formData.category}
                                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="label-form block mb-1">STATUS</label>
-                                    <select
-                                        className="input-premium w-full"
-                                        value={formData.status}
-                                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                                     >
-                                        <option value="active">Active</option>
-                                        <option value="inactive">Inactive</option>
+                                        <option value="General">General</option>
+                                        <option value="VIP">VIP</option>
+                                        <option value="Elite">Elite</option>
+                                        <option value="Seasonal">Seasonal</option>
+                                        <option value="Event">Event</option>
                                     </select>
                                 </div>
-                            </div>
-
-                            <div>
-                                <label className="label-form block mb-1">BACKGROUND FILE (PNG, JPG OR SVGA SKIN) *</label>
-                                <input
-                                    type="file"
-                                    className="input-premium w-full pt-1.5"
-                                    accept="image/*,.svga"
-                                    onChange={handleFileChange}
-                                    required={!editingBg}
-                                />
                                 {editingBg && (
-                                    <p className="text-slate-400 text-xs mt-1">Leave empty to keep existing background file.</p>
+                                    <div className="form-group" style={{ marginBottom: '0px' }}>
+                                        <label>Status</label>
+                                        <select
+                                            className="admin-input"
+                                            value={formData.status}
+                                            onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                        >
+                                            <option value="active">Active</option>
+                                            <option value="inactive">Inactive</option>
+                                        </select>
+                                    </div>
                                 )}
                             </div>
 
-                            <div className="flex justify-end gap-3 mt-6 border-t border-slate-100 pt-4">
-                                <button
-                                    type="button"
-                                    className="btn-secondary"
-                                    onClick={() => setIsModalOpen(false)}
-                                    disabled={isSubmitting}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="btn-primary flex items-center gap-1.5"
-                                    disabled={isSubmitting}
-                                >
-                                    {isSubmitting ? (
-                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                    ) : (
-                                        <Save size={16} />
-                                    )}
-                                    Save Background
-                                </button>
+                            <div className="form-group" style={{ marginTop: '16px' }}>
+                                <label>Background File (PNG, JPG, or SVGA skin) *</label>
+                                <input
+                                    type="file"
+                                    accept="image/*,.svga"
+                                    className="admin-input"
+                                    onChange={handleFileChange}
+                                    required={!editingBg}
+                                />
+                                {editingBg && <small style={{ color: '#888', marginTop: '4px', display: 'block' }}>Leave empty to keep existing background file.</small>}
                             </div>
-                        </form>
-                    </div>
+                        </div>
+
+                        <div className="modal-footer">
+                            <button type="button" className="secondary-btn" onClick={() => setIsModalOpen(false)}>
+                                Cancel
+                            </button>
+                            <button type="submit" className="primary-btn" disabled={isSubmitting}>
+                                {isSubmitting ? 'Saving...' : 'Save Background'}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             )}
 
-            {/* Delete Confirmation Modal */}
+            {/* Delete confirmation modal */}
             {showDeleteConfirm && (
                 <ConfirmationModal
-                    onClose={() => setShowDeleteConfirm(null)}
-                    onConfirm={() => handleDelete(showDeleteConfirm)}
                     title="Delete Profile Background"
-                    message="Are you sure you want to delete this profile background skin? This action is permanent and cannot be undone."
-                    confirmText={isDeleting ? 'Deleting...' : 'Delete Background'}
+                    message="Are you sure you want to delete this profile background? This action cannot be undone."
+                    onConfirm={handleDelete}
+                    onClose={() => setShowDeleteConfirm(null)}
                 />
             )}
         </div>
