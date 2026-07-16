@@ -9,8 +9,7 @@ import '../styles/UserManagement.css';
 
 const isSvgaFrame = (url?: string) => {
     if (!url) return false;
-    const lower = url.toLowerCase();
-    return lower.endsWith('.svga') || (lower.includes('/raw/upload/') && lower.includes('/frames/'));
+    return url.toLowerCase().includes('.svga');
 };
 
 const AvatarFrames: React.FC = () => {
