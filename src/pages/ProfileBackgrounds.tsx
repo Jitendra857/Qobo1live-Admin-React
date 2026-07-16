@@ -9,7 +9,8 @@ import '../styles/UserManagement.css';
 
 const isSvgaBg = (url?: string) => {
     if (!url) return false;
-    return url.toLowerCase().includes('.svga');
+    const lower = url.toLowerCase();
+    return lower.includes('.svga') || (lower.includes('/raw/upload/') && lower.includes('/backgrounds/'));
 };
 
 const ProfileBackgrounds: React.FC = () => {
