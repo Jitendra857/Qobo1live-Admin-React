@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BACKEND_URL } from '../services/api';
-import { Building2, AlertCircle, CheckCircle2, X } from 'lucide-react';
+import { Building2, AlertCircle, CheckCircle2, X, Upload, UserCheck } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -35,22 +35,30 @@ const countryCodes = [
 const RegisterAgency: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const invitedBy = searchParams.get('invitedBy') || '';
+  const invitedByParam = searchParams.get('invitedBy') || '';
 
   const [agencyName, setAgencyName] = useState('');
   const [ownerName, setOwnerName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [countryCode, setCountryCode] = useState('+91');
+  const [invitedBy, setInvitedBy] = useState('');
 
   // Country & State Cascading
   const [selectedCountry, setSelectedCountry] = useState('India');
   const [customCountry, setCustomCountry] = useState('');
   const [selectedState, setSelectedState] = useState('');
   const [customState, setCustomState] = useState('');
+  const [city, setCity] = useState('');
+  const [address, setAddress] = useState('');
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  // File states
+  const [agencyLogo, setAgencyLogo] = useState<File | null>(null);
+  const [docPhotoFront, setDocPhotoFront] = useState<File | null>(null);
+  const [docPhotoBack, setDocPhotoBack] = useState<File | null>(null);
 
   // Autofill states
   const [isPreExistingUser, setIsPreExistingUser] = useState(false);
@@ -62,6 +70,12 @@ const RegisterAgency: React.FC = () => {
   // Password checks
   const hasMinLength = password.length >= 8;
   const hasSpecialChar = /[\!\@\#\$\%\^\&\*\(\)\_\+\-\=\[\]\{\}\;\:\'\"\,\<\>\.\?\/\~\\\|]/.test(password);
+
+  useEffect(() => {
+    if (invitedByParam) {
+      setInvitedBy(invitedByParam);
+    }
+  }, [invitedByParam]);
 
   const triggerScrollAndFocus = (id: string, errorMessage: string) => {
     setMessage({ type: 'error', content: errorMessage });
@@ -95,6 +109,8 @@ const RegisterAgency: React.FC = () => {
           }
         }
         
+        if (u.city) setCity(u.city);
+        if (u.address) setAddress(u.address);
         setIsPreExistingUser(true);
         if (u.hasPassword) {
           setHasExistingPassword(true);
@@ -125,6 +141,12 @@ const RegisterAgency: React.FC = () => {
     if (!phone.trim() || !/^\d+$/.test(phone)) {
       return triggerScrollAndFocus('phone', 'Please enter a valid digits-only Phone Number.');
     }
+    if (!city.trim()) {
+      return triggerScrollAndFocus('city', 'Please enter your City.');
+    }
+    if (!address.trim()) {
+      return triggerScrollAndFocus('address', 'Please enter your Full Address.');
+    }
 
     // Password validations (skipped if user has existing password)
     if (!hasExistingPassword) {
@@ -139,36 +161,58 @@ const RegisterAgency: React.FC = () => {
       }
     }
 
+    // Check files
+    if (!agencyLogo) {
+      return triggerScrollAndFocus('logoLabel', 'Please upload your Agency Logo / Profile photo.');
+    }
+    if (!docPhotoFront) {
+      return triggerScrollAndFocus('docFrontLabel', 'Please upload verification Document Front side.');
+    }
+    if (!docPhotoBack) {
+      return triggerScrollAndFocus('docBackLabel', 'Please upload verification Document Back side.');
+    }
+
     setLoading(true);
 
     const finalCountry = selectedCountry === 'Other' ? customCountry : selectedCountry;
     const finalState = selectedCountry === 'Other' ? customState : (selectedState === 'Other' ? customState : selectedState);
 
+    const formData = new FormData();
+    formData.append('agency_name', agencyName);
+    formData.append('owner_name', ownerName);
+    formData.append('email', email.toLowerCase().trim());
+    formData.append('phone', phone);
+    formData.append('countryCode', countryCode);
+    formData.append('country', finalCountry);
+    formData.append('state', finalState);
+    formData.append('city', city);
+    formData.append('address', address);
+    formData.append('password', !hasExistingPassword ? password : '');
+    formData.append('invitedBy', invitedBy);
+    
+    formData.append('agency_logo', agencyLogo);
+    formData.append('doc_photo_front', docPhotoFront);
+    formData.append('doc_photo_back', docPhotoBack);
+
     try {
-      const res = await axios.post(`${BACKEND_URL}/api/agency/register-public`, {
-        agency_name: agencyName,
-        owner_name: ownerName,
-        email: email.toLowerCase().trim(),
-        phone,
-        countryCode,
-        country: finalCountry,
-        state: finalState,
-        password: !hasExistingPassword ? password : '',
-        invitedBy
+      const res = await axios.post(`${BACKEND_URL}/api/agency/register-public`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
 
       if (res.data.statusCode === 1) {
         setMessage({
           type: 'success',
-          content: 'Agency registered successfully! You can now log into the application.'
+          content: 'Agency registered successfully! You can now log into the application once reviewed.'
         });
         
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         setAgencyName(''); setOwnerName(''); setEmail('');
         setPhone(''); setPassword(''); setConfirmPassword('');
-        setCustomCountry(''); setCustomState('');
+        setCustomCountry(''); setCustomState(''); setCity(''); setAddress('');
+        setAgencyLogo(null); setDocPhotoFront(null); setDocPhotoBack(null);
         setIsPreExistingUser(false); setHasExistingPassword(false);
+        if (!invitedByParam) setInvitedBy('');
       } else {
         setMessage({ type: 'error', content: res.data.message || 'Registration failed' });
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -200,7 +244,7 @@ const RegisterAgency: React.FC = () => {
     <div className="public-onboarding-page" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 16px', fontFamily: 'Inter, sans-serif' }}>
       
       {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: '30px', width: '100%', maxWidth: '750px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '30px', width: '100%', maxWidth: '800px' }}>
         <img src="/logo.svg" alt="Qobo1Live Logo" style={{ height: '48px', marginBottom: '16px', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))' }} />
         <h1 style={{ fontSize: '2rem', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.03em', margin: 0 }}>Register Agency</h1>
         <p style={{ color: '#64748b', fontSize: '1rem', marginTop: '8px', fontWeight: 500 }}>
@@ -209,7 +253,7 @@ const RegisterAgency: React.FC = () => {
       </div>
 
       {/* Main Form Page Container */}
-      <div style={{ background: '#ffffff', width: '100%', maxWidth: '750px', borderRadius: '20px', boxShadow: '0 20px 50px -12px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+      <div style={{ background: '#ffffff', width: '100%', maxWidth: '800px', borderRadius: '20px', boxShadow: '0 20px 50px -12px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
         
         {/* Top Accent Bar */}
         <div style={{ height: '6px', background: 'linear-gradient(90deg, #06b6d4, #3b82f6)' }}></div>
@@ -229,18 +273,57 @@ const RegisterAgency: React.FC = () => {
             </div>
           )}
 
-          {invitedBy && (
+          {invitedByParam && (
             <div style={{ color: '#0369a1', background: '#e0f2fe', padding: '12px 18px', borderRadius: '10px', marginBottom: '24px', fontSize: '0.88rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #bae6fd' }}>
               <Building2 size={16} />
-              <span>You are registering under Super Admin: <strong>{invitedBy}</strong></span>
+              <span>You are registering under Super Admin: <strong>{invitedByParam}</strong></span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="responsive-form-grid" noValidate>
             
-            {/* Section 1: Agency Details */}
+            {/* Section 1: Logo Photo */}
+            <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '15px' }}>
+              <label 
+                id="logoLabel"
+                className="logo-upload-circle"
+                style={{ 
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
+                  width: '120px', height: '120px', borderRadius: '50%', border: '3px dashed #cbd5e1', 
+                  cursor: 'pointer', background: '#f8fafc', transition: 'all 0.2s', position: 'relative', overflow: 'hidden'
+                }}
+              >
+                {agencyLogo ? (
+                  <img src={URL.createObjectURL(agencyLogo)} alt="Logo Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <>
+                    <Upload size={30} color="#64748b" style={{ marginBottom: '8px' }} />
+                    <span style={{ fontSize: '0.75rem', color: '#475569', fontWeight: 700, textAlign: 'center', lineHeight: '1.2' }}>
+                      Agency<br/>Logo
+                    </span>
+                  </>
+                )}
+                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => e.target.files && setAgencyLogo(e.target.files[0])} />
+              </label>
+            </div>
+
+            {/* Section 2: Referral Code */}
             <div style={{ gridColumn: '1 / -1', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginBottom: '8px' }}>
               <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><Building2 size={20} color="#06b6d4" /> Agency Information</h3>
+            </div>
+
+            <div style={{ gridColumn: '1 / -1' }} className="form-item-full">
+              <label className="input-label-premium">Super Admin Referral / Invited By</label>
+              <input 
+                type="text" 
+                id="invitedBy" 
+                value={invitedBy} 
+                onChange={(e) => setInvitedBy(e.target.value)}
+                disabled={!!invitedByParam} 
+                required={!!invitedByParam}
+                className="input-field-premium" 
+                style={invitedByParam ? { background: '#f1f5f9', cursor: 'not-allowed', color: '#64748b', fontWeight: 'bold' } : {}}
+              />
             </div>
 
             <div style={{ gridColumn: '1 / -1' }} className="form-item-full">
@@ -361,7 +444,17 @@ const RegisterAgency: React.FC = () => {
               )}
             </div>
 
-            {/* Section 2: Security (Only visible if password needs setting) */}
+            <div className="form-item-half">
+              <label className="input-label-premium">City</label>
+              <input type="text" id="city" value={city} onChange={(e) => setCity(e.target.value)} disabled={isPreExistingUser} required className="input-field-premium" />
+            </div>
+
+            <div style={{ gridColumn: '1 / -1' }} className="form-item-full">
+              <label className="input-label-premium">Full Address</label>
+              <input type="text" id="address" value={address} onChange={(e) => setAddress(e.target.value)} disabled={isPreExistingUser} required className="input-field-premium" />
+            </div>
+
+            {/* Section 3: Security (Only visible if password needs setting) */}
             {!hasExistingPassword && (
               <>
                 <div style={{ gridColumn: '1 / -1', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginTop: '10px', marginBottom: '8px' }}>
@@ -389,14 +482,47 @@ const RegisterAgency: React.FC = () => {
               </>
             )}
 
+            {/* Section 4: Document Verification */}
+            <div style={{ gridColumn: '1 / -1', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginTop: '10px', marginBottom: '8px' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Verification Documents</h3>
+            </div>
+
+            <div className="form-item-half">
+              <label className="input-label-premium">ID Document Front side</label>
+              <label id="docFrontLabel" className="upload-box-premium">
+                {docPhotoFront ? (
+                  <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold' }}>✓ Front Side Loaded ({docPhotoFront.name.substring(0, 18)}...)</span>
+                ) : (
+                  <>
+                    <Upload size={22} color="#64748b" style={{ marginBottom: '6px' }} />
+                    <span style={{ fontSize: '0.78rem', color: '#475569', fontWeight: 700 }}>Upload Front Side</span>
+                  </>
+                )}
+                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => e.target.files && setDocPhotoFront(e.target.files[0])} />
+              </label>
+            </div>
+
+            <div className="form-item-half">
+              <label className="input-label-premium">ID Document Back side</label>
+              <label id="docBackLabel" className="upload-box-premium">
+                {docPhotoBack ? (
+                  <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold' }}>✓ Back Side Loaded ({docPhotoBack.name.substring(0, 18)}...)</span>
+                ) : (
+                  <>
+                    <Upload size={22} color="#64748b" style={{ marginBottom: '6px' }} />
+                    <span style={{ fontSize: '0.78rem', color: '#475569', fontWeight: 700 }}>Upload Back Side</span>
+                  </>
+                )}
+                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => e.target.files && setDocPhotoBack(e.target.files[0])} />
+              </label>
+            </div>
+
             {/* Actions */}
             <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '16px', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #e2e8f0' }} className="action-buttons-wrap">
               <button 
                 type="button" 
                 onClick={() => navigate('/')}
                 style={{ flex: 1, padding: '14px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', color: '#dc2626', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }}
-                onMouseOver={(e) => { e.currentTarget.style.background = '#fee2e2'; }}
-                onMouseOut={(e) => { e.currentTarget.style.background = '#fef2f2'; }}
               >
                 <X size={18} /> Cancel
               </button>
@@ -439,8 +565,19 @@ const RegisterAgency: React.FC = () => {
         .input-label-premium {
           display: block; fontSize: 0.78rem; fontWeight: 800; color: #475569; marginBottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;
         }
+        .upload-box-premium {
+          display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100px;
+          border: 2.5px dashed #cbd5e1; borderRadius: 12px; cursor: pointer; background: #f8fafc; transition: all 0.2s;
+        }
+        .upload-box-premium:hover {
+          border-color: #06b6d4; background: #f0fdfa;
+        }
         .spinner {
           width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #fff; border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        .logo-upload-circle:hover {
+          border-color: #06b6d4 !important;
+          background: #f0fdfa !important;
         }
         @media (max-width: 600px) {
           .responsive-form-grid {
