@@ -441,7 +441,7 @@ const SuperAdminRequests: React.FC = () => {
                     </div>
                   )}
 
-                  {req.status === 'pending' && (
+                  {(req.status === 'pending' || req.status === 'email_dispatched' || req.status === 'mobile_requested') && (
                     <div style={{ padding: '16px 24px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', display: 'flex', gap: '12px' }}>
                       <button 
                         onClick={() => openRejectModal(req)}
