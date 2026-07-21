@@ -41,6 +41,7 @@ import RegisterHost from './pages/RegisterHost';
 import SuperAdminRequests from './pages/SuperAdminRequests';
 import AvatarFrames from './pages/AvatarFrames';
 import ProfileBackgrounds from './pages/ProfileBackgrounds';
+import RoomBackgrounds from './pages/RoomBackgrounds';
 import GiftPreview from './pages/GiftPreview';
 
 import { Menu as MenuIcon } from 'lucide-react';
@@ -129,6 +130,7 @@ function AppContent() {
                 <Route path="/vip-store" element={<VipStore />} />
                 <Route path="/avatar-frames" element={<AvatarFrames />} />
                 <Route path="/profile-backgrounds" element={<ProfileBackgrounds />} />
+                <Route path="/room-backgrounds" element={<RoomBackgrounds />} />
                 <Route path="/dynamic-tasks" element={<TaskCenter />} />
                 <Route path="/super-admin-forms" element={<StaffManagement />} />
                 <Route path="/super-admin-requests" element={<SuperAdminRequests />} />

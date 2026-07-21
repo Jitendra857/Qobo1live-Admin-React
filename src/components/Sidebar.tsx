@@ -82,6 +82,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
         { title: 'VIP Packages', path: '/vip-store' },
         { title: 'Avatar Frames', path: '/avatar-frames' },
         { title: 'Profile Backgrounds', path: '/profile-backgrounds' },
+        { title: 'Room Backgrounds', path: '/room-backgrounds' },
         { title: 'User Levels', path: '/level-system' },
         { title: 'Daily Tasks', path: '/dynamic-tasks' },
       ],
