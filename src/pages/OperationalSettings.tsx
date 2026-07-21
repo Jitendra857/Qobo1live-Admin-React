@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { adminService } from '../services/api';
+import api, { adminService } from '../services/api';
 import { Image as ImageIcon, Plus, Trash2, ExternalLink, X } from 'lucide-react';
 import '../styles/UserManagement.css';
 import MediaImage from '../components/MediaImage';
@@ -15,6 +15,7 @@ const OperationalSettings: React.FC = () => {
   const [imageUrl, setImageUrl] = useState('');
   const [targetUrl, setTargetUrl] = useState('');
   const [type, setType] = useState('promo');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const fetchAds = async () => {
     try {
@@ -34,9 +35,18 @@ const OperationalSettings: React.FC = () => {
   const handleDelete = async (id: string) => {
     const toastId = toast.loading('Deleting promotional banner...');
     try {
-      await adminService.manageAd('delete', {}, id);
-      toast.success('Promotional banner deleted successfully!', { id: toastId });
-      fetchAds();
+      const token = localStorage.getItem('admin_token') || localStorage.getItem('token');
+      const res = await fetch(`https://my-backend-api-960q.onrender.com/api/admin/ad-action?action=delete&id=${id}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.statusCode === 1 || data.success) {
+        toast.success('Promotional banner deleted successfully!', { id: toastId });
+        fetchAds();
+      } else {
+        toast.error(data.message || 'Failed to delete banner', { id: toastId });
+      }
     } catch (err) {
       console.error(err);
       toast.error('Failed to delete banner', { id: toastId });
@@ -45,29 +55,65 @@ const OperationalSettings: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !imageUrl) {
-      toast.error('Title and Image URL are required');
+    if (!title || (!imageUrl && !selectedFile)) {
+      toast.error('Title and an image file or URL are required');
       return;
     }
     const toastId = toast.loading('Publishing promotional banner...');
     try {
-      await adminService.manageAd('create', {
-        title,
-        imageUrl,
-        targetUrl,
-        type,
-        status: 'active'
-      });
-      toast.success('Promotional Banner published successfully!', { id: toastId });
-      fetchAds();
-      setIsModalOpen(false);
-      setTitle('');
-      setImageUrl('');
-      setTargetUrl('');
-      setType('promo');
-    } catch (err) {
+      if (selectedFile) {
+        // Use FormData for file uploads (requires latest backend deployed)
+        const form = new FormData();
+        form.append('title', title);
+        form.append('targetUrl', targetUrl);
+        form.append('type', type);
+        form.append('status', 'active');
+        form.append('file', selectedFile);
+
+        const res = await api.post('/admin/ad-action?action=create', form, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        
+        const data = res.data;
+        if (data.statusCode === 1 || data.success) {
+          toast.success('Promotional Banner published successfully!', { id: toastId });
+          fetchAds();
+          setIsModalOpen(false);
+          setTitle('');
+          setImageUrl('');
+          setTargetUrl('');
+          setType('promo');
+          setSelectedFile(null);
+        } else {
+          toast.error(data.message || 'Failed to publish banner', { id: toastId });
+        }
+      } else {
+        // Fallback to clean JSON request for pure URLs (works on current live Render backend instantly)
+        const res = await api.post('/admin/ad-action?action=create', {
+          title,
+          imageUrl,
+          targetUrl,
+          type,
+          status: 'active'
+        });
+        
+        const data = res.data;
+        if (data.statusCode === 1 || data.success) {
+          toast.success('Promotional Banner published successfully!', { id: toastId });
+          fetchAds();
+          setIsModalOpen(false);
+          setTitle('');
+          setImageUrl('');
+          setTargetUrl('');
+          setType('promo');
+        } else {
+          toast.error(data.message || 'Failed to publish banner', { id: toastId });
+        }
+      }
+    } catch (err: any) {
       console.error(err);
-      toast.error('Failed to publish banner', { id: toastId });
+      const errMsg = err.response?.data?.message || err.message || 'Failed to publish banner';
+      toast.error(errMsg, { id: toastId });
     }
   };
 
@@ -146,6 +192,20 @@ const OperationalSettings: React.FC = () => {
                   value={imageUrl} 
                   onChange={(e) => setImageUrl(e.target.value)} 
                   placeholder="https://images.unsplash.com/..." 
+                  style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', outline: 'none' }}
+                />
+              </div>
+
+              <div className="form-group">
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#94a3b8', marginBottom: '6px' }}>Or Upload File</label>
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setSelectedFile(e.target.files[0]);
+                    }
+                  }} 
                   style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', outline: 'none' }}
                 />
               </div>

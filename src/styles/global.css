@@ -217,6 +217,8 @@ body {
 /* Sidebar Specific */
 .sidebar {
   width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  flex-shrink: 0;
   transition: var(--transition-smooth);
 }
 

@@ -19,13 +19,15 @@
 /* ── Shell ──────────────────────────────────────────────── */
 .sidebar {
   width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  flex-shrink: 0;
   height: 100%;
   background: var(--sb-bg);
   border-right: 1px solid var(--sb-border);
   display: flex;
   flex-direction: column;
   padding: 0;
-  transition: width 0.25s ease;
+  transition: width 0.25s ease, min-width 0.25s ease;
   overflow: hidden;
 }
 

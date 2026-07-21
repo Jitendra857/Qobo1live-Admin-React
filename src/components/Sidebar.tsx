@@ -82,7 +82,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
         { title: 'VIP Packages', path: '/vip-store' },
         { title: 'Avatar Frames', path: '/avatar-frames' },
         { title: 'Profile Backgrounds', path: '/profile-backgrounds' },
-        { title: 'Room Backgrounds', path: '/room-backgrounds' },
         { title: 'User Levels', path: '/level-system' },
         { title: 'Daily Tasks', path: '/dynamic-tasks' },
       ],
@@ -104,8 +103,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
       subItems: [
         { title: 'Active Rooms', path: '/audio-rooms' },
         { title: 'PK Battles', path: '/pk-battles' },
-        { title: 'Promo Banners', path: '/banners' },
-        { title: 'Backgrounds', path: '/backgrounds' },
+        { title: 'Room backgrounds', path: '/banners' },
         { title: 'System Messages', path: '/notifications' },
       ],
     },
