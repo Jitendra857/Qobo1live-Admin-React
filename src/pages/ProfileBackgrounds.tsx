@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminService } from '../services/api';
 import { toast } from 'react-hot-toast';
-import { Sparkles, Plus, Trash2, Edit, X, Image as ImageIcon, ShieldAlert, Calendar } from 'lucide-react';
+import { Sparkles, Plus, Trash2, Edit, X, Image as ImageIcon, ShieldAlert, Calendar, PlaySquare } from 'lucide-react';
 import ConfirmationModal from '../components/ConfirmationModal';
 import MediaImage from '../components/MediaImage';
 import SvgaPlayer from '../components/SvgaPlayer';
@@ -200,12 +200,21 @@ const ProfileBackgrounds: React.FC = () => {
                             {backgrounds.map((bg) => (
                                 <tr key={bg.id} className="row-premium">
                                     <td>
-                                        <div className="avatar-wrapper" style={{ width: '80px', height: '56px', padding: '4px', border: '1px solid #e2e8f0', borderRadius: '8px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <div 
+                                            className="avatar-wrapper" 
+                                            style={{ width: '80px', height: '56px', padding: '4px', border: '1px solid #e2e8f0', borderRadius: '8px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isSvgaBg(bg.image) ? 'pointer' : 'default' }}
+                                            onClick={() => {
+                                                if (isSvgaBg(bg.image)) {
+                                                    window.open(`/gift-preview?url=${encodeURIComponent(bg.image)}&name=${encodeURIComponent(bg.name)}`, '_blank');
+                                                }
+                                            }}
+                                            title={isSvgaBg(bg.image) ? "Click to preview full animation" : undefined}
+                                        >
                                             {isSvgaBg(bg.image) ? (
-                                                <SvgaPlayer 
-                                                    src={bg.image} 
-                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                />
+                                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: '#64748b' }}>
+                                                    <PlaySquare size={20} />
+                                                    <span style={{ fontSize: '10px', marginTop: '2px', fontWeight: 'bold' }}>SVGA</span>
+                                                </div>
                                             ) : (
                                                 <MediaImage 
                                                     src={bg.image} 
