@@ -202,18 +202,21 @@ const ProfileBackgrounds: React.FC = () => {
                                     <td>
                                         <div 
                                             className="avatar-wrapper" 
-                                            style={{ width: '80px', height: '56px', padding: '4px', border: '1px solid #e2e8f0', borderRadius: '8px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isSvgaBg(bg.image) ? 'pointer' : 'default' }}
+                                            style={{ width: '80px', height: '56px', padding: '4px', border: '1px solid #e2e8f0', borderRadius: '8px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isSvgaBg(bg.image) ? 'pointer' : 'default', overflow: 'hidden' }}
                                             onClick={() => {
                                                 if (isSvgaBg(bg.image)) {
                                                     window.open(`/gift-preview?url=${encodeURIComponent(bg.image)}&name=${encodeURIComponent(bg.name)}`, '_blank');
                                                 }
                                             }}
-                                            title={isSvgaBg(bg.image) ? "Click to preview full animation" : undefined}
+                                            title={isSvgaBg(bg.image) ? "Click to preview full animation with sound" : undefined}
                                         >
                                             {isSvgaBg(bg.image) ? (
-                                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: '#64748b' }}>
-                                                    <PlaySquare size={20} />
-                                                    <span style={{ fontSize: '10px', marginTop: '2px', fontWeight: 'bold' }}>SVGA</span>
+                                                <div style={{ pointerEvents: 'none', width: '100%', height: '100%' }}>
+                                                    <SvgaPlayer 
+                                                        src={bg.image} 
+                                                        mute={true}
+                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                    />
                                                 </div>
                                             ) : (
                                                 <MediaImage 

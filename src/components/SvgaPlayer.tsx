@@ -5,9 +5,10 @@ interface SvgaPlayerProps {
     src: string;
     style?: React.CSSProperties;
     className?: string;
+    mute?: boolean;
 }
 
-const SvgaPlayer: React.FC<SvgaPlayerProps> = ({ src, style, className }) => {
+const SvgaPlayer: React.FC<SvgaPlayerProps> = ({ src, style, className, mute }) => {
     const containerRef = useRef<HTMLDivElement>(null);
 
     const getFullUrl = (url?: string) => {
@@ -44,6 +45,10 @@ const SvgaPlayer: React.FC<SvgaPlayerProps> = ({ src, style, className }) => {
             parser.load(
                 fullUrl,
                 (videoItem: any) => {
+                    if (mute && videoItem) {
+                        // clear audio to prevent sound playing
+                        videoItem.audios = [];
+                    }
                     player.setVideoItem(videoItem);
                     player.startAnimation();
                 },

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { BACKEND_URL } from '../services/api';
 
 const GiftPreview: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -23,8 +24,23 @@ const GiftPreview: React.FC = () => {
             const player = new SVGA.Player(containerRef.current);
             const parser = new SVGA.Parser();
 
+            const getFullUrl = (url?: string) => {
+                if (!url) return '';
+                if (url.startsWith('http://') || url.startsWith('https://')) return url;
+                const uploadsIndex = url.indexOf('uploads');
+                if (uploadsIndex !== -1) {
+                    let path = url.substring(uploadsIndex);
+                    return `${BACKEND_URL}/${path}`;
+                }
+                let cleanUrl = url.startsWith('/') ? url : `/${url}`;
+                if (!cleanUrl.startsWith('/uploads')) cleanUrl = `/uploads${cleanUrl}`;
+                return `${BACKEND_URL}${cleanUrl}`;
+            };
+
+            const fullUrl = getFullUrl(url);
+
             parser.load(
-                url,
+                fullUrl,
                 (videoItem: any) => {
                     player.setVideoItem(videoItem);
                     player.startAnimation();
