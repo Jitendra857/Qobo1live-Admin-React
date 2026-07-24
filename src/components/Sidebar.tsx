@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import {
   Home, Gift, Settings, UserCheck, Wallet,
   Tv, Headset, LogOut, ChevronDown, ChevronRight,
-  Monitor, ChevronLeft, Menu as MenuIcon
+  Monitor, ChevronLeft, Menu as MenuIcon, Building2
 } from 'lucide-react';
 import { useLayout } from '../context/LayoutContext';
 import '../styles/Sidebar.css';
