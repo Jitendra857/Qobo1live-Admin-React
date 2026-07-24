@@ -41,17 +41,36 @@ const HostRegistry: React.FC = () => {
   const fetchApps = async () => {
     try {
       setLoading(true);
-      const [res, adminsRes, agenciesRes] = await Promise.all([
-        adminService.getHosts(),
-        adminService.getAdmins(),
-        adminService.getAgencies()
-      ]);
-      if (res.data.statusCode === 1) {
-        setApps(res.data.data || []);
+      if (currentUser?.role === 'agency') {
+        const res = await adminService.getAgencyHostList();
+        if (res.data.statusCode === 1) {
+          const list = (res.data.data || []).map((h: any) => ({
+            id: h.applicationId || h.id,
+            userId: h.id,
+            hostName: h.name,
+            whatsapp: h.phone,
+            gmail: h.gmail,
+            realPhoto: h.photo,
+            agencyCode: h.agencyCode || currentUser?.agencyCode || '',
+            category: h.category,
+            status: h.status,
+            createdAt: h.createdAt || new Date().toISOString()
+          }));
+          setApps(list);
+        }
+      } else {
+        const [res, adminsRes, agenciesRes] = await Promise.all([
+          adminService.getHosts(),
+          adminService.getAdmins(),
+          adminService.getAgencies()
+        ]);
+        if (res.data.statusCode === 1) {
+          setApps(res.data.data || []);
+        }
+        const adminList = adminsRes.data.data || [];
+        setSuperAdmins(adminList.filter((a: any) => a.role === 'super_admin'));
+        setAgenciesList(agenciesRes.data.data || []);
       }
-      const adminList = adminsRes.data.data || [];
-      setSuperAdmins(adminList.filter((a: any) => a.role === 'super_admin'));
-      setAgenciesList(agenciesRes.data.data || []);
     } catch {
       toast.error('Registry synchronization failure');
     } finally {
@@ -88,7 +107,7 @@ const HostRegistry: React.FC = () => {
   }, [search, activeTab, selectedSuperAdmin, apps, agenciesList]);
 
   const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
-  const canApprove = currentUser?.role === 'super_admin';
+  const canApprove = currentUser?.role === 'super_admin' || currentUser?.role === 'agency';
 
   const totalCount    = apps.length;
   const pendingCount  = apps.filter(a => a.status?.toLowerCase() === 'pending').length;
@@ -98,8 +117,18 @@ const HostRegistry: React.FC = () => {
   const handleAction = async (id: string, status: 'APPROVED' | 'REJECTED', fb?: string) => {
     try {
       setProcessing(true);
-      const res = await adminService.approveHost({ application_id: id, status, feedback: fb });
-      if (res.data.statusCode === 1) {
+      let res;
+      if (currentUser?.role === 'agency') {
+        if (status === 'APPROVED') {
+          res = await adminService.approveAgencyHost(id, { coins_per_second: 5, note: fb || 'Approved by agency' });
+        } else {
+          res = await adminService.rejectAgencyHost(id, { reason: fb || 'Rejected by agency' });
+        }
+      } else {
+        res = await adminService.approveHost({ application_id: id, status, feedback: fb });
+      }
+
+      if (res && res.data.statusCode === 1) {
         toast.success(status === 'APPROVED' ? '✅ Host Approved' : '❌ Host Rejected');
         setShowRejectModal(false);
         setFeedback('');
@@ -107,7 +136,7 @@ const HostRegistry: React.FC = () => {
         setSelectedApp(null);
         fetchApps();
       } else {
-        toast.error(res.data.message || 'Operation failed');
+        toast.error(res?.data?.message || 'Operation failed');
       }
     } catch {
       toast.error('Authorization failed');

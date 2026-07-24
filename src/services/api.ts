@@ -127,11 +127,21 @@ export const adminService = {
   listSellers: () => api.get('/admin/sellers'),
   createSeller: (data: any) => api.post('/admin/seller-create', data),
   updateSeller: (id: string, data: any) => api.put(`/admin/seller/${id}`, data),
-  manageSellerStock: (data: { sellerId: string; amount: number; type: 'TOPUP' | 'DEDUCT' }) => 
-    api.post('/admin/seller-stock', data),
+  manageSellerStock: (data: any) => api.post('/admin/seller-stock', data),
   getSellerReports: (id: string) => api.get(`/admin/seller-reports/${id}`),
 
-  // Agency Extensions
+  // Seller Portal (For the logged in seller)
+  getSellerDashboard: () => api.get('/admin/seller-portal/dashboard'),
+  sellCoinsToUser: (data: any) => api.post('/admin/seller-portal/sell', data),
+
+  // Agency & Super Admin Extensions
+  getSuperAdminDashboard: () => api.get('/super-admin/dashboard'),
+  getAgencyDashboard: () => api.get('/agency/dashboard'),
+  getAgencyHostList: () => api.get('/agency/host-list'),
+  getAgencyHostApplications: (status?: string) => api.get(`/agency/host-applications${status ? `?status=${status}` : ''}`),
+  approveAgencyHost: (id: string, data: any) => api.post(`/agency/host-applications/${id}/approve`, data),
+  rejectAgencyHost: (id: string, data: any) => api.post(`/agency/host-applications/${id}/reject`, data),
+
   getAgencyRevenue: () => api.get('/agency/revenue'),
   getGlobalAgencyStats: () => api.get('/admin/agency-stats'),
   payoutAgency: (data: { agencyId: string }) => api.post('/admin/agency-payout', data),

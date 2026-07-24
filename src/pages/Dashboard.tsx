@@ -14,21 +14,24 @@ import {
 import '../styles/Dashboard.css';
 
 const Dashboard: React.FC = () => {
-  const [stats, setStats] = useState<any>({
-    totalUsers: 0,
-    activeUsers: 0,
-    revenue: 0,
-    roomCount: 0,
-    pendingHosts: 0,
-    giftCount: 0
-  });
+  const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
+  const role = currentUser?.role || 'admin';
+
+  const [stats, setStats] = useState<any>(null);
   const [period, setPeriod] = useState<'DAILY' | 'WEEKLY' | 'ALL_TIME'>('DAILY');
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await adminService.getStats();
-        if (res.data.statusCode === 1) {
+        let res;
+        if (role === 'super_admin') {
+          res = await adminService.getSuperAdminDashboard();
+        } else if (role === 'agency') {
+          res = await adminService.getAgencyDashboard();
+        } else {
+          res = await adminService.getStats();
+        }
+        if (res && res.data.statusCode === 1) {
           setStats(res.data.data);
         }
       } catch (err) {
@@ -36,7 +39,7 @@ const Dashboard: React.FC = () => {
       }
     };
     fetchStats();
-  }, []);
+  }, [role]);
 
   const growthData = [
     { name: 'Mon', users: 400 },
@@ -57,10 +60,39 @@ const Dashboard: React.FC = () => {
 
   const COLORS = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e'];
 
+  // Dynamic Card Mappings based on role
+  const getCardData = () => {
+    if (role === 'super_admin') {
+      return [
+        { label: 'TOTAL AGENCIES', value: stats?.totalAgencies || 0, color: 'blue', icon: <Users size={28} /> },
+        { label: 'ACTIVE HOSTS', value: stats?.activeHosts || 0, color: 'green', icon: <Activity size={28} /> },
+        { label: 'PENDING HOSTS', value: stats?.pendingHosts || 0, color: 'purple', icon: <Crown size={28} /> },
+        { label: 'TOTAL COMMISSIONS', value: `₹${(stats?.totalCommissions || 0).toLocaleString()}`, color: 'gold', icon: <Wallet size={28} /> },
+      ];
+    }
+    if (role === 'agency') {
+      return [
+        { label: 'AGENCY CODE', value: stats?.agency?.code || '—', sub: stats?.agency?.name, color: 'blue', icon: <Users size={28} /> },
+        { label: 'ACTIVE HOSTS', value: stats?.summary?.activeHosts || 0, color: 'green', icon: <Activity size={28} /> },
+        { label: 'PENDING APPLICATIONS', value: stats?.summary?.pendingHostApplications || 0, color: 'purple', icon: <Crown size={28} /> },
+        { label: 'TOTAL EARNINGS', value: `₹${(stats?.summary?.totalAgencyEarnings || 0).toLocaleString()}`, color: 'gold', icon: <Wallet size={28} /> },
+      ];
+    }
+    // Default: global Admin
+    return [
+      { label: 'TOTAL USERS', value: stats?.totalUsers?.toLocaleString() || 0, color: 'blue', icon: <Users size={28} /> },
+      { label: 'ACTIVE ROOMS', value: stats?.roomCount || 0, color: 'green', icon: <Activity size={28} /> },
+      { label: 'PENDING HOSTS', value: stats?.pendingHosts || 0, color: 'purple', icon: <Crown size={28} /> },
+      { label: 'DAILY EARNINGS', value: `₹${(stats?.revenue || 0).toLocaleString()}`, color: 'gold', icon: <Wallet size={28} /> },
+    ];
+  };
+
+  const cards = getCardData();
+
   return (
     <div className="dashboard-page">
       <div className="dashboard-header">
-        <h1>Site Overview</h1>
+        <h1>{role === 'super_admin' ? 'Super Admin Overview' : role === 'agency' ? 'Agency Overview' : 'Site Overview'}</h1>
         <div className="breadcrumb">
           <span>Home</span> <ChevronRight size={14} style={{ verticalAlign: 'middle', margin: '0 4px' }} /> Dashboard
         </div>
@@ -68,42 +100,18 @@ const Dashboard: React.FC = () => {
 
       {/* Row 1: Primary Stats */}
       <div className="stats-row">
-        <div className="stat-card">
-          <div className="stat-info">
-            <span className="label label-blue">TOTAL USERS</span>
-            <span className="value">{stats?.totalUsers?.toLocaleString() || 0}</span>
+        {cards.map((card, idx) => (
+          <div className="stat-card" key={idx}>
+            <div className="stat-info">
+              <span className={`label label-${card.color}`}>{card.label}</span>
+              <span className="value" style={{ fontSize: card.sub ? '1.4rem' : '1.8rem' }}>{card.value}</span>
+              {card.sub && <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, marginTop: '4px', display: 'block' }}>{card.sub}</span>}
+            </div>
+            <div className={`stat-icon stat-icon-${card.color}`}>
+              {card.icon}
+            </div>
           </div>
-          <div className="stat-icon stat-icon-blue">
-            <Users size={28} strokeWidth={2} />
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-info">
-            <span className="label label-green">ACTIVE ROOMS</span>
-            <span className="value">{stats?.roomCount || 0}</span>
-          </div>
-          <div className="stat-icon stat-icon-green">
-            <Activity size={28} strokeWidth={2} />
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-info">
-            <span className="label label-purple">PENDING HOSTS</span>
-            <span className="value">{stats?.pendingHosts || 0}</span>
-          </div>
-          <div className="stat-icon stat-icon-purple">
-            <Crown size={28} strokeWidth={2} />
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-info">
-            <span className="label label-orange">DAILY EARNINGS</span>
-            <span className="value">₹{((stats?.revenue || 0) / 1).toLocaleString()}</span>
-          </div>
-          <div className="stat-icon stat-icon-gold">
-            <Wallet size={28} strokeWidth={2} />
-          </div>
-        </div>
+        ))}
       </div>
 
       {/* Row 2: Mini Ecosystem Pulse */}

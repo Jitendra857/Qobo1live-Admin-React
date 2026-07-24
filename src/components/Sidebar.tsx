@@ -140,6 +140,22 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
         }
       ];
     }
+    if (currentUser?.role === 'agency') {
+      return [
+        {
+          title: 'My Agency', icon: <Building2 size={17} />, iconClass: 'icon-blue',
+          subItems: [
+            { title: 'Dashboard', path: '/dashboard' },
+            { title: 'My Hosts',    path: '/host-registry' },
+          ],
+        }
+      ];
+    }
+    if (currentUser?.role === 'seller_admin') {
+      return [
+        { title: 'Merchant Portal', path: '/dashboard', icon: <Home size={17} />, iconClass: 'icon-blue' }
+      ];
+    }
     return []; // For 'user' or unknown roles, leave it blank
   })();
   // ──────────────────────────────────────────────────────────────────────────

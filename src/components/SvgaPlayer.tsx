@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { BACKEND_URL } from '../services/api';
 
 interface SvgaPlayerProps {
     src: string;
@@ -8,6 +9,19 @@ interface SvgaPlayerProps {
 
 const SvgaPlayer: React.FC<SvgaPlayerProps> = ({ src, style, className }) => {
     const containerRef = useRef<HTMLDivElement>(null);
+
+    const getFullUrl = (url?: string) => {
+        if (!url) return '';
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+        const uploadsIndex = url.indexOf('uploads');
+        if (uploadsIndex !== -1) {
+            let path = url.substring(uploadsIndex);
+            return `${BACKEND_URL}/${path}`;
+        }
+        let cleanUrl = url.startsWith('/') ? url : `/${url}`;
+        if (!cleanUrl.startsWith('/uploads')) cleanUrl = `/uploads${cleanUrl}`;
+        return `${BACKEND_URL}${cleanUrl}`;
+    };
 
     useEffect(() => {
         if (!containerRef.current) return;
@@ -24,9 +38,11 @@ const SvgaPlayer: React.FC<SvgaPlayerProps> = ({ src, style, className }) => {
         try {
             const player = new SVGA.Player(containerRef.current);
             const parser = new SVGA.Parser(); // Parser does not require a selector/element
+            
+            const fullUrl = getFullUrl(src);
 
             parser.load(
-                src,
+                fullUrl,
                 (videoItem: any) => {
                     player.setVideoItem(videoItem);
                     player.startAnimation();

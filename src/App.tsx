@@ -19,6 +19,7 @@ import AuthPage from './pages/AuthPage';
 import NotificationCenter from './pages/ops/NotificationCenter';
 import AdvancedSettings from './pages/ops/AdvancedSettings';
 import SellerManager from './pages/ops/SellerManager';
+import SellerDashboard from './pages/SellerDashboard';
 import AmbienceManager from './pages/ops/AmbienceManager';
 import AudioRoomManager from './pages/ops/AudioRoomManager';
 import GiftCategories from './pages/GiftCategories';
@@ -59,6 +60,10 @@ function AppContent() {
     localStorage.removeItem('admin_user');
     setIsAuthenticated(false);
   };
+
+  const adminUserStr = localStorage.getItem('admin_user');
+  const adminUser = adminUserStr ? JSON.parse(adminUserStr) : null;
+  const isSellerAdmin = adminUser?.role === 'seller_admin';
 
   const isStandalonePage = ['/apply-super-admin', '/register-agency', '/register-host', '/gift-preview'].includes(window.location.pathname);
 
@@ -121,42 +126,50 @@ function AppContent() {
             {!isAuthenticated ? (
               <Route path="*" element={<AuthPage onLogin={() => setIsAuthenticated(true)} />} />
             ) : (
-              <>
-                <Route path="/" element={<Navigate to="/dashboard" />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/users" element={<UserManagement />} />
-                <Route path="/gifts" element={<Gifts />} />
-                <Route path="/gift-categories" element={<GiftCategories />} />
-                <Route path="/vip-store" element={<VipStore />} />
-                <Route path="/avatar-frames" element={<AvatarFrames />} />
-                <Route path="/profile-backgrounds" element={<ProfileBackgrounds />} />
-                <Route path="/room-backgrounds" element={<RoomBackgrounds />} />
-                <Route path="/dynamic-tasks" element={<TaskCenter />} />
-                <Route path="/super-admin-forms" element={<StaffManagement />} />
-                <Route path="/super-admin-requests" element={<SuperAdminRequests />} />
-                <Route path="/coin-seller-forms" element={<SellerManager />} />
-                <Route path="/agents" element={<AgencyHub />} />
-                <Route path="/host-registry" element={<HostRegistry />} />
-                <Route path="/performance-tracking" element={<PerformanceTracking />} />
-                <Route path="/pk-battles" element={<PKBattleManager />} />
-                <Route path="/support" element={<SupportDesk />} />
-                <Route path="/withdrawals" element={<Withdrawals />} />
-                <Route path="/transactions" element={<TransactionHistory />} />
-                <Route path="/operational-settings" element={<OperationalSettings />} />
-                <Route path="/economy" element={<Economy />} />
-                <Route path="/banners" element={<OperationalSettings />} />
-                <Route path="/backgrounds" element={<AmbienceManager />} />
-                <Route path="/audio-rooms" element={<AudioRoomManager />} />
-                <Route path="/notifications" element={<NotificationCenter />} />
-                <Route path="/moderation" element={<Moderation />} />
-                <Route path="/localization" element={<Localization />} />
-                <Route path="/locations" element={<Locations />} />
-                <Route path="/level-system" element={<LevelSystem />} />
-                <Route path="/payment-gateways" element={<GatewayConfig />} />
-                <Route path="/simulation" element={<SimulationManager />} />
-                <Route path="/settings" element={<AdvancedSettings />} />
-                <Route path="*" element={<Navigate to="/dashboard" />} />
-              </>
+              isSellerAdmin ? (
+                <>
+                  <Route path="/" element={<Navigate to="/dashboard" />} />
+                  <Route path="/dashboard" element={<SellerDashboard />} />
+                  <Route path="*" element={<Navigate to="/dashboard" />} />
+                </>
+              ) : (
+                <>
+                  <Route path="/" element={<Navigate to="/dashboard" />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/users" element={<UserManagement />} />
+                  <Route path="/gifts" element={<Gifts />} />
+                  <Route path="/gift-categories" element={<GiftCategories />} />
+                  <Route path="/vip-store" element={<VipStore />} />
+                  <Route path="/avatar-frames" element={<AvatarFrames />} />
+                  <Route path="/profile-backgrounds" element={<ProfileBackgrounds />} />
+                  <Route path="/room-backgrounds" element={<RoomBackgrounds />} />
+                  <Route path="/dynamic-tasks" element={<TaskCenter />} />
+                  <Route path="/super-admin-forms" element={<StaffManagement />} />
+                  <Route path="/super-admin-requests" element={<SuperAdminRequests />} />
+                  <Route path="/coin-seller-forms" element={<SellerManager />} />
+                  <Route path="/agents" element={<AgencyHub />} />
+                  <Route path="/host-registry" element={<HostRegistry />} />
+                  <Route path="/performance-tracking" element={<PerformanceTracking />} />
+                  <Route path="/pk-battles" element={<PKBattleManager />} />
+                  <Route path="/support" element={<SupportDesk />} />
+                  <Route path="/withdrawals" element={<Withdrawals />} />
+                  <Route path="/transactions" element={<TransactionHistory />} />
+                  <Route path="/operational-settings" element={<OperationalSettings />} />
+                  <Route path="/economy" element={<Economy />} />
+                  <Route path="/banners" element={<OperationalSettings />} />
+                  <Route path="/backgrounds" element={<AmbienceManager />} />
+                  <Route path="/audio-rooms" element={<AudioRoomManager />} />
+                  <Route path="/notifications" element={<NotificationCenter />} />
+                  <Route path="/moderation" element={<Moderation />} />
+                  <Route path="/localization" element={<Localization />} />
+                  <Route path="/locations" element={<Locations />} />
+                  <Route path="/level-system" element={<LevelSystem />} />
+                  <Route path="/payment-gateways" element={<GatewayConfig />} />
+                  <Route path="/simulation" element={<SimulationManager />} />
+                  <Route path="/settings" element={<AdvancedSettings />} />
+                  <Route path="*" element={<Navigate to="/dashboard" />} />
+                </>
+              )
             )}
           </Routes>
         </main>
