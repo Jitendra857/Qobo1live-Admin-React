@@ -199,11 +199,31 @@ const AvatarFrames: React.FC = () => {
                             {frames.map((frame) => (
                                 <tr key={frame.id} className="row-premium">
                                     <td>
-                                        <div className="avatar-wrapper" style={{ width: '56px', height: '56px', padding: '4px', border: '1px solid #e2e8f0', borderRadius: '8px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <div 
+                                            className="avatar-wrapper" 
+                                            style={{ 
+                                                width: '56px', 
+                                                height: '56px', 
+                                                padding: '4px', 
+                                                border: '1px solid #e2e8f0', 
+                                                borderRadius: '8px', 
+                                                background: '#f8fafc', 
+                                                display: 'flex', 
+                                                alignItems: 'center', 
+                                                justifyContent: 'center',
+                                                cursor: 'pointer' 
+                                            }}
+                                            onClick={() => {
+                                                if (isSvgaFrame(frame.image)) {
+                                                    window.open('/gift-preview?url=' + encodeURIComponent(frame.image), '_blank');
+                                                }
+                                            }}
+                                        >
                                             {isSvgaFrame(frame.image) ? (
                                                 <SvgaPlayer 
                                                     src={frame.image} 
                                                     style={{ width: '48px', height: '48px', objectFit: 'contain' }}
+                                                    mute={true}
                                                 />
                                             ) : (
                                                 <MediaImage 
