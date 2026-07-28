@@ -6,6 +6,7 @@ import { TopMenu, SettingsToggle } from './components/LayoutControls';
 import { LayoutProvider, useLayout } from './context/LayoutContext';
 import Dashboard from './pages/Dashboard';
 import UserManagement from './pages/UserManagement';
+import CoinsSellerRequests from './pages/CoinsSellerRequests';
 import Gifts from './pages/Gifts';
 import AgencyHub from './pages/AgencyHub';
 import Withdrawals from './pages/Withdrawals';
@@ -137,6 +138,7 @@ function AppContent() {
                   <Route path="/" element={<Navigate to="/dashboard" />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/users" element={<UserManagement />} />
+                  <Route path="/coins-seller-requests" element={<CoinsSellerRequests />} />
                   <Route path="/gifts" element={<Gifts />} />
                   <Route path="/gift-categories" element={<GiftCategories />} />
                   <Route path="/vip-store" element={<VipStore />} />
