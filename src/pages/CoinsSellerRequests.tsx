@@ -26,7 +26,7 @@ const CoinsSellerRequests: React.FC = () => {
     try {
       setLoading(true);
       const response = await api.get(`/admin/coins-seller-applications?status=${activeTab}`);
-      if (response.data.success) {
+      if (response.data.statusCode === 1) {
         setApplications(response.data.data);
       }
     } catch (error: any) {
@@ -43,7 +43,7 @@ const CoinsSellerRequests: React.FC = () => {
   const handleApprove = async (id: string) => {
     try {
       const response = await api.post(`/admin/coins-seller-applications/${id}/approve`);
-      if (response.data.success) {
+      if (response.data.statusCode === 1) {
         toast.success('Application approved successfully');
         fetchApplications();
       }
@@ -55,7 +55,7 @@ const CoinsSellerRequests: React.FC = () => {
   const handleReject = async (id: string) => {
     try {
       const response = await api.post(`/admin/coins-seller-applications/${id}/reject`);
-      if (response.data.success) {
+      if (response.data.statusCode === 1) {
         toast.success('Application rejected successfully');
         fetchApplications();
       }
