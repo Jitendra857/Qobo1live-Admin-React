@@ -1,7 +1,7 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
-import { useLayout } from '../context/LayoutContext';
+
 
 interface Application {
   id: string;
@@ -18,17 +18,20 @@ interface Application {
 }
 
 const CoinsSellerRequests: React.FC = () => {
-  const { headerHeight } = useLayout();
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('pending');
 
+  // Hardcoding API base url since this is likely running on the same domain or has a setup proxy
+  // But ideally it should use an axios instance if you have one.
+  const API_URL = import.meta.env.VITE_API_URL || '';
+
   const fetchApplications = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const response = await axios.get(http://localhost:5000/api/admin/coins-seller-applications?status=, {
-        headers: { Authorization: Bearer  }
+      const token = localStorage.getItem('admin_token') || localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/api/admin/coins-seller-applications?status=${activeTab}`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.success) {
         setApplications(response.data.data);
@@ -46,9 +49,9 @@ const CoinsSellerRequests: React.FC = () => {
 
   const handleApprove = async (id: string) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(http://localhost:5000/api/admin/coins-seller-applications//approve, {}, {
-        headers: { Authorization: Bearer  }
+      const token = localStorage.getItem('admin_token') || localStorage.getItem('token');
+      const response = await axios.post(`${API_URL}/api/admin/coins-seller-applications/${id}/approve`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.success) {
         toast.success('Application approved successfully');
@@ -61,9 +64,9 @@ const CoinsSellerRequests: React.FC = () => {
 
   const handleReject = async (id: string) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(http://localhost:5000/api/admin/coins-seller-applications//reject, {}, {
-        headers: { Authorization: Bearer  }
+      const token = localStorage.getItem('admin_token') || localStorage.getItem('token');
+      const response = await axios.post(`${API_URL}/api/admin/coins-seller-applications/${id}/reject`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.success) {
         toast.success('Application rejected successfully');
@@ -75,7 +78,7 @@ const CoinsSellerRequests: React.FC = () => {
   };
 
   return (
-    <div style={{ marginTop: headerHeight, padding: '24px' }}>
+    <div className="fade-in" style={{ padding: '24px' }}>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Coins Seller Requests</h1>
       </div>
@@ -86,7 +89,7 @@ const CoinsSellerRequests: React.FC = () => {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={px-4 py-2 font-medium capitalize }
+            className={`px-4 py-2 font-medium capitalize ${activeTab === tab ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
           >
             {tab}
           </button>
@@ -129,7 +132,11 @@ const CoinsSellerRequests: React.FC = () => {
                     <td className="px-6 py-4 max-w-xs truncate" title={app.details}>{app.details || '-'}</td>
                     <td className="px-6 py-4">{new Date(app.createdAt).toLocaleDateString()}</td>
                     <td className="px-6 py-4">
-                      <span className={px-2 py-1 rounded-full text-xs font-medium capitalize }>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${
+                        app.status === 'approved' ? 'bg-green-100 text-green-700' :
+                        app.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                        'bg-yellow-100 text-yellow-700'
+                      }`}>
                         {app.status}
                       </span>
                     </td>
