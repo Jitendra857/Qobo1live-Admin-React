@@ -237,34 +237,47 @@ const CoinsSellerRequests: React.FC = () => {
 
   return (
     <div className="user-management fade-in">
-      <div className="header-actions">
-        <div className="flex items-center justify-between w-full">
+      <div className="header-actions" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
           <div>
-            <h2 className="page-title">Unified Coins Sellers</h2>
-            <p style={{ color: 'var(--text-secondary)' }}>Manage active merchants, allocate stock, and review mobile applications</p>
+            <h2 className="page-title" style={{ fontSize: '2rem', fontWeight: '900', color: '#0f172a', margin: '0 0 8px 0' }}>Coins Sellers Management</h2>
+            <p style={{ color: '#64748b', fontSize: '1rem', margin: 0 }}>Manage active merchants, allocate stock, and review mobile applications</p>
           </div>
           {activeTab === 'Active Sellers' && (
-            <button className="primary flex items-center gap-2" onClick={handleOpenCreate}>
+            <button 
+              onClick={handleOpenCreate}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                padding: '12px 24px', background: '#2563eb', color: 'white',
+                borderRadius: '16px', fontWeight: 'bold', fontSize: '1rem',
+                border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)',
+                transition: 'transform 0.2s, box-shadow 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+            >
               <Plus size={20} /> Add New Seller
             </button>
           )}
         </div>
         
-        <div className="top-tools mt-6">
-          <div className="filter-group" style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', background: '#f8fafc', padding: '8px', borderRadius: '20px', border: '1px solid #e2e8f0', flexWrap: 'wrap', gap: '16px' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {['Active Sellers', 'Pending Applications', 'Rejected Applications'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 style={{
-                  padding: '10px 20px',
-                  borderRadius: '20px',
-                  border: activeTab === tab ? 'none' : '1px solid #e2e8f0',
-                  background: activeTab === tab ? 'var(--primary)' : 'transparent',
-                  color: activeTab === tab ? 'white' : 'var(--text-secondary)',
+                  padding: '12px 24px',
+                  borderRadius: '14px',
+                  border: 'none',
+                  background: activeTab === tab ? '#2563eb' : 'transparent',
+                  color: activeTab === tab ? '#ffffff' : '#64748b',
                   cursor: 'pointer',
-                  fontWeight: '600',
-                  transition: 'all 0.2s'
+                  fontWeight: '700',
+                  fontSize: '0.95rem',
+                  transition: 'all 0.3s ease',
+                  boxShadow: activeTab === tab ? '0 4px 12px rgba(37, 99, 235, 0.25)' : 'none'
                 }}
               >
                 {tab}
@@ -273,13 +286,14 @@ const CoinsSellerRequests: React.FC = () => {
           </div>
 
           {activeTab === 'Active Sellers' && (
-            <div className="search-bar">
-              <Search size={20} style={{ color: 'var(--text-secondary)' }} />
+            <div style={{ display: 'flex', alignItems: 'center', background: 'white', padding: '12px 20px', borderRadius: '14px', border: '1px solid #e2e8f0', minWidth: '320px', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
+              <Search size={18} style={{ color: '#94a3b8', marginRight: '12px' }} />
               <input 
                 type="text" 
-                placeholder="Search merchants..." 
+                placeholder="Search merchants by name or email..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                style={{ border: 'none', outline: 'none', background: 'transparent', width: '100%', fontSize: '0.95rem', color: '#1e293b', fontWeight: '500' }}
               />
             </div>
           )}
