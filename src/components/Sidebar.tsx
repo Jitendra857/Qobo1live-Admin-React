@@ -115,7 +115,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
       subItems: [
         { title: 'Admin Accounts', path: '/super-admin-forms' },
         { title: 'Super Admin Requests', path: '/super-admin-requests' },
-        { title: 'Coin Resellers', path: '/coin-seller-forms' },
         { title: 'Payment Gateways', path: '/payment-gateways' },
         { title: 'General Settings', path: '/settings' },
         { title: 'App Language', path: '/localization' },

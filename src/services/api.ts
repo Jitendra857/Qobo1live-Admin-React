@@ -127,6 +127,7 @@ export const adminService = {
   listSellers: () => api.get('/admin/sellers'),
   createSeller: (data: any) => api.post('/admin/seller-create', data),
   updateSeller: (id: string, data: any) => api.put(`/admin/seller/${id}`, data),
+  deleteSeller: (id: string) => api.delete(`/admin/seller/${id}`),
   manageSellerStock: (data: any) => api.post('/admin/seller-stock', data),
   getSellerReports: (id: string) => api.get(`/admin/seller-reports/${id}`),
 
