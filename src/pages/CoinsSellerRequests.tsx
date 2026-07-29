@@ -65,7 +65,10 @@ const CoinsSellerRequests: React.FC = () => {
         const res = await adminService.listSellers();
         setSellers(res.data.data || []);
       } else {
-        const statusStr = activeTab === 'Pending Applications' ? 'pending' : 'rejected';
+        let statusStr = 'pending';
+        if (activeTab === 'Rejected Applications') statusStr = 'rejected';
+        if (activeTab === 'Approved Applications') statusStr = 'approved';
+        
         const response = await api.get(`/admin/coins-seller-applications?status=${statusStr}`);
         if (response.data.statusCode === 1) {
           setApplications(response.data.data || []);
@@ -263,7 +266,7 @@ const CoinsSellerRequests: React.FC = () => {
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', background: '#f8fafc', padding: '8px', borderRadius: '20px', border: '1px solid #e2e8f0', flexWrap: 'wrap', gap: '16px' }}>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {['Active Sellers', 'Pending Applications', 'Rejected Applications'].map(tab => (
+            {['Active Sellers', 'Pending Applications', 'Approved Applications', 'Rejected Applications'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -317,14 +320,18 @@ const CoinsSellerRequests: React.FC = () => {
               {filteredSellers.map((seller) => (
                 <tr key={seller.id} className="row-premium">
                   <td>
-                    <div className="identity-block">
-                      <div className="avatar-glass">
-                        {seller.name?.charAt(0) || 'S'}
+                    <div className="identity-block" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div className="avatar-glass" style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {seller.displayPicture ? (
+                           <img src={seller.displayPicture} alt={seller.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                           <span style={{ fontSize: '1.2rem', fontWeight: '800', color: '#64748b' }}>{seller.name?.charAt(0) || 'S'}</span>
+                        )}
                       </div>
-                      <div className="identity-text">
-                        <span className="name-bold">{seller.name}</span>
-                        <span className="email-sub">{seller.email}</span>
-                        <span className="id-sub" style={{ fontSize: '10px' }}>ID: {seller.id.slice(0, 8)}</span>
+                      <div className="identity-text" style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span className="name-bold" style={{ fontWeight: '800', color: '#1e293b' }}>{seller.name}</span>
+                        <span className="email-sub" style={{ fontSize: '0.85rem', color: '#64748b' }}>{seller.email}</span>
+                        <span className="id-sub" style={{ fontSize: '10px', color: '#94a3b8' }}>ID: {seller.id.slice(0, 8)}</span>
                       </div>
                     </div>
                   </td>
@@ -366,18 +373,38 @@ const CoinsSellerRequests: React.FC = () => {
                     </div>
                   </td>
                   <td>
-                    <div className="ops-cluster">
-                      <button className="op-btn wide coin" onClick={() => handleOpenStock(seller)}>
-                        <Plus size={16} /> Stock
+                    <div className="ops-cluster" style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end' }}>
+                      <button 
+                        onClick={() => handleOpenStock(seller)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', borderRadius: '10px', background: '#eff6ff', color: '#3b82f6', border: 'none', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s' }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = '#dbeafe'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = '#eff6ff'}
+                      >
+                        <Plus size={14} /> Stock
                       </button>
-                      <button className="op-btn wide" onClick={() => handleOpenReports(seller)}>
-                        <TrendingUp size={16} /> Reports
+                      <button 
+                        onClick={() => handleOpenReports(seller)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', borderRadius: '10px', background: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s' }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = '#f8fafc'}
+                      >
+                        <TrendingUp size={14} /> Reports
                       </button>
-                      <button className="op-btn edit" onClick={() => handleOpenEdit(seller)}>
-                        <MoreVertical size={18} />
+                      <button 
+                        onClick={() => handleOpenEdit(seller)}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px', borderRadius: '10px', background: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0', cursor: 'pointer', transition: 'all 0.2s' }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = '#f8fafc'}
+                      >
+                        <MoreVertical size={16} />
                       </button>
-                      <button className="op-btn text-danger ml-2" onClick={() => handleDeleteSeller(seller.id)}>
-                        <Trash2 size={18} />
+                      <button 
+                        onClick={() => handleDeleteSeller(seller.id)}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px', borderRadius: '10px', background: '#fef2f2', color: '#ef4444', border: 'none', cursor: 'pointer', transition: 'all 0.2s' }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = '#fee2e2'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = '#fef2f2'}
+                      >
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </td>
@@ -667,105 +694,110 @@ const CoinsSellerRequests: React.FC = () => {
       {/* Stock Management Modal */}
       {showStockModal && selectedSeller && (
         <div className="modal-overlay">
-          <div className="modal-content bento-card" style={{ maxWidth: '550px', width: '90%', padding: '0', overflow: 'hidden', borderRadius: '40px', background: 'white', border: 'none' }}>
-            <div style={{ padding: '32px 40px', borderBottom: '1px solid #f1f5f9' }}>
-               <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-5">
-                    <div style={{ background: '#eff6ff', borderRadius: '16px', padding: '12px', color: '#3b82f6' }}>
-                      <Wallet size={28} />
-                    </div>
-                    <div>
-                      <h3 style={{ color: '#0f172a', fontSize: '1.5rem', fontWeight: '800', lineHeight: '1.2' }}>Inventory Control</h3>
-                      <p style={{ color: '#64748b', fontSize: '0.95rem', marginTop: '2px' }}>Merchant: {selectedSeller.name}</p>
-                    </div>
+          <div className="modal-content bento-card" style={{ maxWidth: '480px', width: '90%', padding: '0', overflow: 'hidden', borderRadius: '24px', background: 'white', border: 'none', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+            <div style={{ padding: '24px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc' }}>
+               <div className="flex items-center gap-4">
+                  <div style={{ background: '#eff6ff', borderRadius: '12px', padding: '10px', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Wallet size={24} />
                   </div>
-                  <div onClick={() => setShowStockModal(false)} style={{ background: '#f8fafc', borderRadius: '50%', padding: '10px', color: '#64748b', cursor: 'pointer' }}>
-                    <X size={22} />
+                  <div>
+                    <h3 style={{ color: '#0f172a', fontSize: '1.25rem', fontWeight: '800', lineHeight: '1.2', margin: 0 }}>Inventory Control</h3>
+                    <p style={{ color: '#64748b', fontSize: '0.85rem', margin: '2px 0 0 0' }}>Merchant: <span style={{ fontWeight: 600 }}>{selectedSeller.name}</span></p>
                   </div>
+               </div>
+               <div onClick={() => setShowStockModal(false)} style={{ background: '#e2e8f0', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = '#cbd5e1'} onMouseLeave={(e) => e.currentTarget.style.background = '#e2e8f0'}>
+                 <X size={18} />
                </div>
             </div>
 
-            <div style={{ padding: '40px' }}>
-              <div style={{ background: '#f8faff', padding: '24px', borderRadius: '24px', border: '2px solid #e0e7ff', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+            <div style={{ padding: '24px' }}>
+              <div style={{ background: '#f8faff', padding: '16px 20px', borderRadius: '16px', border: '1px solid #e0e7ff', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                 <div className="flex items-center gap-3">
-                  <div style={{ background: 'white', padding: '10px', borderRadius: '12px', color: '#3b82f6', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                    <PlusSquare size={20} />
+                  <div style={{ background: 'white', padding: '8px', borderRadius: '8px', color: '#3b82f6', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                    <PlusSquare size={16} />
                   </div>
-                  <span style={{ fontWeight: '800', color: '#1e293b', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Current Liquidity</span>
+                  <span style={{ fontWeight: '700', color: '#1e293b', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Current Balance</span>
                 </div>
-                <span style={{ fontSize: '1.5rem', fontWeight: '900', color: '#2563eb' }}>
-                  {selectedSeller.coinsBalance.toLocaleString()} <span style={{ fontSize: '0.8rem', opacity: 0.6 }}>COINS</span>
+                <span style={{ fontSize: '1.2rem', fontWeight: '900', color: '#2563eb' }}>
+                  {selectedSeller.coinsBalance.toLocaleString()} <span style={{ fontSize: '0.75rem', opacity: 0.7, fontWeight: 700 }}>COINS</span>
                 </span>
               </div>
 
-              <form onSubmit={handleStockAction} className="flex flex-col gap-8">
+              <form onSubmit={handleStockAction} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 <div>
-                  <label style={{ display: 'block', color: '#1e293b', fontWeight: '800', marginBottom: '12px', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Operation Type</label>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <label style={{ display: 'block', color: '#1e293b', fontWeight: '800', marginBottom: '10px', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Operation Type</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div 
                       style={{ 
-                        padding: '20px', borderRadius: '20px', border: '2px solid',
+                        padding: '16px', borderRadius: '14px', border: '2px solid',
                         borderColor: stockData.type === 'TOPUP' ? '#3b82f6' : '#f1f5f9',
-                        backgroundColor: stockData.type === 'TOPUP' ? '#eff6ff' : 'white',
-                        cursor: 'pointer', transition: 'all 0.2s', display: 'flex', flexDirection: 'column', gap: '8px'
+                        backgroundColor: stockData.type === 'TOPUP' ? '#eff6ff' : '#f8fafc',
+                        cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '12px'
                       }}
                       onClick={() => setStockData({...stockData, type: 'TOPUP'})}
                     >
-                      <div className="flex items-center justify-between">
-                        <Plus size={20} style={{ color: stockData.type === 'TOPUP' ? '#3b82f6' : '#94a3b8' }} />
-                        <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '2px solid', borderColor: stockData.type === 'TOPUP' ? '#3b82f6' : '#cbd5e1', position: 'relative' }}>
-                          {stockData.type === 'TOPUP' && <div style={{ position: 'absolute', top: '3px', left: '3px', right: '3px', bottom: '3px', background: '#3b82f6', borderRadius: '50%' }} />}
-                        </div>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: stockData.type === 'TOPUP' ? '#3b82f6' : '#e2e8f0', color: stockData.type === 'TOPUP' ? 'white' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Plus size={18} />
                       </div>
-                      <span style={{ fontWeight: '800', color: stockData.type === 'TOPUP' ? '#1e293b' : '#64748b' }}>Stock Top-up</span>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontWeight: '800', color: stockData.type === 'TOPUP' ? '#1e293b' : '#64748b', fontSize: '0.95rem' }}>Top-up</span>
+                        <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Add Coins</span>
+                      </div>
                     </div>
 
                     <div 
                       style={{ 
-                        padding: '20px', borderRadius: '20px', border: '2px solid',
+                        padding: '16px', borderRadius: '14px', border: '2px solid',
                         borderColor: stockData.type === 'DEDUCT' ? '#ef4444' : '#f1f5f9',
-                        backgroundColor: stockData.type === 'DEDUCT' ? '#fef2f2' : 'white',
-                        cursor: 'pointer', transition: 'all 0.2s', display: 'flex', flexDirection: 'column', gap: '8px'
+                        backgroundColor: stockData.type === 'DEDUCT' ? '#fef2f2' : '#f8fafc',
+                        cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '12px'
                       }}
                       onClick={() => setStockData({...stockData, type: 'DEDUCT'})}
                     >
-                      <div className="flex items-center justify-between">
-                        <Minus size={20} style={{ color: stockData.type === 'DEDUCT' ? '#ef4444' : '#94a3b8' }} />
-                        <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '2px solid', borderColor: stockData.type === 'DEDUCT' ? '#ef4444' : '#cbd5e1', position: 'relative' }}>
-                          {stockData.type === 'DEDUCT' && <div style={{ position: 'absolute', top: '3px', left: '3px', right: '3px', bottom: '3px', background: '#ef4444', borderRadius: '50%' }} />}
-                        </div>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: stockData.type === 'DEDUCT' ? '#ef4444' : '#e2e8f0', color: stockData.type === 'DEDUCT' ? 'white' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Minus size={18} />
                       </div>
-                      <span style={{ fontWeight: '800', color: stockData.type === 'DEDUCT' ? '#1e293b' : '#64748b' }}>Stock Deduction</span>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontWeight: '800', color: stockData.type === 'DEDUCT' ? '#1e293b' : '#64748b', fontSize: '0.95rem' }}>Deduct</span>
+                        <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Remove Coins</span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', color: '#1e293b', fontWeight: '800', marginBottom: '12px', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Allocation Quantity</label>
-                  <input 
-                    type="number" 
-                    style={{ 
-                      width: '100%', padding: '24px', fontSize: '2rem', fontWeight: '900', textAlign: 'center',
-                      color: '#1e293b', background: '#fff', borderRadius: '20px', border: '2px solid #e0e7ff'
-                    }}
-                    placeholder="0"
-                    value={stockData.amount || ''}
-                    onChange={e => setStockData({...stockData, amount: Number(e.target.value)})}
-                    required
-                  />
+                  <label style={{ display: 'block', color: '#1e293b', fontWeight: '800', marginBottom: '10px', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Allocation Quantity</label>
+                  <div style={{ position: 'relative' }}>
+                    <input 
+                      type="number" 
+                      style={{ 
+                        width: '100%', padding: '16px 20px', paddingRight: '60px', fontSize: '1.25rem', fontWeight: '800',
+                        color: '#1e293b', background: '#fff', borderRadius: '14px', border: '2px solid #e2e8f0', outline: 'none', transition: 'border-color 0.2s'
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = stockData.type === 'TOPUP' ? '#3b82f6' : '#ef4444'}
+                      onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                      placeholder="Enter amount..."
+                      value={stockData.amount || ''}
+                      onChange={e => setStockData({...stockData, amount: Number(e.target.value)})}
+                      required
+                      min="1"
+                    />
+                    <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)', fontWeight: '700', color: '#94a3b8', fontSize: '0.85rem' }}>COINS</span>
+                  </div>
                 </div>
 
                 <button 
                   type="submit" 
-                  className="primary" 
                   style={{ 
-                    width: '100%', padding: '24px', fontSize: '1.1rem', fontWeight: '900', borderRadius: '24px',
-                    border: 'none', color: 'white', cursor: 'pointer',
+                    width: '100%', padding: '16px', fontSize: '1rem', fontWeight: '800', borderRadius: '14px',
+                    border: 'none', color: 'white', cursor: 'pointer', transition: 'all 0.2s',
                     background: stockData.type === 'TOPUP' ? '#2563eb' : '#dc2626',
-                    boxShadow: stockData.type === 'TOPUP' ? '0 8px 16px rgba(37, 99, 235, 0.2)' : '0 8px 16px rgba(220, 38, 38, 0.2)'
+                    boxShadow: stockData.type === 'TOPUP' ? '0 4px 12px rgba(37, 99, 235, 0.25)' : '0 4px 12px rgba(220, 38, 38, 0.25)'
                   }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                 >
-                  Confirm Allocation
+                  {stockData.type === 'TOPUP' ? 'Confirm Addition' : 'Confirm Deduction'}
                 </button>
               </form>
             </div>
