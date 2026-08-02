@@ -84,7 +84,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
         { title: 'Avatar Frames', path: '/avatar-frames' },
         { title: 'Profile Backgrounds', path: '/profile-backgrounds' },
         { title: 'User Levels', path: '/level-system' },
-        { title: 'Daily Tasks', path: '/dynamic-tasks' },
+        // { title: 'Daily Tasks', path: '/dynamic-tasks' }, // Hidden for MVP
       ],
     },
 
@@ -119,7 +119,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
         { title: 'General Settings', path: '/settings' },
         { title: 'App Language', path: '/localization' },
         { title: 'Manage Locations', path: '/locations' },
-        { title: 'Simulator Control', path: '/simulation' },
+        // { title: 'Simulator Control', path: '/simulation' }, // Hidden for MVP
         { title: 'Privacy Policy', path: '/privacy' },
       ],
     },
