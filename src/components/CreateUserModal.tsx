@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, User, Mail, ShieldCheck, UserPlus, Plus, Image as ImageIcon } from 'lucide-react';
+import { X, User, Mail, ShieldCheck, UserPlus, Plus, Image as ImageIcon, Lock, Eye, EyeOff } from 'lucide-react';
 import { adminService } from '../services/api';
 import toast from 'react-hot-toast';
 import '../styles/Modal.css';
@@ -19,6 +19,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onSuccess })
     role: 'user',
     password: 'Password123!' // Default fallback
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -131,6 +132,41 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onSuccess })
                 <option value="host">Live Host</option>
                 <option value="admin">System Admin</option>
               </select>
+            </div>
+
+            <div className="form-group span-2" style={{ marginBottom: '0px' }}>
+              <label>
+                <Lock size={16} color="var(--accent-blue)" /> Password
+              </label>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <input 
+                  type={showPassword ? "text" : "password"} 
+                  className="admin-input" 
+                  style={{ paddingRight: '40px', width: '100%' }}
+                  placeholder="Set initial password"
+                  required
+                  value={formData.password}
+                  onChange={e => setFormData({...formData, password: e.target.value})}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-secondary, #94a3b8)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '4px'
+                  }}
+                  title={showPassword ? "Hide Password" : "View Password"}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
 
             <div className="form-group span-2" style={{ marginBottom: '0px' }}>

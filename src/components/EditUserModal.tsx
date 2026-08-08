@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, Mail, ShieldCheck, Save, AlertCircle, Star, Zap, Trash2, Image as ImageIcon, Plus, Lock, Phone } from 'lucide-react';
+import { X, User, Mail, ShieldCheck, Save, AlertCircle, Star, Zap, Trash2, Image as ImageIcon, Plus, Lock, Phone, Eye, EyeOff } from 'lucide-react';
 import { adminService } from '../services/api';
 import toast from 'react-hot-toast';
 import '../styles/Modal.css';
@@ -26,6 +26,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
     coinsPerSecond: user.coinsPerSecond !== undefined ? user.coinsPerSecond : 2.0,
     password: ''
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [blockGoLive, setBlockGoLive] = useState<boolean>(user.blockedFeatures?.includes('go_live') || user.blockedFeatures?.includes('live_streaming') || false);
@@ -130,15 +131,38 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
             </div>
 
             <div className="form-group" style={{ marginBottom: '0px' }}>
-              <label><Lock size={14} /> Reset Password</label>
-              <input 
-                type="password" 
-                className="admin-input" 
-                value={formData.password}
-                onChange={e => setFormData({...formData, password: e.target.value})}
-                placeholder="Leave blank to keep current password"
-                autoComplete="new-password"
-              />
+              <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span><Lock size={14} /> Reset / Update Password</span>
+              </label>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <input 
+                  type={showPassword ? "text" : "password"} 
+                  className="admin-input" 
+                  style={{ paddingRight: '40px', width: '100%' }}
+                  value={formData.password}
+                  onChange={e => setFormData({...formData, password: e.target.value})}
+                  placeholder="Leave blank to keep current password"
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-secondary, #94a3b8)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '4px'
+                  }}
+                  title={showPassword ? "Hide Password" : "View Password"}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
 
             <div className="form-group" style={{ marginBottom: '0px' }}>
