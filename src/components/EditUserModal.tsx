@@ -133,6 +133,15 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
             <div className="form-group" style={{ marginBottom: '0px' }}>
               <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span><Lock size={14} /> Reset / Update Password</span>
+                {user.password ? (
+                  <span style={{ fontSize: '0.65rem', background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', border: '1px solid rgba(34, 197, 94, 0.3)', padding: '2px 8px', borderRadius: '12px', fontWeight: 700 }}>
+                    ✓ Password Set (Encrypted)
+                  </span>
+                ) : (
+                  <span style={{ fontSize: '0.65rem', background: 'rgba(234, 179, 8, 0.15)', color: '#eab308', border: '1px solid rgba(234, 179, 8, 0.3)', padding: '2px 8px', borderRadius: '12px', fontWeight: 700 }}>
+                    ! No Password Set
+                  </span>
+                )}
               </label>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                 <input 
