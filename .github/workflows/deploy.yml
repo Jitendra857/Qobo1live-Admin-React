@@ -1,0 +1,166 @@
+name: Deploy Qobo1live Frontend
+
+on:
+  push:
+    branches:
+      - prod
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build and Deploy Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # ----------------------------------------
+      # Checkout
+      # ----------------------------------------
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # ----------------------------------------
+      # Node.js
+      # ----------------------------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # ----------------------------------------
+      # Install dependencies
+      # ----------------------------------------
+      - name: Install Dependencies
+        run: npm ci
+
+      # ----------------------------------------
+      # Build
+      # .env.production already contains:
+      # VITE_BACKEND_URL=https://api.qobo1live.in
+      # ----------------------------------------
+      - name: Build Application
+        run: npm run build
+
+      # ----------------------------------------
+      # Verify build
+      # ----------------------------------------
+      - name: Verify Build
+        run: |
+          test -f dist/index.html
+          echo "Frontend build successful."
+          ls -lah dist
+
+      # ----------------------------------------
+      # Create deployment package
+      # ----------------------------------------
+      - name: Create Deployment Package
+        run: |
+          tar -czf qobo1live-frontend.tar.gz -C dist .
+          ls -lh qobo1live-frontend.tar.gz
+
+      # ----------------------------------------
+      # Upload to VPS
+      # ----------------------------------------
+      - name: Upload Frontend
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: qobo1live-frontend.tar.gz
+          target: /tmp
+
+      # ----------------------------------------
+      # Deploy on VPS
+      # ----------------------------------------
+      - name: Deploy Frontend on VPS
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+
+          script: |
+            set -e
+
+            echo "=========================================="
+            echo "Starting Qobo1live Frontend Deployment"
+            echo "=========================================="
+
+            # ----------------------------------------
+            # Create deployment directories
+            # ----------------------------------------
+            mkdir -p /var/www/qobo1live/releases
+
+            # ----------------------------------------
+            # Create unique release
+            # ----------------------------------------
+            RELEASE_ID=$(date +%Y%m%d%H%M%S)
+            RELEASE_DIR="/var/www/qobo1live/releases/$RELEASE_ID"
+
+            mkdir -p "$RELEASE_DIR"
+
+            echo "Release directory:"
+            echo "$RELEASE_DIR"
+
+            # ----------------------------------------
+            # Extract frontend
+            # ----------------------------------------
+            echo "Extracting frontend package..."
+
+            tar -xzf /tmp/qobo1live-frontend.tar.gz \
+              -C "$RELEASE_DIR"
+
+            # ----------------------------------------
+            # Verify index.html
+            # ----------------------------------------
+            test -f "$RELEASE_DIR/index.html"
+
+            echo "Frontend files:"
+            ls -lah "$RELEASE_DIR"
+
+            # ----------------------------------------
+            # Update current symlink
+            # ----------------------------------------
+            ln -sfn "$RELEASE_DIR" /var/www/qobo1live/current
+
+            # ----------------------------------------
+            # Set permissions
+            # ----------------------------------------
+            chown -R www-data:www-data "$RELEASE_DIR"
+
+            # ----------------------------------------
+            # Remove uploaded package
+            # ----------------------------------------
+            rm -f /tmp/qobo1live-frontend.tar.gz
+
+            # ----------------------------------------
+            # Keep latest 3 releases
+            # ----------------------------------------
+            cd /var/www/qobo1live/releases
+
+            ls -1dt */ 2>/dev/null | tail -n +4 | xargs -r rm -rf
+
+            # ----------------------------------------
+            # Validate Nginx
+            # ----------------------------------------
+            nginx -t
+
+            # ----------------------------------------
+            # Reload Nginx
+            # ----------------------------------------
+            systemctl reload nginx
+
+            echo "=========================================="
+            echo "Qobo1live Frontend Deployment Completed"
+            echo "=========================================="
+
+            echo "Current release:"
+            readlink -f /var/www/qobo1live/current
+
+            echo "=========================================="
