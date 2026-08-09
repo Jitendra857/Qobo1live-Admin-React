@@ -18,13 +18,13 @@ jobs:
     steps:
 
       # ----------------------------------------
-      # Checkout
+      # Checkout repository
       # ----------------------------------------
       - name: Checkout Repository
         uses: actions/checkout@v4
 
       # ----------------------------------------
-      # Node.js
+      # Setup Node.js
       # ----------------------------------------
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -39,7 +39,8 @@ jobs:
         run: npm ci
 
       # ----------------------------------------
-      # Build
+      # Build frontend
+      #
       # .env.production already contains:
       # VITE_BACKEND_URL=https://api.qobo1live.in
       # ----------------------------------------
@@ -51,8 +52,15 @@ jobs:
       # ----------------------------------------
       - name: Verify Build
         run: |
-          test -f dist/index.html
+          echo "Checking frontend build..."
+
+          if [ ! -f "dist/index.html" ]; then
+            echo "ERROR: dist/index.html not found"
+            exit 1
+          fi
+
           echo "Frontend build successful."
+          echo "Build contents:"
           ls -lah dist
 
       # ----------------------------------------
@@ -60,11 +68,32 @@ jobs:
       # ----------------------------------------
       - name: Create Deployment Package
         run: |
+          echo "Creating deployment package..."
+
           tar -czf qobo1live-frontend.tar.gz -C dist .
+
+          echo "Deployment package:"
           ls -lh qobo1live-frontend.tar.gz
 
       # ----------------------------------------
-      # Upload to VPS
+      # Test VPS connectivity from GitHub Runner
+      # ----------------------------------------
+      - name: Test VPS SSH Connectivity
+        run: |
+          echo "Testing connectivity to VPS..."
+          echo "Host: ${{ secrets.VPS_HOST }}"
+          echo "Port: 22"
+
+          timeout 15 bash -c \
+            '</dev/tcp/${{ secrets.VPS_HOST }}/22' \
+            && echo "VPS port 22 is reachable from GitHub Runner" \
+            || (
+              echo "ERROR: VPS port 22 is NOT reachable from GitHub Runner"
+              exit 1
+            )
+
+      # ----------------------------------------
+      # Upload frontend package to VPS
       # ----------------------------------------
       - name: Upload Frontend
         uses: appleboy/scp-action@v0.1.7
@@ -72,11 +101,19 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+
           source: qobo1live-frontend.tar.gz
           target: /tmp
 
+          timeout: 30s
+          command_timeout: 10m
+
+          overwrite: true
+          debug: true
+
       # ----------------------------------------
-      # Deploy on VPS
+      # Deploy frontend on VPS
       # ----------------------------------------
       - name: Deploy Frontend on VPS
         uses: appleboy/ssh-action@v1.2.2
@@ -84,6 +121,10 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+
+          timeout: 30s
+          command_timeout: 10m
 
           script: |
             set -e
@@ -95,43 +136,66 @@ jobs:
             # ----------------------------------------
             # Create deployment directories
             # ----------------------------------------
+            echo "Creating deployment directories..."
+
             mkdir -p /var/www/qobo1live/releases
 
             # ----------------------------------------
-            # Create unique release
+            # Generate release ID
             # ----------------------------------------
             RELEASE_ID=$(date +%Y%m%d%H%M%S)
             RELEASE_DIR="/var/www/qobo1live/releases/$RELEASE_ID"
 
+            echo "Release ID: $RELEASE_ID"
+            echo "Release directory: $RELEASE_DIR"
+
             mkdir -p "$RELEASE_DIR"
 
-            echo "Release directory:"
-            echo "$RELEASE_DIR"
+            # ----------------------------------------
+            # Verify uploaded package
+            # ----------------------------------------
+            echo "Checking uploaded package..."
+
+            if [ ! -f "/tmp/qobo1live-frontend.tar.gz" ]; then
+              echo "ERROR: Deployment package not found!"
+              exit 1
+            fi
+
+            ls -lh /tmp/qobo1live-frontend.tar.gz
 
             # ----------------------------------------
             # Extract frontend
             # ----------------------------------------
-            echo "Extracting frontend package..."
+            echo "Extracting frontend..."
 
             tar -xzf /tmp/qobo1live-frontend.tar.gz \
               -C "$RELEASE_DIR"
 
             # ----------------------------------------
-            # Verify index.html
+            # Verify deployment
             # ----------------------------------------
-            test -f "$RELEASE_DIR/index.html"
+            echo "Verifying deployed files..."
+
+            if [ ! -f "$RELEASE_DIR/index.html" ]; then
+              echo "ERROR: index.html not found after extraction!"
+              exit 1
+            fi
 
             echo "Frontend files:"
             ls -lah "$RELEASE_DIR"
 
             # ----------------------------------------
-            # Update current symlink
+            # Update current release symlink
             # ----------------------------------------
+            echo "Updating current release..."
+
             ln -sfn "$RELEASE_DIR" /var/www/qobo1live/current
 
             # ----------------------------------------
-            # Set permissions
+            # Set ownership
             # ----------------------------------------
+            echo "Setting permissions..."
+
             chown -R www-data:www-data "$RELEASE_DIR"
 
             # ----------------------------------------
@@ -142,6 +206,8 @@ jobs:
             # ----------------------------------------
             # Keep latest 3 releases
             # ----------------------------------------
+            echo "Cleaning old releases..."
+
             cd /var/www/qobo1live/releases
 
             ls -1dt */ 2>/dev/null | tail -n +4 | xargs -r rm -rf
@@ -149,18 +215,25 @@ jobs:
             # ----------------------------------------
             # Validate Nginx
             # ----------------------------------------
+            echo "Testing Nginx configuration..."
+
             nginx -t
 
             # ----------------------------------------
             # Reload Nginx
             # ----------------------------------------
+            echo "Reloading Nginx..."
+
             systemctl reload nginx
 
+            # ----------------------------------------
+            # Deployment information
+            # ----------------------------------------
             echo "=========================================="
-            echo "Qobo1live Frontend Deployment Completed"
+            echo "Deployment completed successfully"
             echo "=========================================="
 
-            echo "Current release:"
+            echo "Current frontend release:"
             readlink -f /var/www/qobo1live/current
 
             echo "=========================================="
