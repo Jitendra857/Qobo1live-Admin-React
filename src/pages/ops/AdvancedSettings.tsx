@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminService } from '../../services/api';
 import toast from 'react-hot-toast';
-import { Settings, Shield, Globe, Database, Save, CreditCard } from 'lucide-react';
+import { Settings, Shield, Globe, Database, Save, CreditCard, Share2 } from 'lucide-react';
 import '../../styles/UserManagement.css';
 
 const AdvancedSettings: React.FC = () => {
@@ -112,6 +112,29 @@ const AdvancedSettings: React.FC = () => {
             <div className="form-group">
               <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>CALL COMMISSION RATE (%)</label>
               <input type="number" value={settings.call_commission_rate || ''} onChange={(e) => setSettings({...settings, call_commission_rate: e.target.value})} onBlur={() => handleUpdate('call_commission_rate', settings.call_commission_rate)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '12px', borderRadius: '12px', color: 'var(--text-primary)' }} placeholder="e.g. 50" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bento-card wide">
+          <div className="card-top">
+            <div className="card-label">REFERRAL PROGRAM & REWARD SETUP</div>
+            <div className="card-icon-wrap" style={{ color: '#ec4899' }}>
+              <Share2 size={24} />
+            </div>
+          </div>
+          <div className="card-bottom" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginTop: '10px' }}>
+            <div className="form-group">
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>TOTAL REFERRAL REWARD (COINS)</label>
+              <input type="number" value={settings.referral_reward_coins ?? 300} onChange={(e) => setSettings({...settings, referral_reward_coins: e.target.value})} onBlur={() => handleUpdate('referral_reward_coins', settings.referral_reward_coins)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '12px', borderRadius: '12px', color: 'var(--text-primary)' }} placeholder="e.g. 300" />
+            </div>
+            <div className="form-group">
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>REFERRER (SHARING USER) BONUS (COINS)</label>
+              <input type="number" value={settings.referral_referrer_reward ?? 150} onChange={(e) => setSettings({...settings, referral_referrer_reward: e.target.value})} onBlur={() => handleUpdate('referral_referrer_reward', settings.referral_referrer_reward)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '12px', borderRadius: '12px', color: 'var(--text-primary)' }} placeholder="e.g. 150" />
+            </div>
+            <div className="form-group">
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>REFEREE (NEW SIGNUP USER) BONUS (COINS)</label>
+              <input type="number" value={settings.referral_referee_reward ?? 150} onChange={(e) => setSettings({...settings, referral_referee_reward: e.target.value})} onBlur={() => handleUpdate('referral_referee_reward', settings.referral_referee_reward)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '12px', borderRadius: '12px', color: 'var(--text-primary)' }} placeholder="e.g. 150" />
             </div>
           </div>
         </div>
