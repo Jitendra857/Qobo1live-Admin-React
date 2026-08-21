@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { adminService } from '../services/api';
 import { toast } from 'react-hot-toast';
 import {
-  Smile, Plus, Trash2, Edit, X, Check, Save, Image as ImageIcon,
-  Sparkles, RefreshCw, LayoutGrid, List, Search, Tag, Eye, EyeOff
+  Smile, Plus, Trash2, Edit, X, Save,
+  Sparkles, RefreshCw, LayoutGrid, List, Search,
+  Eye, EyeOff, Play, Volume2, Send, Radio
 } from 'lucide-react';
 import ConfirmationModal from '../components/ConfirmationModal';
 import MediaImage from '../components/MediaImage';
@@ -19,8 +20,11 @@ const Emojis: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Modals & Preview States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [previewEmoji, setPreviewEmoji] = useState<any | null>(null);
+  const [animationMode, setAnimationMode] = useState<'float' | 'bounce' | 'pulse' | 'burst'>('bounce');
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingEmoji, setEditingEmoji] = useState<any>(null);
@@ -206,6 +210,45 @@ const Emojis: React.FC = () => {
   return (
     <div className="users-container page-fade-in" style={{ padding: '24px' }}>
       
+      {/* ── Keyframe Animations CSS ── */}
+      <style>{`
+        @keyframes emojiBounce {
+          0%, 100% { transform: translateY(0) scale(1); }
+          50% { transform: translateY(-12px) scale(1.15); }
+        }
+        @keyframes emojiPulse {
+          0%, 100% { transform: scale(1); filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.4)); }
+          50% { transform: scale(1.18); filter: drop-shadow(0 0 16px rgba(251, 191, 36, 0.8)); }
+        }
+        @keyframes emojiFloat {
+          0% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-8px) rotate(5deg); }
+          100% { transform: translateY(0px) rotate(0deg); }
+        }
+        @keyframes emojiBurst {
+          0% { transform: scale(0.2) rotate(-20deg); opacity: 0; }
+          60% { transform: scale(1.3) rotate(10deg); opacity: 1; }
+          100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        .emoji-card-preview {
+          transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .emoji-card-preview:hover {
+          transform: scale(1.04);
+          box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+        }
+        .emoji-img-animated {
+          animation: emojiFloat 3s infinite ease-in-out;
+        }
+        .emoji-card-preview:hover .emoji-img-animated {
+          animation: emojiBounce 0.8s infinite ease-in-out;
+        }
+        .preview-bounce { animation: emojiBounce 1s infinite ease-in-out; }
+        .preview-pulse { animation: emojiPulse 1.5s infinite ease-in-out; }
+        .preview-float { animation: emojiFloat 2.5s infinite ease-in-out; }
+        .preview-burst { animation: emojiBurst 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+      `}</style>
+
       {/* ── Header ── */}
       <div className="page-header" style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
@@ -213,7 +256,7 @@ const Emojis: React.FC = () => {
             <Smile className="icon-amber" size={28} /> Emoji Catalog & Mobile API
           </h1>
           <p style={{ color: '#94a3b8', fontSize: '14px', marginTop: '4px', margin: 0 }}>
-            Manage static and SVG gifts/emojis sent by users across chat, rooms, and live streams.
+            Manage static and animated emojis for mobile chat, 1:1 calls, audio rooms, and live streaming.
           </p>
         </div>
 
@@ -237,7 +280,7 @@ const Emojis: React.FC = () => {
             }}
           >
             <Sparkles size={16} />
-            {seeding ? 'Seeding SVGs...' : 'Seed 6 Test Emojis'}
+            {seeding ? 'Updating...' : 'Seed 6 Test Emojis'}
           </button>
 
           <button
@@ -405,6 +448,7 @@ const Emojis: React.FC = () => {
           {filteredEmojis.map(emoji => (
             <div
               key={emoji.id}
+              className="emoji-card-preview"
               style={{
                 background: '#1e293b',
                 border: emoji.status === 'active' ? '1px solid #334155' : '1px solid #475569',
@@ -414,8 +458,7 @@ const Emojis: React.FC = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                position: 'relative',
-                transition: 'all 0.2s ease-in-out'
+                position: 'relative'
               }}
             >
               {/* Category tag & Status Badge */}
@@ -436,27 +479,44 @@ const Emojis: React.FC = () => {
                 </span>
               </div>
 
-              {/* Emoji Preview Box */}
-              <div style={{
-                width: '100px',
-                height: '100px',
-                background: '#0f172a',
-                borderRadius: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '10px',
-                marginBottom: '14px',
-                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)'
-              }}>
-                <img
+              {/* Emoji Preview Container with Click-to-Animate */}
+              <div
+                onClick={() => setPreviewEmoji(emoji)}
+                style={{
+                  width: '100px',
+                  height: '100px',
+                  background: '#0f172a',
+                  borderRadius: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '10px',
+                  marginBottom: '14px',
+                  boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.6)',
+                  cursor: 'pointer',
+                  position: 'relative'
+                }}
+                title="Click to preview full animation"
+              >
+                <MediaImage
                   src={emoji.image}
                   alt={emoji.name}
-                  style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
-                  onError={(e) => {
-                    (e.target as HTMLElement).style.display = 'none';
-                  }}
+                  fallbackText="😊"
+                  className="emoji-img-animated"
+                  style={{ width: '70px', height: '70px', objectFit: 'contain' }}
                 />
+
+                <div style={{
+                  position: 'absolute',
+                  bottom: '4px',
+                  right: '4px',
+                  background: 'rgba(15, 23, 42, 0.8)',
+                  borderRadius: '50%',
+                  padding: '4px',
+                  color: '#38bdf8'
+                }}>
+                  <Play size={12} />
+                </div>
               </div>
 
               {/* Info */}
@@ -470,28 +530,40 @@ const Emojis: React.FC = () => {
               </div>
 
               {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: '8px', width: '100%', borderTop: '1px solid #334155', paddingTop: '12px' }}>
+              <div style={{ display: 'flex', gap: '6px', width: '100%', borderTop: '1px solid #334155', paddingTop: '12px' }}>
                 <button
-                  onClick={() => handleToggleStatus(emoji)}
+                  onClick={() => setPreviewEmoji(emoji)}
                   style={{
-                    flex: 1,
-                    background: emoji.status === 'active' ? '#334155' : '#1e3a8a',
-                    color: emoji.status === 'active' ? '#94a3b8' : '#60a5fa',
+                    background: '#2563eb',
+                    color: '#fff',
                     border: 'none',
-                    padding: '6px',
+                    padding: '6px 10px',
                     borderRadius: '6px',
                     fontSize: '12px',
                     fontWeight: '600',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
                     gap: '4px'
+                  }}
+                  title="Test Live Animation"
+                >
+                  <Play size={12} /> Play
+                </button>
+
+                <button
+                  onClick={() => handleToggleStatus(emoji)}
+                  style={{
+                    background: '#334155',
+                    color: emoji.status === 'active' ? '#94a3b8' : '#34d399',
+                    border: 'none',
+                    padding: '6px 8px',
+                    borderRadius: '6px',
+                    cursor: 'pointer'
                   }}
                   title="Toggle Status"
                 >
                   {emoji.status === 'active' ? <EyeOff size={14} /> : <Eye size={14} />}
-                  {emoji.status === 'active' ? 'Hide' : 'Show'}
                 </button>
 
                 <button
@@ -500,7 +572,7 @@ const Emojis: React.FC = () => {
                     background: '#334155',
                     color: '#f8fafc',
                     border: 'none',
-                    padding: '6px 10px',
+                    padding: '6px 8px',
                     borderRadius: '6px',
                     cursor: 'pointer'
                   }}
@@ -515,7 +587,7 @@ const Emojis: React.FC = () => {
                     background: 'rgba(239, 68, 68, 0.15)',
                     color: '#f87171',
                     border: 'none',
-                    padding: '6px 10px',
+                    padding: '6px 8px',
                     borderRadius: '6px',
                     cursor: 'pointer'
                   }}
@@ -549,8 +621,11 @@ const Emojis: React.FC = () => {
               {filteredEmojis.map(emoji => (
                 <tr key={emoji.id} style={{ borderBottom: '1px solid #334155', color: '#f8fafc', fontSize: '14px' }}>
                   <td style={{ padding: '12px 16px' }}>
-                    <div style={{ width: '40px', height: '40px', background: '#0f172a', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}>
-                      <img src={emoji.image} alt={emoji.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    <div
+                      onClick={() => setPreviewEmoji(emoji)}
+                      style={{ width: '44px', height: '44px', background: '#0f172a', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px', cursor: 'pointer' }}
+                    >
+                      <MediaImage src={emoji.image} alt={emoji.name} fallbackText="😊" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
                     </div>
                   </td>
                   <td style={{ padding: '12px 16px', fontWeight: '600' }}>{emoji.name}</td>
@@ -576,9 +651,15 @@ const Emojis: React.FC = () => {
                   <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                       <button
+                        onClick={() => setPreviewEmoji(emoji)}
+                        style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '6px', borderRadius: '6px', cursor: 'pointer' }}
+                        title="Test Animation"
+                      >
+                        <Play size={14} />
+                      </button>
+                      <button
                         onClick={() => handleToggleStatus(emoji)}
                         style={{ background: '#334155', color: '#f8fafc', border: 'none', padding: '6px', borderRadius: '6px', cursor: 'pointer' }}
-                        title="Toggle Status"
                       >
                         {emoji.status === 'active' ? <EyeOff size={14} /> : <Eye size={14} />}
                       </button>
@@ -600,6 +681,176 @@ const Emojis: React.FC = () => {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* ── INTERACTIVE EMOJI ANIMATION PREVIEW MODAL ── */}
+      {previewEmoji && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.85)',
+          backdropFilter: 'blur(6px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1100,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: '#1e293b',
+            border: '1px solid #334155',
+            borderRadius: '20px',
+            width: '100%',
+            maxWidth: '520px',
+            overflow: 'hidden',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
+            position: 'relative'
+          }}>
+            {/* Close Button */}
+            <button
+              onClick={() => setPreviewEmoji(null)}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                background: '#0f172a',
+                border: 'none',
+                color: '#94a3b8',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                zIndex: 10
+              }}
+            >
+              <X size={18} />
+            </button>
+
+            {/* Modal Title */}
+            <div style={{ padding: '20px 24px 12px', borderBottom: '1px solid #334155' }}>
+              <div style={{ fontSize: '12px', fontWeight: '600', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                Live Animation Preview
+              </div>
+              <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#f8fafc', margin: '4px 0 0' }}>
+                {previewEmoji.name} <span style={{ fontSize: '14px', color: '#94a3b8', fontWeight: '400' }}>({previewEmoji.code})</span>
+              </h2>
+            </div>
+
+            {/* Main Animated Stage */}
+            <div style={{
+              padding: '30px',
+              background: 'radial-gradient(circle at center, #1e3a8a 0%, #0f172a 70%)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+              minHeight: '260px'
+            }}>
+              
+              {/* Floating particles decoration */}
+              <div style={{ position: 'absolute', inset: 0, opacity: 0.2, pointerEvents: 'none' }}>
+                <Sparkles size={24} style={{ position: 'absolute', top: '20px', left: '30px', color: '#fbbf24' }} />
+                <Sparkles size={20} style={{ position: 'absolute', bottom: '30px', right: '40px', color: '#38bdf8' }} />
+              </div>
+
+              {/* Animated Emoji Image */}
+              <div key={animationMode} className={`preview-${animationMode}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <MediaImage
+                  src={previewEmoji.image}
+                  alt={previewEmoji.name}
+                  fallbackText="😊"
+                  style={{ width: '130px', height: '130px', objectFit: 'contain', filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.5))' }}
+                />
+              </div>
+
+              <div style={{ marginTop: '20px', fontSize: '13px', color: '#94a3b8', background: 'rgba(15, 23, 42, 0.6)', padding: '4px 14px', borderRadius: '12px' }}>
+                Mode: <strong style={{ color: '#38bdf8', textTransform: 'capitalize' }}>{animationMode} Effect</strong>
+              </div>
+
+            </div>
+
+            {/* Mobile Context Preview Tabs */}
+            <div style={{ padding: '20px 24px', background: '#1e293b' }}>
+              <div style={{ fontSize: '12px', fontWeight: '600', color: '#94a3b8', marginBottom: '10px' }}>
+                Select Animation Style:
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '20px' }}>
+                {[
+                  { id: 'bounce', label: 'Bounce' },
+                  { id: 'pulse', label: 'Pulse Glow' },
+                  { id: 'float', label: 'Floating' },
+                  { id: 'burst', label: 'Pop Burst' }
+                ].map(mode => (
+                  <button
+                    key={mode.id}
+                    onClick={() => setAnimationMode(mode.id as any)}
+                    style={{
+                      padding: '8px 4px',
+                      borderRadius: '8px',
+                      border: '1px solid',
+                      borderColor: animationMode === mode.id ? '#3b82f6' : '#334155',
+                      background: animationMode === mode.id ? '#2563eb' : '#0f172a',
+                      color: animationMode === mode.id ? '#ffffff' : '#94a3b8',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {mode.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Chat Bubble Context Preview */}
+              <div style={{ background: '#0f172a', borderRadius: '12px', padding: '14px', border: '1px solid #334155' }}>
+                <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Radio size={12} className="text-emerald-400" /> Mobile Chat Bubble Preview:
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#3b82f6', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '12px' }}>
+                    User
+                  </div>
+                  <div style={{ background: '#1e293b', padding: '10px 14px', borderRadius: '12px', borderTopLeftRadius: '0', maxWidth: '80%' }}>
+                    <div style={{ fontSize: '11px', color: '#38bdf8', fontWeight: '600', marginBottom: '4px' }}>Alex</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <MediaImage src={previewEmoji.image} alt="preview" style={{ width: '36px', height: '36px', objectFit: 'contain' }} />
+                      <span style={{ fontSize: '13px', color: '#f8fafc' }}>{previewEmoji.code}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Modal Footer */}
+            <div style={{ padding: '16px 24px', borderTop: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '12px', color: '#64748b' }}>
+                Ready for mobile Socket.IO emission
+              </span>
+              <button
+                onClick={() => setPreviewEmoji(null)}
+                style={{
+                  background: '#334155',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '8px 20px',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                Close Preview
+              </button>
+            </div>
+
+          </div>
         </div>
       )}
 
@@ -753,7 +1004,7 @@ const Emojis: React.FC = () => {
                 <label style={{ display: 'block', fontSize: '13px', color: '#94a3b8', marginBottom: '6px' }}>Or Image / SVG Data URI / URL</label>
                 <textarea
                   rows={3}
-                  placeholder="data:image/svg+xml;utf8,<svg>...</svg> or https://..."
+                  placeholder="https://... or data:image/..."
                   value={formData.imageUrl}
                   onChange={e => setFormData({ ...formData, imageUrl: e.target.value })}
                   style={{
