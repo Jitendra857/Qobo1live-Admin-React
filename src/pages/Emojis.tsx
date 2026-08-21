@@ -820,8 +820,7 @@ const Emojis: React.FC = () => {
           message="Are you sure you want to delete this emoji? This action cannot be undone."
           confirmText="Delete"
           onConfirm={() => handleDelete(showDeleteConfirm)}
-          onCancel={() => setShowDeleteConfirm(null)}
-          isDeleting={isDeleting}
+          onClose={() => setShowDeleteConfirm(null)}
         />
       )}
 
