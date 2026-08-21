@@ -79,6 +79,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
       title: 'Gifts & Rewards', icon: <Gift size={17} />, iconClass: 'icon-amber',
       subItems: [
         { title: 'Gifts Catalog', path: '/gifts' },
+        { title: 'Emojis Catalog', path: '/emojis' },
         { title: 'Gift Categories', path: '/gift-categories' },
         { title: 'VIP Packages', path: '/vip-store' },
         { title: 'Avatar Frames', path: '/avatar-frames' },
