@@ -429,3 +429,6 @@ FodyWeavers.xsd
 *.msp
 *.yml
 *.yaml
+*.env
+*.env.production
+*.env.development
