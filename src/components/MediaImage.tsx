@@ -29,8 +29,8 @@ const MediaImage: React.FC<MediaImageProps> = ({
       return `${BACKEND_URL}${cleanUrl}`;
     }
 
-    // Keep external absolute URLs
-    if (url.startsWith('http://') || url.startsWith('https://')) {
+    // Keep external absolute URLs and Data URIs
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
       return url;
     }
 
