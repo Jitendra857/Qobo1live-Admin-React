@@ -3,7 +3,7 @@ import { adminService } from '../services/api';
 import { toast, Toaster } from 'react-hot-toast';
 import { 
     Trophy, Plus, Trash2, Edit3, Target, X, 
-    Activity, ShieldCheck, Clock, Users, Building2, Coins, Tv, Radio, Video, Zap, ArrowUpRight
+    ShieldCheck, Clock, Users, Building2, Coins, Tv, Zap, ArrowUpRight, Search, RefreshCw
 } from 'lucide-react';
 import '../styles/TaskCenter.css';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -13,11 +13,14 @@ const TaskCenter: React.FC = () => {
     const [tasks, setTasks] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+    const [selectedFrequency, setSelectedFrequency] = useState<string>('ALL');
+    const [searchQuery, setSearchQuery] = useState<string>('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingTask, setEditingTask] = useState<any>(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [togglingTaskId, setTogglingTaskId] = useState<string | null>(null);
     
     // Comprehensive Target & Bonus Form State
     const [formData, setFormData] = useState({
@@ -108,6 +111,32 @@ const TaskCenter: React.FC = () => {
         }
     };
 
+    const handleToggleStatus = async (task: any) => {
+        setTogglingTaskId(task.id);
+        const newStatus = task.status === 'active' ? 'draft' : 'active';
+        try {
+            const payload = {
+                title: task.title,
+                description: task.description,
+                targetCategory: task.targetCategory,
+                frequency: task.frequency || task.type,
+                type: task.frequency || task.type,
+                roomType: task.roomType,
+                targetMetric: task.targetMetric,
+                targetValue: task.targetValue,
+                reward: task.reward,
+                status: newStatus
+            };
+            await adminService.manageTask('update', payload, task.id);
+            toast.success(`Task status changed to ${newStatus === 'active' ? 'Active' : 'Inactive'}`);
+            fetchTasks();
+        } catch (err) {
+            toast.error('Failed to update task status');
+        } finally {
+            setTogglingTaskId(null);
+        }
+    };
+
     const handleDeleteClick = (id: string) => {
         setTaskToDelete(id);
         setIsDeleteModalOpen(true);
@@ -130,11 +159,30 @@ const TaskCenter: React.FC = () => {
         fetchTasks();
     }, []);
 
-    // Filter tasks based on selected tab
+    // Filter tasks based on search, category, and frequency
     const filteredTasks = tasks.filter(t => {
-        if (selectedCategory === 'ALL') return true;
-        const category = (t.targetCategory || 'ALL').toUpperCase();
-        return category === selectedCategory || category === 'ALL';
+        // Category filter
+        if (selectedCategory !== 'ALL') {
+            const category = (t.targetCategory || 'ALL').toUpperCase();
+            if (category !== selectedCategory && category !== 'ALL') return false;
+        }
+
+        // Frequency filter
+        if (selectedFrequency !== 'ALL') {
+            const freq = (t.frequency || t.type || '').toUpperCase();
+            if (freq !== selectedFrequency) return false;
+        }
+
+        // Search query filter
+        if (searchQuery.trim() !== '') {
+            const query = searchQuery.toLowerCase();
+            const titleMatch = (t.title || '').toLowerCase().includes(query);
+            const descMatch = (t.description || '').toLowerCase().includes(query);
+            const categoryMatch = (t.targetCategory || '').toLowerCase().includes(query);
+            if (!titleMatch && !descMatch && !categoryMatch) return false;
+        }
+
+        return true;
     });
 
     const getCategoryBadgeClass = (category: string) => {
@@ -148,8 +196,8 @@ const TaskCenter: React.FC = () => {
 
     const getCategoryLabel = (category: string) => {
         switch ((category || '').toUpperCase()) {
-            case 'HOST': return 'Host';
-            case 'AGENCY': return 'Agency';
+            case 'HOST': return 'Host Target';
+            case 'AGENCY': return 'Agency Target';
             case 'COINS_SELLER': return 'Coins Seller';
             default: return 'All Users';
         }
@@ -177,7 +225,7 @@ const TaskCenter: React.FC = () => {
             return `${val} ${val === 1 ? 'Session' : 'Sessions'}`;
         }
         if (metric === 'COIN_TARGET') {
-            return `${val} Coins`;
+            return `${Number(val).toLocaleString()} Coins`;
         }
         return `${val}`;
     };
@@ -186,163 +234,231 @@ const TaskCenter: React.FC = () => {
         <div className="dashboard-page tasks-page">
             <Toaster position="top-right" />
 
-            <div className="dashboard-header">
-                <div className="header-text-group">
-                    <h1>Target & Bonus Tasks</h1>
+            {/* Header Area */}
+            <div className="task-module-header">
+                <div className="header-title-block">
+                    <div className="title-row">
+                        <h1>Target & Bonus Tasks</h1>
+                        <span className="task-count-pill">{tasks.length} Total</span>
+                    </div>
                     <p className="subtitle">Configure category-wise target tasks, bonus coins, and streaming requirements</p>
                 </div>
-                <div className="header-actions">
-                    <button className="secondary" onClick={fetchTasks}>
-                        <Activity size={18} />
+                <div className="header-action-row">
+                    <button className="secondary reload-btn" onClick={fetchTasks} disabled={loading}>
+                        <RefreshCw size={16} className={loading ? 'spinning' : ''} />
                         <span>Reload Data</span>
                     </button>
-                    <button className="primary flex items-center gap-2" onClick={() => handleOpenModal()}>
-                        <Plus size={20} />
+                    <button className="primary add-task-btn" onClick={() => handleOpenModal()}>
+                        <Plus size={18} />
                         <span>Add New Task</span>
                     </button>
                 </div>
             </div>
 
-            {/* Overview Metric Stats */}
-            <div className="tasks-stats-row mb-6">
-                <div className="stat-card">
-                    <div className="stat-info">
-                        <span className="label label-blue">Active Tasks</span>
-                        <span className="value">{tasks.filter(t => t.status === 'active').length}</span>
-                    </div>
-                    <div className="stat-icon">
-                        <ShieldCheck size={32} />
-                    </div>
-                </div>
-                <div className="stat-card">
-                    <div className="stat-info">
-                        <span className="label label-purple">Host Targets</span>
-                        <span className="value">{tasks.filter(t => (t.targetCategory || '').toUpperCase() === 'HOST').length}</span>
-                    </div>
-                    <div className="stat-icon">
-                        <Tv size={32} />
+            {/* Overview Metric Stats Row */}
+            <div className="tasks-stats-grid">
+                <div className="stat-card stat-card-blue">
+                    <div className="stat-card-inner">
+                        <div className="stat-info">
+                            <span className="stat-label label-blue">ACTIVE TASKS</span>
+                            <span className="stat-value">{tasks.filter(t => t.status === 'active').length}</span>
+                        </div>
+                        <div className="stat-icon icon-blue">
+                            <ShieldCheck size={26} />
+                        </div>
                     </div>
                 </div>
-                <div className="stat-card">
-                    <div className="stat-info">
-                        <span className="label label-cyan">Agency Targets</span>
-                        <span className="value">{tasks.filter(t => (t.targetCategory || '').toUpperCase() === 'AGENCY').length}</span>
-                    </div>
-                    <div className="stat-icon">
-                        <Building2 size={32} />
+
+                <div className="stat-card stat-card-purple">
+                    <div className="stat-card-inner">
+                        <div className="stat-info">
+                            <span className="stat-label label-purple">HOST TARGETS</span>
+                            <span className="stat-value">{tasks.filter(t => (t.targetCategory || '').toUpperCase() === 'HOST').length}</span>
+                        </div>
+                        <div className="stat-icon icon-purple">
+                            <Tv size={26} />
+                        </div>
                     </div>
                 </div>
-                <div className="stat-card">
-                    <div className="stat-info">
-                        <span className="label label-orange">Coins Seller Targets</span>
-                        <span className="value">{tasks.filter(t => (t.targetCategory || '').toUpperCase() === 'COINS_SELLER').length}</span>
+
+                <div className="stat-card stat-card-cyan">
+                    <div className="stat-card-inner">
+                        <div className="stat-info">
+                            <span className="stat-label label-cyan">AGENCY TARGETS</span>
+                            <span className="stat-value">{tasks.filter(t => (t.targetCategory || '').toUpperCase() === 'AGENCY').length}</span>
+                        </div>
+                        <div className="stat-icon icon-cyan">
+                            <Building2 size={26} />
+                        </div>
                     </div>
-                    <div className="stat-icon">
-                        <Coins size={32} />
+                </div>
+
+                <div className="stat-card stat-card-amber">
+                    <div className="stat-card-inner">
+                        <div className="stat-info">
+                            <span className="stat-label label-amber">COINS SELLER TARGETS</span>
+                            <span className="stat-value">{tasks.filter(t => (t.targetCategory || '').toUpperCase() === 'COINS_SELLER').length}</span>
+                        </div>
+                        <div className="stat-icon icon-amber">
+                            <Coins size={26} />
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Category Navigation Tabs */}
-            <div className="task-category-tabs-container mb-6">
+            {/* Category Tabs & Filter Controls Bar */}
+            <div className="controls-filter-bar">
+                {/* Category Navigation Tabs */}
                 <div className="task-category-tabs">
                     <button 
                         className={`tab-btn ${selectedCategory === 'ALL' ? 'active' : ''}`}
                         onClick={() => setSelectedCategory('ALL')}
                     >
-                        <Users size={16} />
+                        <Users size={15} />
                         <span>All Categories ({tasks.length})</span>
                     </button>
                     <button 
                         className={`tab-btn host-tab ${selectedCategory === 'HOST' ? 'active' : ''}`}
                         onClick={() => setSelectedCategory('HOST')}
                     >
-                        <Tv size={16} />
+                        <Tv size={15} />
                         <span>Host Tasks ({tasks.filter(t => (t.targetCategory || '').toUpperCase() === 'HOST' || (t.targetCategory || '').toUpperCase() === 'ALL').length})</span>
                     </button>
                     <button 
                         className={`tab-btn agency-tab ${selectedCategory === 'AGENCY' ? 'active' : ''}`}
                         onClick={() => setSelectedCategory('AGENCY')}
                     >
-                        <Building2 size={16} />
+                        <Building2 size={15} />
                         <span>Agency Tasks ({tasks.filter(t => (t.targetCategory || '').toUpperCase() === 'AGENCY' || (t.targetCategory || '').toUpperCase() === 'ALL').length})</span>
                     </button>
                     <button 
                         className={`tab-btn seller-tab ${selectedCategory === 'COINS_SELLER' ? 'active' : ''}`}
                         onClick={() => setSelectedCategory('COINS_SELLER')}
                     >
-                        <Coins size={16} />
-                        <span>Coins Seller Tasks ({tasks.filter(t => (t.targetCategory || '').toUpperCase() === 'COINS_SELLER' || (t.targetCategory || '').toUpperCase() === 'ALL').length})</span>
+                        <Coins size={15} />
+                        <span>Coins Seller ({tasks.filter(t => (t.targetCategory || '').toUpperCase() === 'COINS_SELLER' || (t.targetCategory || '').toUpperCase() === 'ALL').length})</span>
                     </button>
+                </div>
+
+                {/* Search & Frequency Filters */}
+                <div className="filter-actions-right">
+                    <div className="search-box-wrap">
+                        <Search size={15} className="search-icon" />
+                        <input 
+                            type="text" 
+                            placeholder="Search tasks..." 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="search-input-field"
+                        />
+                        {searchQuery && (
+                            <button onClick={() => setSearchQuery('')} className="clear-search-btn">
+                                <X size={13} />
+                            </button>
+                        )}
+                    </div>
+
+                    <select 
+                        value={selectedFrequency} 
+                        onChange={(e) => setSelectedFrequency(e.target.value)}
+                        className="frequency-select-dropdown"
+                    >
+                        <option value="ALL">All Frequencies</option>
+                        <option value="DAILY">Daily</option>
+                        <option value="WEEKLY">Weekly</option>
+                        <option value="MONTHLY">Monthly</option>
+                        <option value="ONE_TIME">One Time</option>
+                    </select>
                 </div>
             </div>
 
             {/* Dynamic Task Grid */}
-            <div className="bento-grid dynamic-task-list-grid">
-                {filteredTasks.map((task) => (
-                    <div key={task.id} className="bento-card-premium">
-                        <div className="card-payload">
-                            <div className="card-top-identity flex justify-between items-center mb-3">
-                                <div className="flex gap-2 items-center flex-wrap">
-                                    <span className={`category-badge ${getCategoryBadgeClass(task.targetCategory)}`}>
+            <div className="dynamic-task-cards-grid">
+                {filteredTasks.map((task) => {
+                    const isActive = task.status === 'active';
+                    const categoryClass = getCategoryBadgeClass(task.targetCategory);
+                    const frequencyText = (task.frequency || task.type || 'DAILY').toUpperCase();
+                    
+                    return (
+                        <div key={task.id} className={`task-card-pro ${isActive ? 'status-active' : 'status-inactive'}`}>
+                            <div className="card-top-header">
+                                <div className="badges-group">
+                                    <span className={`category-badge ${categoryClass}`}>
                                         {getCategoryLabel(task.targetCategory)}
                                     </span>
-                                    <span className={`card-type-badge ${(task.frequency || task.type || 'daily').toLowerCase()}`}>
-                                        {task.frequency || task.type || 'DAILY'}
+                                    <span className={`frequency-badge ${frequencyText.toLowerCase()}`}>
+                                        {frequencyText}
                                     </span>
                                 </div>
-                                <div className="card-icon-glass" style={{ color: task.status === 'active' ? 'var(--accent-sapphire)' : '#94a3b8' }}>
-                                    <Target size={22} />
-                                </div>
-                            </div>
 
-                            <div className="card-mid-section">
-                                <h4 className="mission-title-highdef">{task.title}</h4>
-                                <p className="mission-desc-highdef">{task.description}</p>
-                            </div>
-
-                            <div className="task-criteria-info-box my-3 p-3 rounded-lg bg-black/20 border border-white/10 text-xs flex flex-col gap-1.5">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-secondary font-medium">Target Required:</span>
-                                    <span className="font-bold text-amber-400">{getMetricDisplay(task)}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-secondary font-medium">Feature / Room:</span>
-                                    <span className="font-bold text-sky-400">{getRoomTypeLabel(task.roomType)}</span>
-                                </div>
-                            </div>
-
-                            <div className="mission-reward-pill mt-auto">
-                                <span className="pill-prefix">🎁</span>
-                                <span className="pill-amount">{task.reward}</span>
-                                <span className="pill-suffix">Bonus Coins</span>
-                            </div>
-                        </div>
-
-                        <div className="card-action-bar-glass">
-                            <div className="completions-tag">
-                                <Clock size={12} />
-                                <span>{task._count?.userTasks || 0} completions</span>
-                            </div>
-                            <div className="action-set">
-                                <button className="minimal-action-btn edit" title="Edit Task" onClick={() => handleOpenModal(task)}>
-                                    <Edit3 size={15} />
-                                </button>
-                                <button className="minimal-action-btn delete" title="Delete Task" onClick={() => handleDeleteClick(task.id)}>
-                                    <Trash2 size={15} />
+                                <button 
+                                    className={`status-toggle-btn ${isActive ? 'is-active' : 'is-inactive'}`}
+                                    onClick={() => handleToggleStatus(task)}
+                                    disabled={togglingTaskId === task.id}
+                                    title={isActive ? 'Click to deactivate task' : 'Click to activate task'}
+                                >
+                                    <span className="dot"></span>
+                                    <span>{isActive ? 'Active' : 'Inactive'}</span>
                                 </button>
                             </div>
+
+                            <div className="card-body-content">
+                                <h3 className="task-title">{task.title}</h3>
+                                <p className="task-description">{task.description}</p>
+
+                                <div className="task-metrics-box">
+                                    <div className="metric-row">
+                                        <span className="metric-key">Target Required</span>
+                                        <span className="metric-val target-val">{getMetricDisplay(task)}</span>
+                                    </div>
+                                    <div className="metric-row">
+                                        <span className="metric-key">Feature / Room</span>
+                                        <span className="metric-val room-val">{getRoomTypeLabel(task.roomType)}</span>
+                                    </div>
+                                </div>
+
+                                <div className="reward-badge-card">
+                                    <div className="reward-icon-group">
+                                        <span className="gift-emoji">🎁</span>
+                                        <div className="reward-text">
+                                            <span className="reward-num">+{Number(task.reward).toLocaleString()}</span>
+                                            <span className="reward-label">Bonus Coins</span>
+                                        </div>
+                                    </div>
+                                    <span className="coin-emoji">🪙</span>
+                                </div>
+                            </div>
+
+                            <div className="card-footer-bar">
+                                <div className="completion-stats">
+                                    <Clock size={13} />
+                                    <span>{task._count?.userTasks || 0} completions</span>
+                                </div>
+
+                                <div className="action-set">
+                                    <button className="minimal-action-btn edit" title="Edit Task" onClick={() => handleOpenModal(task)}>
+                                        <Edit3 size={15} />
+                                    </button>
+                                    <button className="minimal-action-btn delete" title="Delete Task" onClick={() => handleDeleteClick(task.id)}>
+                                        <Trash2 size={15} />
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
 
                 {filteredTasks.length === 0 && !loading && (
-                    <div className="bento-card wide empty-state">
-                        <div className="empty-content">
-                            <Trophy size={64} className="empty-icon-ghost" />
-                            <p className="empty-text">No target tasks found for this category.<br/>Create objectives to incentivize performance and grant bonus coins.</p>
-                            <button className="primary mt-6" onClick={() => handleOpenModal()}>Add First Task</button>
+                    <div className="empty-tasks-container">
+                        <div className="empty-icon-circle">
+                            <Trophy size={36} />
                         </div>
+                        <h3>No Target Tasks Found</h3>
+                        <p>No tasks matched your current search or category filter. Deploy new target objectives to incentivize hosts & sellers.</p>
+                        <button className="primary" onClick={() => handleOpenModal()}>
+                            <Plus size={18} />
+                            <span>Add First Task</span>
+                        </button>
                     </div>
                 )}
             </div>
@@ -387,7 +503,7 @@ const TaskCenter: React.FC = () => {
                                 <div className="input-wrapper-glass">
                                     <textarea 
                                         className="premium-input-field"
-                                        style={{ height: '70px', resize: 'none' }}
+                                        style={{ height: '75px', resize: 'none' }}
                                         placeholder="Detail the specific actions required to earn the bonus..."
                                         value={formData.description}
                                         onChange={e => setFormData({...formData, description: e.target.value})}
@@ -459,7 +575,7 @@ const TaskCenter: React.FC = () => {
                                             required
                                         />
                                     </div>
-                                    <span className="text-[10px] text-gray-400 mt-1 block">Specify 120 for 2 Hours (120 Mins) target duration</span>
+                                    <span className="input-hint-text">Specify 120 for 2 Hours (120 Mins) target duration</span>
                                 </div>
                             </div>
 
@@ -490,7 +606,7 @@ const TaskCenter: React.FC = () => {
                                                 checked={formData.status === 'active'}
                                                 onChange={e => setFormData({...formData, status: e.target.value})}
                                             />
-                                            <span>Active (1)</span>
+                                            <span>Active</span>
                                         </label>
                                         <label className={`radio-option ${formData.status === 'draft' ? 'active' : ''}`}>
                                             <input 
@@ -500,13 +616,13 @@ const TaskCenter: React.FC = () => {
                                                 checked={formData.status === 'draft'}
                                                 onChange={e => setFormData({...formData, status: e.target.value})}
                                             />
-                                            <span>Inactive (0)</span>
+                                            <span>Inactive</span>
                                         </label>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="modal-footer">
+                            <div className="modal-footer-row">
                                 <button
                                     type="button"
                                     className="secondary-btn"
