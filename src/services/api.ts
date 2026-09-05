@@ -76,7 +76,7 @@ export const adminService = {
     api.post(`/admin/ad-action?action=${action}${id ? `&id=${id}` : ''}`, data),
   getGames: () => api.get('/admin/games'),
   updateGame: (id: string, data: any) => api.put(`/admin/game/${id}`, data),
-  getTasks: () => api.get('/admin/tasks'),
+  getTasks: (category?: string) => api.get(`/admin/tasks${category ? `?category=${category}` : ''}`),
   manageTask: (action: string, data: any, id?: string) => 
     api.post(`/admin/task-action?action=${action}${id ? `&id=${id}` : ''}`, data),
   // Simulation & Bots

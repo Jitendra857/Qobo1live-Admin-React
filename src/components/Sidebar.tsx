@@ -85,7 +85,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
         { title: 'Avatar Frames', path: '/avatar-frames' },
         { title: 'Profile Backgrounds', path: '/profile-backgrounds' },
         { title: 'User Levels', path: '/level-system' },
-        // { title: 'Daily Tasks', path: '/dynamic-tasks' }, // Hidden for MVP
+        { title: 'Task', path: '/dynamic-tasks' },
       ],
     },
 
