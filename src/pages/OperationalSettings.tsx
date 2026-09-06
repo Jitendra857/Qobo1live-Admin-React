@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api, { adminService } from '../services/api';
+import api, { adminService, BACKEND_URL } from '../services/api';
 import { Image as ImageIcon, Plus, Trash2, ExternalLink, X } from 'lucide-react';
 import '../styles/UserManagement.css';
 import MediaImage from '../components/MediaImage';
@@ -36,7 +36,7 @@ const OperationalSettings: React.FC = () => {
     const toastId = toast.loading('Deleting promotional banner...');
     try {
       const token = localStorage.getItem('admin_token') || localStorage.getItem('token');
-      const res = await fetch(`https://my-backend-api-960q.onrender.com/api/admin/ad-action?action=delete&id=${id}`, {
+      const res = await fetch(`${BACKEND_URL}/api/admin/ad-action?action=delete&id=${id}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
