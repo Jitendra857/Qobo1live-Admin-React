@@ -21,10 +21,7 @@ export const TopMenu: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
 
   const visibleMenuItems = (() => {
-    if (currentUser?.role === 'admin') return menuItems;
-    if (currentUser?.role === 'super_admin') {
-      return menuItems.filter(item => item.path === '/agents' || item.path === '/host-registry');
-    }
+    if (currentUser?.role === 'admin' || currentUser?.role === 'super_admin' || currentUser?.email === 'admin@qobo1live.com') return menuItems;
     return [];
   })();
 

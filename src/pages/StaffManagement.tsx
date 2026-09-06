@@ -363,7 +363,7 @@ const StaffManagement: React.FC = () => {
                   style={{ borderRadius: '0px', border: '1px solid #cbd5e1', padding: '12px', width: '100%', fontWeight: 700, background: '#fff' }}
                 >
                   <option value="admin">Admin (All Menu Rights)</option>
-                  <option value="super_admin">Super Admin (Agency & Host Only)</option>
+                  <option value="super_admin">Super Admin (Full Access)</option>
                   <option value="user">User (No Menu Access)</option>
                 </select>
               </div>
