@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { adminService } from '../services/api';
+import { adminService, BACKEND_URL } from '../services/api';
 import { toast } from 'react-hot-toast';
 import { Sparkles, Plus, Trash2, Edit, X, Image as ImageIcon, CheckCircle, Power } from 'lucide-react';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -27,7 +27,7 @@ const RoomBackgrounds: React.FC = () => {
         try {
             setLoading(true);
             const token = localStorage.getItem('token');
-            const res = await fetch('https://my-backend-api-960q.onrender.com/api/admin/room-backgrounds', {
+            const res = await fetch(`${BACKEND_URL}/api/admin/room-backgrounds`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -110,8 +110,8 @@ const RoomBackgrounds: React.FC = () => {
             }
 
             const url = editingBg 
-                ? `https://my-backend-api-960q.onrender.com/api/admin/room-backgrounds/${editingBg.id}`
-                : 'https://my-backend-api-960q.onrender.com/api/admin/room-backgrounds';
+                ? `${BACKEND_URL}/api/admin/room-backgrounds/${editingBg.id}`
+                : `${BACKEND_URL}/api/admin/room-backgrounds`;
             
             const method = editingBg ? 'PUT' : 'POST';
 
@@ -141,7 +141,7 @@ const RoomBackgrounds: React.FC = () => {
         try {
             setIsDeleting(true);
             const token = localStorage.getItem('token');
-            const res = await fetch(`https://my-backend-api-960q.onrender.com/api/admin/room-backgrounds/${id}`, {
+            const res = await fetch(`${BACKEND_URL}/api/admin/room-backgrounds/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
