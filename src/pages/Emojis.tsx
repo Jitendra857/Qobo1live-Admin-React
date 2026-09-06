@@ -54,11 +54,12 @@ const Emojis: React.FC = () => {
       if (response.data && response.data.statusCode === 1) {
         setEmojis(response.data.data || []);
       } else {
-        toast.error('Failed to load emoji catalog');
+        toast.error(response.data?.message || 'Failed to load emoji catalog');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to fetch emojis:', err);
-      toast.error('Error connecting to backend server');
+      const msg = err.response?.data?.message || err.message || 'Error connecting to backend server';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
