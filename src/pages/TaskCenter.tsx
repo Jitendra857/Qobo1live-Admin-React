@@ -39,10 +39,15 @@ const TaskCenter: React.FC = () => {
         setLoading(true);
         try {
             const res = await adminService.getTasks();
-            setTasks(res.data.data || []);
-        } catch (err) {
-            console.error(err);
-            toast.error('Sync failure: Task registry offline');
+            if (res.data && res.data.statusCode === 1) {
+                setTasks(res.data.data || []);
+            } else {
+                toast.error(res.data?.message || 'Failed to fetch tasks');
+            }
+        } catch (err: any) {
+            console.error('Task fetch error:', err);
+            const msg = err.response?.data?.message || err.message || 'Sync failure: Task registry offline';
+            toast.error(msg);
         } finally {
             setLoading(false);
         }
