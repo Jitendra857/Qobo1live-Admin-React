@@ -281,7 +281,7 @@ const Emojis: React.FC = () => {
             }}
           >
             <Sparkles size={16} />
-            {seeding ? 'Updating...' : 'Seed 6 Test Emojis'}
+            {seeding ? 'Updating...' : 'Seed Test Emojis'}
           </button>
 
           <button
@@ -439,7 +439,7 @@ const Emojis: React.FC = () => {
               cursor: 'pointer'
             }}
           >
-            Seed 6 Test SVG Emojis
+            {seeding ? 'Seeding...' : 'Seed Default Emojis'}
           </button>
         </div>
       ) : viewMode === 'grid' ? (

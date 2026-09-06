@@ -6,7 +6,10 @@ const isLocalhost = typeof window !== 'undefined' &&
    window.location.hostname === '127.0.0.1' || 
    window.location.hostname.startsWith('192.168.'));
 
-export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://dev-api.qobo1live.in';
+const rawBackendUrl = import.meta.env.VITE_BACKEND_URL || 'https://dev-api.qobo1live.in';
+export const BACKEND_URL = (typeof window !== 'undefined' && window.location.protocol === 'https:')
+  ? rawBackendUrl.replace(/^http:\/\//, 'https://')
+  : rawBackendUrl;
 
 const api = axios.create({
   baseURL: `${BACKEND_URL}/api`,
