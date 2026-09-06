@@ -129,18 +129,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
   
   const visibleMenuItems: MenuItem[] = (() => {
-    if (currentUser?.email === 'admin@qobo1live.com' || currentUser?.role === 'admin') return menuItems;
-    if (currentUser?.role === 'super_admin') {
-      return [
-        {
-          title: 'Agencies & Hosts', icon: <UserCheck size={17} />, iconClass: 'icon-cyan',
-          subItems: [
-            { title: 'Agencies', path: '/agents' },
-            { title: 'Hosts',    path: '/host-registry' },
-          ],
-        }
-      ];
-    }
+    if (currentUser?.email === 'admin@qobo1live.com' || currentUser?.role === 'admin' || currentUser?.role === 'super_admin') return menuItems;
     if (currentUser?.role === 'agency') {
       return [
         {
@@ -184,11 +173,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
               className={sidebarTheme.id !== 'white' ? 'dark-sidebar-logo' : ''} 
             />
           )}
-          {currentUser?.role !== 'super_admin' && (
-            <button className="burger-btn" onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}>
-              {isSidebarCollapsed ? <MenuIcon size={17} /> : <ChevronLeft size={17} />}
-            </button>
-          )}
+          <button className="burger-btn" onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}>
+            {isSidebarCollapsed ? <MenuIcon size={17} /> : <ChevronLeft size={17} />}
+          </button>
         </div>
 
         {/* Nav */}
