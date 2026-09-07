@@ -107,18 +107,8 @@ export const adminService = {
   manageFrame: (action: string, data: any) => api.post('/frame/admin/action', data),
   getBackgroundsList: () => api.get('/background/admin/list'),
   manageBackground: (action: string, data: any) => api.post('/background/admin/action', data),
-  getEmojis: async () => {
-    try {
-      const res = await api.get('/emoji/admin/list');
-      if (res.data && (Array.isArray(res.data.data) ? res.data.data.length > 0 : true)) {
-        return res;
-      }
-    } catch (err) {
-      console.warn('Admin emoji route failed, falling back to public mobile list:', err);
-    }
-    return api.get('/emojis/public-list');
-  },
-  getPublicEmojis: () => api.get('/emojis/public-list'),
+  getEmojis: () => api.get(`/emojis/public-list?t=${Date.now()}`),
+  getPublicEmojis: () => api.get(`/emojis/public-list?t=${Date.now()}`),
   manageEmoji: (action: string, data: any, id?: string) => 
     api.post(`/emoji/admin/action?action=${action}${id ? `&id=${id}` : ''}`, data),
   seedEmojis: () => api.post('/emoji/admin/seed'),

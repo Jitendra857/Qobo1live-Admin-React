@@ -59,29 +59,8 @@ const Emojis: React.FC = () => {
   const fetchEmojis = async () => {
     try {
       setLoading(true);
-      let items: any[] = [];
-
-      try {
-        const response = await adminService.getEmojis();
-        if (response.data) {
-          items = extractEmojiArray(response.data);
-        }
-      } catch (adminErr: any) {
-        console.warn('Admin emoji endpoint error, trying fallback:', adminErr?.message);
-      }
-
-      // Fallback: If admin endpoint returns empty array or fails, fetch from public emoji list
-      if (items.length === 0) {
-        try {
-          const publicRes = await adminService.getPublicEmojis();
-          if (publicRes.data) {
-            items = extractEmojiArray(publicRes.data);
-          }
-        } catch (pubErr: any) {
-          console.warn('Public emoji fallback error:', pubErr?.message);
-        }
-      }
-
+      const response = await adminService.getEmojis();
+      const items = extractEmojiArray(response.data);
       setEmojis(Array.isArray(items) ? items : []);
     } catch (err: any) {
       console.error('Failed to fetch emojis:', err);
