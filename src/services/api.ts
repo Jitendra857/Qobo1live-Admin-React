@@ -108,6 +108,7 @@ export const adminService = {
   getBackgroundsList: () => api.get('/background/admin/list'),
   manageBackground: (action: string, data: any) => api.post('/background/admin/action', data),
   getEmojis: () => api.get('/emoji/admin/list'),
+  getPublicEmojis: () => api.get('/emojis/public-list'),
   manageEmoji: (action: string, data: any, id?: string) => 
     api.post(`/emoji/admin/action?action=${action}${id ? `&id=${id}` : ''}`, data),
   seedEmojis: () => api.post('/emoji/admin/seed'),

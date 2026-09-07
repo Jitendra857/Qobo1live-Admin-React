@@ -47,17 +47,45 @@ const Emojis: React.FC = () => {
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+  const extractEmojiArray = (resData: any): any[] => {
+    if (!resData) return [];
+    if (Array.isArray(resData)) return resData;
+    if (Array.isArray(resData.data)) return resData.data;
+    if (Array.isArray(resData.data?.items)) return resData.data.items;
+    if (Array.isArray(resData.items)) return resData.items;
+    return [];
+  };
+
   const fetchEmojis = async () => {
     try {
       setLoading(true);
-      const response = await adminService.getEmojis();
-      if (response.data && response.data.statusCode === 1) {
-        setEmojis(response.data.data || []);
-      } else {
-        toast.error(response.data?.message || 'Failed to load emoji catalog');
+      let items: any[] = [];
+
+      try {
+        const response = await adminService.getEmojis();
+        if (response.data) {
+          items = extractEmojiArray(response.data);
+        }
+      } catch (adminErr: any) {
+        console.warn('Admin emoji endpoint error, trying fallback:', adminErr?.message);
       }
+
+      // Fallback: If admin endpoint returns empty array or fails, fetch from public emoji list
+      if (items.length === 0) {
+        try {
+          const publicRes = await adminService.getPublicEmojis();
+          if (publicRes.data) {
+            items = extractEmojiArray(publicRes.data);
+          }
+        } catch (pubErr: any) {
+          console.warn('Public emoji fallback error:', pubErr?.message);
+        }
+      }
+
+      setEmojis(Array.isArray(items) ? items : []);
     } catch (err: any) {
       console.error('Failed to fetch emojis:', err);
+      setEmojis([]);
       const msg = err.response?.data?.message || err.message || 'Error connecting to backend server';
       toast.error(msg);
     } finally {
@@ -78,10 +106,13 @@ const Emojis: React.FC = () => {
         fetchEmojis();
       } else {
         toast.error('Failed to seed test emojis');
+        // Try refreshing catalog anyway
+        fetchEmojis();
       }
     } catch (err) {
       console.error('Seed error:', err);
       toast.error('Error seeding test emojis');
+      fetchEmojis();
     } finally {
       setSeeding(false);
     }
@@ -197,16 +228,22 @@ const Emojis: React.FC = () => {
     }
   };
 
-  // Filter Emojis
-  const filteredEmojis = emojis.filter(e => {
-    const matchesCategory = activeCategory === 'All' || e.category.toLowerCase() === activeCategory.toLowerCase();
-    const matchesSearch = e.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          (e.code && e.code.toLowerCase().includes(searchQuery.toLowerCase()));
+  // Filter Emojis safely
+  const safeEmojis = Array.isArray(emojis) ? emojis : [];
+  const filteredEmojis = safeEmojis.filter(e => {
+    if (!e) return false;
+    const cat = String(e.category || 'expressive').toLowerCase();
+    const name = String(e.name || '').toLowerCase();
+    const code = String(e.code || '').toLowerCase();
+    const query = searchQuery.toLowerCase();
+
+    const matchesCategory = activeCategory === 'All' || cat === activeCategory.toLowerCase();
+    const matchesSearch = name.includes(query) || code.includes(query);
     return matchesCategory && matchesSearch;
   });
 
-  const totalActive = emojis.filter(e => e.status === 'active').length;
-  const totalInactive = emojis.length - totalActive;
+  const totalActive = safeEmojis.filter(e => e && (e.status === 'active' || e.isActive)).length;
+  const totalInactive = safeEmojis.length - totalActive;
 
   return (
     <div className="users-container page-fade-in" style={{ padding: '24px' }}>
@@ -311,7 +348,7 @@ const Emojis: React.FC = () => {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
         <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '12px', padding: '16px 20px' }}>
           <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '4px' }}>Total Emojis</div>
-          <div style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc' }}>{emojis.length}</div>
+          <div style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc' }}>{safeEmojis.length}</div>
         </div>
 
         <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '12px', padding: '16px 20px' }}>
@@ -327,7 +364,7 @@ const Emojis: React.FC = () => {
         <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '12px', padding: '16px 20px' }}>
           <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '4px' }}>Categories</div>
           <div style={{ fontSize: '24px', fontWeight: '700', color: '#60a5fa' }}>
-            {new Set(emojis.map(e => e.category)).size || 0}
+            {new Set(safeEmojis.map(e => e?.category || 'expressive')).size || 0}
           </div>
         </div>
       </div>
