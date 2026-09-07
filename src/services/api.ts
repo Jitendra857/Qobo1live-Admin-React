@@ -6,10 +6,14 @@ const isLocalhost = typeof window !== 'undefined' &&
    window.location.hostname === '127.0.0.1' || 
    window.location.hostname.startsWith('192.168.'));
 
-const rawBackendUrl = import.meta.env.VITE_BACKEND_URL || 'https://dev-api.qobo1live.in';
-export const BACKEND_URL = (typeof window !== 'undefined' && window.location.protocol === 'https:')
-  ? rawBackendUrl.replace(/^http:\/\//, 'https://')
-  : rawBackendUrl;
+let envUrl = String(import.meta.env.VITE_BACKEND_URL || '').trim();
+if (!envUrl || envUrl.includes('staging-api') || envUrl.includes('https:https:')) {
+  envUrl = 'https://dev-api.qobo1live.in';
+}
+if (typeof window !== 'undefined' && window.location.protocol === 'https:' && envUrl.startsWith('http://')) {
+  envUrl = envUrl.replace('http://', 'https://');
+}
+export const BACKEND_URL = envUrl;
 
 const api = axios.create({
   baseURL: `${BACKEND_URL}/api`,
