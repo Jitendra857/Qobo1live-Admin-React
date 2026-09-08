@@ -4,9 +4,9 @@ import CoinModal from '../components/CoinModal';
 import CreateUserModal from '../components/CreateUserModal';
 import EditUserModal from '../components/EditUserModal';
 import ConfirmationModal from '../components/ConfirmationModal';
-import { UserPlus, Search, Trash2 } from 'lucide-react';
+import UserHistoryModal from '../components/UserHistoryModal';
+import { UserPlus, Search } from 'lucide-react';
 import { adminService } from '../services/api';
-import toast from 'react-hot-toast';
 import '../styles/UserManagement.css';
 
 const UserManagement: React.FC = () => {
@@ -15,19 +15,23 @@ const UserManagement: React.FC = () => {
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+  
+  // History Modal State
+  const [isHistoryModalOpen, setHistoryModalOpen] = useState(false);
+  const [selectedHistoryUser, setSelectedHistoryUser] = useState<any>(null);
+
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [errorPopupMessage, setErrorPopupMessage] = useState<string | null>(null);
 
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      console.log('Fetching users from administrative gateway...');
       const res = await adminService.getUsers();
       setUsers(res.data.data || []);
-      console.log(`Successfully retrieved ${res.data.data?.length || 0} user identities.`);
     } catch (err) {
-      console.error('CRITICAL: Failed to synchronize user demographic data.', err);
+      console.error('Failed to synchronize user demographic data.', err);
     } finally {
       setLoading(false);
     }
@@ -38,57 +42,30 @@ const UserManagement: React.FC = () => {
   }, []);
 
   const handleAddCoins = (user: any) => {
-    console.log('Action: Initiating asset injection for user:', user.id);
     setSelectedUser(user);
     setCoinModalOpen(true);
   };
 
   const handleEdit = (user: any) => {
-    console.log('Action: Initiating identity modification for user:', user.id);
     setSelectedUser(user);
     setEditModalOpen(true);
   };
 
   const handleDeleteClick = (id: string) => {
-    console.log('Action: Initiating termination protocol for user:', id);
     setSelectedUser({ id });
     setDeleteModalOpen(true);
   };
 
-  const [isClearEconomyModalOpen, setClearEconomyModalOpen] = useState(false);
-  const [isClearUserEconomyModalOpen, setClearUserEconomyModalOpen] = useState(false);
-
-  const handleClearUserEconomy = (user: any) => {
-    setSelectedUser(user);
-    setClearUserEconomyModalOpen(true);
+  const handleViewHistory = (user: any) => {
+    setSelectedHistoryUser(user);
+    setHistoryModalOpen(true);
   };
-
-  const confirmClearUserEconomy = async () => {
-    if (!selectedUser) return;
-    try {
-      setLoading(true);
-      console.log(`Initiating economy wipe for user ${selectedUser.id}...`);
-      const res = await adminService.clearUserEconomyData(selectedUser.id);
-      toast.success(res.data.message || 'User economy data wiped successfully.');
-      fetchUsers();
-      setClearUserEconomyModalOpen(false);
-    } catch (err: any) {
-      console.error('User wipe failed:', err);
-      toast.error(err.response?.data?.message || err.message || 'User wipe failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const [errorPopupMessage, setErrorPopupMessage] = useState<string | null>(null);
 
   const confirmDelete = async () => {
     if (!selectedUser) return;
     try {
       setLoading(true);
-      console.log('Verifying termination for user:', selectedUser.id);
       await adminService.deleteUser(selectedUser.id);
-      console.log('Identity purged successfully.');
       fetchUsers();
       setDeleteModalOpen(false);
     } catch (err: any) {
@@ -96,22 +73,6 @@ const UserManagement: React.FC = () => {
       const errMsg = err.response?.data?.message || err.message || 'Delete failed';
       setDeleteModalOpen(false);
       setErrorPopupMessage(errMsg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const confirmClearEconomy = async () => {
-    try {
-      setLoading(true);
-      console.log('Initiating wipe protocol for transaction history and wallet ledger balances...');
-      const res = await adminService.clearEconomyData();
-      toast.success(res.data.message || 'Economy data wiped successfully.');
-      fetchUsers();
-      setClearEconomyModalOpen(false);
-    } catch (err: any) {
-      console.error('Wipe protocol failed:', err);
-      toast.error(err.response?.data?.message || err.message || 'Wipe failed');
     } finally {
       setLoading(false);
     }
@@ -138,10 +99,6 @@ const UserManagement: React.FC = () => {
                 }}
               />
             </div>
-            <button className="primary flex-center gap-2" style={{ background: '#ef4444' }} onClick={() => setClearEconomyModalOpen(true)}>
-              <Trash2 size={18} />
-              <span>Clear Economy Data</span>
-            </button>
             <button className="primary flex-center gap-2" onClick={() => setCreateModalOpen(true)}>
               <UserPlus size={18} />
               <span>Create User</span>
@@ -155,7 +112,7 @@ const UserManagement: React.FC = () => {
             onAddCoins={handleAddCoins} 
             onEdit={handleEdit}
             onDelete={handleDeleteClick}
-            onClearEconomy={handleClearUserEconomy}
+            onViewHistory={handleViewHistory}
             loading={loading}
           />
         </div>
@@ -184,6 +141,13 @@ const UserManagement: React.FC = () => {
         />
       )}
 
+      {isHistoryModalOpen && selectedHistoryUser && (
+        <UserHistoryModal
+          user={selectedHistoryUser}
+          onClose={() => setHistoryModalOpen(false)}
+        />
+      )}
+
       {isDeleteModalOpen && (
         <ConfirmationModal 
           title="Security Override Required"
@@ -193,30 +157,6 @@ const UserManagement: React.FC = () => {
           type="danger"
           onConfirm={confirmDelete}
           onClose={() => setDeleteModalOpen(false)}
-        />
-      )}
-
-      {isClearEconomyModalOpen && (
-        <ConfirmationModal 
-          title="Wipe Economy Data"
-          message="You are about to delete all transaction history, agency commission logs, and reset all user coin and diamond balances to 0 for fresh testing. This cannot be undone."
-          confirmText="Yes, Wipe Data"
-          cancelText="Abort Wipe"
-          type="danger"
-          onConfirm={confirmClearEconomy}
-          onClose={() => setClearEconomyModalOpen(false)}
-        />
-      )}
-
-      {isClearUserEconomyModalOpen && (
-        <ConfirmationModal 
-          title="Wipe User Economy Data"
-          message={`You are about to delete all transaction history, commission logs, and reset both coin and diamond balances to 0 for user ${selectedUser?.name || 'this user'}. This cannot be undone.`}
-          confirmText="Yes, Wipe User Data"
-          cancelText="Abort Wipe"
-          type="danger"
-          onConfirm={confirmClearUserEconomy}
-          onClose={() => setClearUserEconomyModalOpen(false)}
         />
       )}
 

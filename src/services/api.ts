@@ -50,6 +50,7 @@ export const adminService = {
     api.get(`/admin/leaderboard?type=${type}&period=${period}`),
   login: (data: any) => api.post('/admin/login', data),
   getUsers: (search?: string) => api.get(`/admin/user-list${search ? `?search=${search}` : ''}`),
+  getUserActivityHistory: (id: string) => api.get(`/admin/user/${id}/activity-history`),
   createUser: (data: any) => api.post('/admin/user-create', data),
   updateUser: (id: string, data: any) => api.put(`/admin/user/${id}`, data),
   deleteUser: (id: string) => api.delete(`/admin/user/${id}`),

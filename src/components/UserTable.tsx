@@ -1,5 +1,5 @@
-import { Edit2, Trash2, Coins, RotateCcw } from 'lucide-react';
-import { BACKEND_URL } from '../services/api';
+import React from 'react';
+import { Edit2, Trash2, Coins, History } from 'lucide-react';
 import MediaImage from './MediaImage';
 
 interface UserTableProps {
@@ -7,11 +7,11 @@ interface UserTableProps {
   onAddCoins: (user: any) => void;
   onEdit: (user: any) => void;
   onDelete: (id: string) => void;
-  onClearEconomy: (user: any) => void;
+  onViewHistory: (user: any) => void;
   loading?: boolean;
 }
 
-const UserTable: React.FC<UserTableProps> = ({ users, onAddCoins, onEdit, onDelete, onClearEconomy, loading = false }) => {
+const UserTable: React.FC<UserTableProps> = ({ users, onAddCoins, onEdit, onDelete, onViewHistory, loading = false }) => {
   const statusClassName = (status?: string) => {
     const value = (status || 'active').toLowerCase();
     if (value === 'blocked' || value === 'inactive' || value === 'banned') return 'status-pill danger';
@@ -63,7 +63,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onAddCoins, onEdit, onDele
                   </div>
                 </td>
                 <td className="data-cell-dim">{user.phone || 'No Phone'}</td>
-                 <td className="data-cell">
+                <td className="data-cell">
                   <div className="assets-cluster" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <div className="asset-tag coins" title="Coins" style={{ display: 'inline-flex', alignItems: 'center' }}>
                       <Coins size={14} />
@@ -88,13 +88,15 @@ const UserTable: React.FC<UserTableProps> = ({ users, onAddCoins, onEdit, onDele
                     <button className="op-btn coin" title="Inject Assets" onClick={() => onAddCoins(user)}>
                       <Coins size={18} />
                     </button>
-                    <button className="op-btn edit" title="Clear User Economy" onClick={() => onClearEconomy(user)} style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
-                      <RotateCcw size={18} />
+                    <button 
+                      className="op-btn edit" 
+                      title="User Activity & History" 
+                      onClick={() => onViewHistory(user)} 
+                      style={{ background: 'rgba(139, 92, 246, 0.18)', color: '#a78bfa', border: '1px solid rgba(139, 92, 246, 0.35)' }}
+                    >
+                      <History size={18} />
                     </button>
-                    <button className="op-btn edit" title="Modify" onClick={() => {
-                        console.log('Click: Edit User', user.id);
-                        onEdit(user);
-                    }}>
+                    <button className="op-btn edit" title="Modify" onClick={() => onEdit(user)}>
                       <Edit2 size={18} />
                     </button>
                     <button className="op-btn delete" title="Terminate" onClick={() => onDelete(user.id)}>
