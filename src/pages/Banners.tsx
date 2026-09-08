@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { adminService, BACKEND_URL } from '../services/api';
+import { adminService } from '../services/api';
 import { toast } from 'react-hot-toast';
-import { Image as ImageIcon, Plus, Trash2, Edit, X, ExternalLink, Filter, Layers } from 'lucide-react';
+import { Image as ImageIcon, Plus, Trash2, Edit, X, ExternalLink, Filter, Layers, ZoomIn, Eye } from 'lucide-react';
 import ConfirmationModal from '../components/ConfirmationModal';
 import MediaImage from '../components/MediaImage';
 import '../styles/UserManagement.css';
+import '../styles/Banners.css';
 
 interface Banner {
   id: string;
@@ -26,6 +27,9 @@ const Banners: React.FC = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
+
+  // Zoom / Lightbox State
+  const [zoomedBanner, setZoomedBanner] = useState<Banner | null>(null);
 
   // Filters
   const [filterType, setFilterType] = useState('all');
@@ -61,6 +65,18 @@ const Banners: React.FC = () => {
   useEffect(() => {
     fetchBanners();
   }, [filterType, filterStatus]);
+
+  // Handle ESC key to close zoom modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setZoomedBanner(null);
+        setIsModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleOpenCreateModal = () => {
     setEditingBanner(null);
@@ -166,35 +182,30 @@ const Banners: React.FC = () => {
   };
 
   return (
-    <div className="user-management-container dark-theme page-padding">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Layers className="text-purple-400" /> Mobile & App Banners
+    <div className="banners-container">
+      {/* Header */}
+      <div className="banners-header">
+        <div className="banners-title-wrap">
+          <h1>
+            <Layers style={{ color: '#8b5cf6' }} /> Mobile & App Banners
           </h1>
-          <p className="text-gray-400 text-sm mt-1">
-            Manage promotional banners displayed across Mobile App home screens, agency hubs, and live streaming carousels.
-          </p>
+          <p>Manage promotional banners displayed across Mobile App home screens, agency hubs, and live streaming carousels.</p>
         </div>
-        <button
-          onClick={handleOpenCreateModal}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-lg font-medium flex items-center gap-2 shadow-lg transition-all"
-        >
-          <Plus size={18} /> Add New Banner
+        <button onClick={handleOpenCreateModal} className="btn-primary-banner">
+          <Plus size={18} />
+          <span>Add New Banner</span>
         </button>
       </div>
 
-      {/* Filter Toolbar */}
-      <div className="bg-gray-800/40 border border-gray-700/60 rounded-xl p-4 mb-6 flex flex-wrap items-center gap-4">
-        <div className="flex items-center gap-2 text-sm text-gray-400">
-          <Filter size={16} /> Filters:
-        </div>
-        <div className="flex items-center gap-2">
-          <label className="text-xs text-gray-400 font-semibold">Category/Type:</label>
+      {/* Filter Bar */}
+      <div className="banners-filter-bar">
+        <div className="filter-group">
+          <Filter size={16} style={{ color: '#94a3b8' }} />
+          <label>Category / Type:</label>
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="bg-gray-900 border border-gray-700 text-white text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-purple-500"
+            className="filter-select"
           >
             <option value="all">All Types</option>
             <option value="home">Home Screen (home)</option>
@@ -205,12 +216,12 @@ const Banners: React.FC = () => {
           </select>
         </div>
 
-        <div className="flex items-center gap-2">
-          <label className="text-xs text-gray-400 font-semibold">Status:</label>
+        <div className="filter-group">
+          <label>Status:</label>
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="bg-gray-900 border border-gray-700 text-white text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-purple-500"
+            className="filter-select"
           >
             <option value="all">All Statuses</option>
             <option value="active">Active Only</option>
@@ -219,74 +230,88 @@ const Banners: React.FC = () => {
         </div>
       </div>
 
+      {/* Main Grid Content */}
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '240px' }}>
+          <div className="animate-spin" style={{ width: '40px', height: '40px', border: '3px solid rgba(139, 92, 246, 0.2)', borderTopColor: '#8b5cf6', borderRadius: '50%' }} />
         </div>
       ) : banners.length === 0 ? (
-        <div className="bg-gray-800/40 rounded-xl p-12 text-center border border-gray-700">
-          <ImageIcon className="mx-auto text-gray-500 mb-4" size={48} />
-          <h3 className="text-lg font-medium text-gray-300">No Banners Found</h3>
-          <p className="text-gray-500 text-sm mt-1">Click "Add New Banner" to create banner carousels for the mobile app.</p>
+        <div className="banners-empty-state">
+          <ImageIcon size={48} style={{ opacity: 0.3, margin: '0 auto' }} />
+          <h3>No Banners Found</h3>
+          <p>Click "Add New Banner" to publish promotional banners to the mobile app.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="banners-grid">
           {banners.map((banner) => (
-            <div
-              key={banner.id}
-              className="bg-gray-800/60 border border-gray-700/60 rounded-xl overflow-hidden shadow-md hover:border-purple-500/50 transition-all flex flex-col"
-            >
-              <div className="relative h-48 bg-gray-900 overflow-hidden">
-                <MediaImage
-                  src={banner.imageUrl}
-                  alt={banner.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-2 right-2 flex gap-1">
-                  <span className="bg-purple-900/80 text-purple-200 border border-purple-500/30 text-xs font-bold px-2 py-0.5 rounded shadow uppercase">
-                    {banner.type}
-                  </span>
-                  <span
-                    className={`text-xs font-bold px-2 py-0.5 rounded shadow ${
-                      banner.status === 'active' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'
-                    }`}
-                  >
-                    {banner.status.toUpperCase()}
-                  </span>
+            <div key={banner.id} className="banner-card">
+              {/* Image Container with Zoom Click Listener */}
+              <div
+                className="banner-img-container"
+                onClick={() => setZoomedBanner(banner)}
+                title="Click to view full size zoom"
+              >
+                <MediaImage src={banner.imageUrl} alt={banner.title} />
+
+                {/* Hover Zoom Overlay */}
+                <div className="banner-zoom-overlay">
+                  <div className="zoom-badge">
+                    <ZoomIn size={16} />
+                    <span>Click to Zoom</span>
+                  </div>
                 </div>
+
+                <span className="banner-badge-type">{banner.type}</span>
+                <span className={`banner-badge-status ${banner.status === 'active' ? 'active' : 'inactive'}`}>
+                  {banner.status}
+                </span>
               </div>
 
-              <div className="p-4 flex-1 flex flex-col justify-between">
+              {/* Card Content Body */}
+              <div className="banner-card-body">
                 <div>
-                  <h3 className="text-base font-semibold text-white line-clamp-1">{banner.title}</h3>
-                  {banner.targetUrl && (
+                  <h3 className="banner-card-title">{banner.title}</h3>
+                  {banner.targetUrl ? (
                     <a
                       href={banner.targetUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-purple-400 hover:underline flex items-center gap-1 mt-1 truncate"
+                      className="banner-card-link"
                     >
-                      <ExternalLink size={12} /> {banner.targetUrl}
+                      <ExternalLink size={13} /> {banner.targetUrl}
                     </a>
+                  ) : (
+                    <span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block', marginBottom: '12px' }}>
+                      No Action Link Attached
+                    </span>
                   )}
-                  <p className="text-xs text-gray-400 mt-2">Sort Order: {banner.sortOrder || 0}</p>
                 </div>
 
-                <div className="flex justify-end gap-2 mt-4 pt-3 border-t border-gray-700/40">
-                  <button
-                    onClick={() => handleOpenEditModal(banner)}
-                    className="p-2 bg-gray-700/50 hover:bg-gray-700 text-gray-300 hover:text-white rounded-lg transition-colors"
-                    title="Edit Banner"
-                  >
-                    <Edit size={16} />
-                  </button>
-                  <button
-                    onClick={() => setShowDeleteConfirm(banner.id)}
-                    className="p-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg transition-colors"
-                    title="Delete Banner"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                <div className="banner-card-meta">
+                  <span>Sort Order: {banner.sortOrder || 0}</span>
+                  <div className="banner-card-actions">
+                    <button
+                      onClick={() => setZoomedBanner(banner)}
+                      className="action-btn zoom"
+                      title="Zoom Preview Image"
+                    >
+                      <Eye size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleOpenEditModal(banner)}
+                      className="action-btn edit"
+                      title="Edit Banner"
+                    >
+                      <Edit size={16} />
+                    </button>
+                    <button
+                      onClick={() => setShowDeleteConfirm(banner.id)}
+                      className="action-btn delete"
+                      title="Delete Banner"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -294,130 +319,169 @@ const Banners: React.FC = () => {
         </div>
       )}
 
+      {/* 🔍 ZOOM LIGHTBOX MODAL */}
+      {zoomedBanner && (
+        <div className="lightbox-backdrop" onClick={() => setZoomedBanner(null)}>
+          <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="lightbox-close-btn"
+              onClick={() => setZoomedBanner(null)}
+              title="Close (ESC)"
+            >
+              <X size={22} />
+            </button>
+
+            <div className="lightbox-image-wrap">
+              <MediaImage src={zoomedBanner.imageUrl} alt={zoomedBanner.title} />
+            </div>
+
+            <div className="lightbox-footer">
+              <div>
+                <div className="lightbox-title">{zoomedBanner.title}</div>
+                <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span>Category: <strong style={{ color: '#c084fc' }}>{zoomedBanner.type.toUpperCase()}</strong></span>
+                  <span>Status: <strong style={{ color: zoomedBanner.status === 'active' ? '#10b981' : '#f43f5e' }}>{zoomedBanner.status.toUpperCase()}</strong></span>
+                  <span>Sort Order: <strong>{zoomedBanner.sortOrder || 0}</strong></span>
+                </div>
+              </div>
+
+              <div className="lightbox-actions">
+                {zoomedBanner.targetUrl && (
+                  <a
+                    href={zoomedBanner.targetUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-primary-banner"
+                    style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+                  >
+                    <ExternalLink size={15} /> Visit Target Link
+                  </a>
+                )}
+                <button
+                  onClick={() => {
+                    const b = zoomedBanner;
+                    setZoomedBanner(null);
+                    handleOpenEditModal(b);
+                  }}
+                  className="btn-secondary-custom"
+                >
+                  Edit Details
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Add / Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-gray-800 border border-gray-700 rounded-xl w-full max-w-lg p-6 shadow-2xl relative">
+        <div className="modal-backdrop-custom" onClick={() => setIsModalOpen(false)}>
+          <div className="modal-box-custom" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white"
+              style={{ position: 'absolute', top: '20px', right: '20px', background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
             >
               <X size={20} />
             </button>
-            <h2 className="text-xl font-bold text-white mb-4">
-              {editingBanner ? 'Edit Banner' : 'Add New Banner'}
-            </h2>
+            <h3>{editingBanner ? 'Edit Banner' : 'Add New Banner'}</h3>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-300 uppercase mb-1">
-                  Banner Title *
-                </label>
+            <form onSubmit={handleSubmit}>
+              <div className="form-group-custom">
+                <label>Banner Title *</label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="e.g. Qobo Live Agency Partner"
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-purple-500"
+                  className="form-input-custom"
                   required
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-300 uppercase mb-1">
-                  Upload Image File (PNG / JPG / WebP)
-                </label>
+              <div className="form-group-custom">
+                <label>Upload Image File (PNG / JPG / WebP)</label>
                 <input
                   type="file"
                   accept="image/*"
                   onChange={handleFileChange}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-300 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700"
+                  className="form-input-custom"
+                  style={{ padding: '8px' }}
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-300 uppercase mb-1">
-                  Or Image URL
-                </label>
+              <div className="form-group-custom">
+                <label>Or Image URL</label>
                 <input
                   type="text"
                   value={formData.imageUrl}
                   onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
                   placeholder="https://..."
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-purple-500"
+                  className="form-input-custom"
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-300 uppercase mb-1">
-                  Target Link / Action URL (Optional)
-                </label>
+              <div className="form-group-custom">
+                <label>Target Link / Action URL (Optional)</label>
                 <input
                   type="text"
                   value={formData.targetUrl}
                   onChange={(e) => setFormData({ ...formData, targetUrl: e.target.value })}
                   placeholder="https://qobo1live.com/agency"
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-purple-500"
+                  className="form-input-custom"
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-300 uppercase mb-1">
-                    Banner Category / Type
-                  </label>
+              <div className="form-grid-3">
+                <div className="form-group-custom">
+                  <label>Type</label>
                   <select
                     value={formData.type}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500"
+                    className="form-input-custom"
                   >
-                    <option value="home">Home Screen (home)</option>
-                    <option value="agency">Agency Partner (agency)</option>
-                    <option value="live">Live Stream (live)</option>
-                    <option value="promo">Promotion (promo)</option>
-                    <option value="vip">VIP Store (vip)</option>
+                    <option value="home">Home (home)</option>
+                    <option value="agency">Agency (agency)</option>
+                    <option value="live">Live (live)</option>
+                    <option value="promo">Promo (promo)</option>
+                    <option value="vip">VIP (vip)</option>
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-300 uppercase mb-1">
-                    Status
-                  </label>
+                <div className="form-group-custom">
+                  <label>Status</label>
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500"
+                    className="form-input-custom"
                   >
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-300 uppercase mb-1">
-                    Sort Order
-                  </label>
+                <div className="form-group-custom">
+                  <label>Sort Order</label>
                   <input
                     type="number"
                     value={formData.sortOrder}
                     onChange={(e) => setFormData({ ...formData, sortOrder: Number(e.target.value) })}
-                    className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500"
+                    className="form-input-custom"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-700">
+              <div className="modal-footer-custom">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm"
+                  className="btn-secondary-custom"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium flex items-center gap-2"
+                  className="btn-primary-banner"
                 >
                   {isSubmitting ? 'Saving...' : 'Save Banner'}
                 </button>
