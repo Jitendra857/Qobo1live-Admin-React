@@ -105,7 +105,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
       subItems: [
         { title: 'Active Rooms', path: '/audio-rooms' },
         { title: 'PK Battles', path: '/pk-battles' },
-        { title: 'Room backgrounds', path: '/banners' },
+        { title: 'Room Backgrounds', path: '/room-backgrounds' },
+        { title: 'App Banners', path: '/banners' },
         { title: 'System Messages', path: '/notifications' },
       ],
     },

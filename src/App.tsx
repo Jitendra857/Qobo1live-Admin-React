@@ -44,7 +44,9 @@ import SuperAdminRequests from './pages/SuperAdminRequests';
 import AvatarFrames from './pages/AvatarFrames';
 import ProfileBackgrounds from './pages/ProfileBackgrounds';
 import RoomBackgrounds from './pages/RoomBackgrounds';
+import Banners from './pages/Banners';
 import GiftPreview from './pages/GiftPreview';
+
 import Emojis from './pages/Emojis';
 
 import { Menu as MenuIcon } from 'lucide-react';
@@ -160,8 +162,9 @@ function AppContent() {
                   <Route path="/transactions" element={<TransactionHistory />} />
                   <Route path="/operational-settings" element={<OperationalSettings />} />
                   <Route path="/economy" element={<Economy />} />
-                  <Route path="/banners" element={<OperationalSettings />} />
+                  <Route path="/banners" element={<Banners />} />
                   <Route path="/backgrounds" element={<AmbienceManager />} />
+
                   <Route path="/audio-rooms" element={<AudioRoomManager />} />
                   <Route path="/notifications" element={<NotificationCenter />} />
                   <Route path="/moderation" element={<Moderation />} />

@@ -84,6 +84,11 @@ export const adminService = {
   getAds: () => api.get('/admin/ads-config'),
   manageAd: (action: string, data: any, id?: string) => 
     api.post(`/admin/ad-action?action=${action}${id ? `&id=${id}` : ''}`, data),
+  getBanners: (type?: string, status?: string) => 
+    api.get(`/admin/banners${type || status ? `?type=${type || 'all'}&status=${status || 'all'}` : ''}`),
+  manageBanner: (action: string, data: any, id?: string) => 
+    api.post(`/admin/banner-action?action=${action}${id ? `&id=${id}` : ''}`, data),
+  deleteBanner: (id: string) => api.delete(`/admin/banners/${id}`),
   getGames: () => api.get('/admin/games'),
   updateGame: (id: string, data: any) => api.put(`/admin/game/${id}`, data),
   getTasks: (category?: string) => api.get(`/admin/tasks${category ? `?category=${category}` : ''}`),
