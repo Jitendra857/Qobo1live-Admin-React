@@ -7,6 +7,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import UserHistoryModal from '../components/UserHistoryModal';
 import { UserPlus, Search } from 'lucide-react';
 import { adminService } from '../services/api';
+import toast from 'react-hot-toast';
 import '../styles/UserManagement.css';
 
 const UserManagement: React.FC = () => {
@@ -61,6 +62,17 @@ const UserManagement: React.FC = () => {
     setHistoryModalOpen(true);
   };
 
+  const handleForceLogout = async (user: any) => {
+    if (!window.confirm(`Are you sure you want to forcibly log out ${user.name || 'this user'} from the mobile app?`)) return;
+    try {
+      await adminService.forceLogoutUser(user.id);
+      toast.success(`User ${user.name || ''} forcibly logged out from mobile session`);
+      fetchUsers();
+    } catch (err: any) {
+      toast.error('Failed to log out user: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
   const confirmDelete = async () => {
     if (!selectedUser) return;
     try {
@@ -113,6 +125,7 @@ const UserManagement: React.FC = () => {
             onEdit={handleEdit}
             onDelete={handleDeleteClick}
             onViewHistory={handleViewHistory}
+            onForceLogout={handleForceLogout}
             loading={loading}
           />
         </div>

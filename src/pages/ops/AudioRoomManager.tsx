@@ -3,7 +3,8 @@ import { adminService } from '../../services/api';
 import { 
   Mic, MicOff, Users, Settings, Activity, Lock, Unlock, 
   Hand, AlertTriangle, Crown, Shield, Plus, X, Gift,
-  Clock, Flame, Award, ArrowLeft, Play, Sparkles
+  Clock, Flame, Award, ArrowLeft, Play, Sparkles, Video,
+  Trash2, LogOut, Radio
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import '../../styles/AudioRoomMatrix.css';
@@ -22,12 +23,14 @@ interface RoomSeat {
 
 const AudioRoomManager: React.FC = () => {
   const [rooms, setRooms] = useState<any[]>([]);
+  const [liveStreams, setLiveStreams] = useState<any[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'live' | 'create'>('live');
+  const [activeTab, setActiveTab] = useState<'rooms' | 'streams' | 'create'>('rooms');
 
   useEffect(() => {
     fetchRooms();
+    fetchLiveStreams();
   }, []);
 
   const fetchRooms = async () => {
@@ -39,6 +42,15 @@ const AudioRoomManager: React.FC = () => {
       console.error('Failed to fetch rooms', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchLiveStreams = async () => {
+    try {
+      const res = await adminService.getLiveStreams();
+      setLiveStreams(res.data.data || []);
+    } catch (err) {
+      console.error('Failed to fetch live streams', err);
     }
   };
 
@@ -65,7 +77,30 @@ const AudioRoomManager: React.FC = () => {
         coinsEarned: room.topEarner?.userId === room.micStatus?.[i]?.userId ? room.topEarner?.coins : 0
       }))
     });
-    setActiveTab('live');
+    setActiveTab('rooms');
+  };
+
+  const handleEndRoom = async (roomId: string) => {
+    if (!window.confirm('Are you sure you want to forcibly end/remove this audio room? Participants will be disconnected.')) return;
+    try {
+      await adminService.deleteRoom(roomId);
+      toast.success('Audio room terminated and removed');
+      setSelectedRoom(null);
+      fetchRooms();
+    } catch (err: any) {
+      toast.error('Failed to end room: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleEndLiveStream = async (streamId: string) => {
+    if (!window.confirm('Are you sure you want to forcibly end/remove this live stream? Host and viewers will be disconnected.')) return;
+    try {
+      await adminService.endLiveStream(streamId);
+      toast.success('Live stream terminated successfully');
+      fetchLiveStreams();
+    } catch (err: any) {
+      toast.error('Failed to end stream: ' + (err.response?.data?.message || err.message));
+    }
   };
 
   const handleToggleMic = (seatIndex: number) => {
@@ -135,34 +170,45 @@ const AudioRoomManager: React.FC = () => {
         <div className="matrix-title-wrap">
           <h1>
             <Mic style={{ color: '#a855f7' }} size={30} />
-            Audio Room Matrix
+            Live Broadcasting & Matrix Control
           </h1>
-          <p>Real-time Audio Spaces • Joined Users • Live Gift Economy • Top Earners</p>
+          <p>Remove Forgot/Abandoned Audio Rooms & Live Streams • Joined Users • Live Economy</p>
         </div>
-        <button 
-          className="btn-matrix-action" 
-          onClick={() => setActiveTab(activeTab === 'create' ? 'live' : 'create')}
-        >
-          {activeTab === 'create' ? (
-            <>
-              <ArrowLeft size={18} /> Back to Matrix
-            </>
-          ) : (
-            <>
-              <Plus size={18} /> Create New Room
-            </>
-          )}
-        </button>
+
+        {/* Tab Selection */}
+        <div className="flex gap-2 items-center">
+          <button 
+            className={`btn-matrix-action ${activeTab === 'rooms' ? 'active' : ''}`}
+            style={{ background: activeTab === 'rooms' ? 'linear-gradient(135deg, #6366f1, #a855f7)' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+            onClick={() => setActiveTab('rooms')}
+          >
+            <Radio size={18} /> Audio Rooms ({rooms.length})
+          </button>
+          <button 
+            className={`btn-matrix-action ${activeTab === 'streams' ? 'active' : ''}`}
+            style={{ background: activeTab === 'streams' ? 'linear-gradient(135deg, #ef4444, #f97316)' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+            onClick={() => setActiveTab('streams')}
+          >
+            <Video size={18} /> Live Streams ({liveStreams.length})
+          </button>
+          <button 
+            className="btn-matrix-action"
+            style={{ background: activeTab === 'create' ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+            onClick={() => setActiveTab(activeTab === 'create' ? 'rooms' : 'create')}
+          >
+            {activeTab === 'create' ? <ArrowLeft size={18} /> : <Plus size={18} />} Create Room
+          </button>
+        </div>
       </div>
 
-      {/* Main Matrix Tab */}
-      {activeTab === 'live' && (
+      {/* Main Audio Rooms Tab */}
+      {activeTab === 'rooms' && (
         <>
           {/* Bento Global Summary Cards */}
           <div className="matrix-bento-grid">
             <div className="matrix-bento-card">
               <div className="matrix-bento-top">
-                <span className="matrix-bento-label">ACTIVE ROOMS</span>
+                <span className="matrix-bento-label">ACTIVE AUDIO ROOMS</span>
                 <div className="matrix-bento-icon" style={{ color: '#4ade80' }}>
                   <Activity size={22} />
                 </div>
@@ -175,14 +221,14 @@ const AudioRoomManager: React.FC = () => {
 
             <div className="matrix-bento-card">
               <div className="matrix-bento-top">
-                <span className="matrix-bento-label">JOINED USERS</span>
-                <div className="matrix-bento-icon" style={{ color: '#60a5fa' }}>
-                  <Users size={22} />
+                <span className="matrix-bento-label">ACTIVE LIVE STREAMS</span>
+                <div className="matrix-bento-icon" style={{ color: '#ef4444' }}>
+                  <Video size={22} />
                 </div>
               </div>
               <div>
-                <div className="matrix-bento-value">{totalJoinedUsers}</div>
-                <div className="matrix-bento-sub">Active Speakers & Listeners</div>
+                <div className="matrix-bento-value">{liveStreams.length}</div>
+                <div className="matrix-bento-sub">Video Broadcasts</div>
               </div>
             </div>
 
@@ -203,7 +249,7 @@ const AudioRoomManager: React.FC = () => {
 
             <div className="matrix-bento-card">
               <div className="matrix-bento-top">
-                <span className="matrix-bento-label">TOP EARNER</span>
+                <span className="matrix-bento-label">TOP ROOM EARNER</span>
                 <div className="matrix-bento-icon" style={{ color: '#facc15' }}>
                   <Crown size={22} />
                 </div>
@@ -334,12 +380,22 @@ const AudioRoomManager: React.FC = () => {
                     </div>
                   </div>
 
-                  <button 
-                    className="btn-matrix-action w-full flex-center justify-center gap-2 mt-2"
-                    onClick={() => handleModerate(room)}
-                  >
-                    <Settings size={16} /> Moderate Room
-                  </button>
+                  <div className="flex gap-2 mt-2">
+                    <button 
+                      className="btn-matrix-action flex-1 flex-center justify-center gap-2"
+                      onClick={() => handleModerate(room)}
+                    >
+                      <Settings size={16} /> Moderate
+                    </button>
+                    <button 
+                      className="btn-matrix-action"
+                      style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid rgba(239, 68, 68, 0.4)', color: '#f87171' }}
+                      onClick={() => handleEndRoom(room.id)}
+                      title="Force End/Remove Room"
+                    >
+                      <Trash2 size={16} /> End
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -348,7 +404,7 @@ const AudioRoomManager: React.FC = () => {
               <div className="matrix-room-card" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px' }}>
                 <Mic size={48} style={{ opacity: 0.2, margin: '0 auto 16px auto' }} />
                 <h3 style={{ fontWeight: 900, marginBottom: '8px' }}>No Active Audio Rooms</h3>
-                <p style={{ color: '#94a3b8' }}>Click "Create New Room" to launch a live audio matrix session</p>
+                <p style={{ color: '#94a3b8' }}>Click "Create Room" to launch a live audio room session</p>
               </div>
             )}
           </div>
@@ -380,6 +436,13 @@ const AudioRoomManager: React.FC = () => {
                 </button>
                 <button className="btn-matrix-action" style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)' }}>
                   <Lock size={16} /> Lock All Seats
+                </button>
+                <button 
+                  className="btn-matrix-action" 
+                  style={{ background: '#ef4444', color: '#fff', marginLeft: 'auto' }}
+                  onClick={() => handleEndRoom(selectedRoom.id)}
+                >
+                  <Trash2 size={16} /> Terminate & Delete Room
                 </button>
               </div>
 
@@ -463,6 +526,83 @@ const AudioRoomManager: React.FC = () => {
         </>
       )}
 
+      {/* Live Streams Management Tab */}
+      {activeTab === 'streams' && (
+        <div className="fade-in">
+          <div className="matrix-bento-card mb-6" style={{ background: 'rgba(239, 68, 68, 0.1)', borderColor: 'rgba(239, 68, 68, 0.3)' }}>
+            <div className="flex items-center gap-3">
+              <Video size={24} style={{ color: '#ef4444' }} />
+              <div>
+                <h3 style={{ fontWeight: 800, color: '#ffffff' }}>Live Stream Administrative Removal</h3>
+                <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
+                  Terminate abandoned or forgotten live streams directly to clean system resource allocations.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="matrix-rooms-grid">
+            {liveStreams.map(stream => (
+              <div key={stream.id} className="matrix-room-card" style={{ borderColor: 'rgba(239, 68, 68, 0.3)' }}>
+                <div className="matrix-room-header">
+                  <div className="matrix-room-badges">
+                    <span className="badge-pill badge-private" style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#f87171' }}>
+                      <Video size={11} /> LIVE NOW
+                    </span>
+                    <span className="badge-pill badge-uptime">
+                      <Users size={11} /> {stream.viewerCount || 0} Viewers
+                    </span>
+                  </div>
+                </div>
+
+                <h3 className="matrix-room-title">{stream.name || 'Live Video Stream'}</h3>
+                
+                <div className="matrix-room-host">
+                  {stream.host?.displayPicture ? (
+                    <img src={stream.host.displayPicture} alt="Host" className="host-avatar" />
+                  ) : (
+                    <div className="host-avatar-fallback">
+                      {stream.host?.name?.[0]?.toUpperCase() || 'H'}
+                    </div>
+                  )}
+                  <div>
+                    <div>Host: <strong>{stream.host?.name || 'Unknown Host'}</strong></div>
+                    <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>ID: {stream.host?.id}</div>
+                  </div>
+                </div>
+
+                <div className="matrix-metrics-strip">
+                  <div className="metric-pill-row">
+                    <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Stream ID:</span>
+                    <span style={{ fontSize: '0.8rem', color: '#fff', fontFamily: 'monospace' }}>{stream.liveStreamingId}</span>
+                  </div>
+                  <div className="metric-pill-row" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '6px' }}>
+                    <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>ZEGO ID:</span>
+                    <span style={{ fontSize: '0.8rem', color: '#60a5fa', fontFamily: 'monospace' }}>{stream.zegoLiveId}</span>
+                  </div>
+                </div>
+
+                <button 
+                  className="btn-matrix-action w-full flex-center justify-center gap-2 mt-4"
+                  style={{ background: 'linear-gradient(135deg, #ef4444, #dc2626)', boxShadow: '0 4px 15px rgba(239,68,68,0.4)' }}
+                  onClick={() => handleEndLiveStream(stream.id)}
+                >
+                  <Trash2 size={16} /> Force End Live Stream
+                </button>
+              </div>
+            ))}
+
+            {liveStreams.length === 0 && (
+              <div className="matrix-room-card" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px' }}>
+                <Video size={48} style={{ opacity: 0.2, margin: '0 auto 16px auto' }} />
+                <h3 style={{ fontWeight: 900, marginBottom: '8px' }}>No Active Live Video Streams</h3>
+                <p style={{ color: '#94a3b8' }}>All hosts have cleanly ended their live video sessions</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Create Room Form Tab */}
       {activeTab === 'create' && (
         <div className="matrix-mod-panel fade-in" style={{ maxWidth: '700px', margin: '30px auto' }}>
@@ -509,7 +649,7 @@ const AudioRoomManager: React.FC = () => {
                 type="button" 
                 className="btn-matrix-action"
                 style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', justifyContent: 'center' }}
-                onClick={() => setActiveTab('live')}
+                onClick={() => setActiveTab('rooms')}
               >
                 Cancel
               </button>
@@ -519,7 +659,7 @@ const AudioRoomManager: React.FC = () => {
                 style={{ flex: 1, justifyContent: 'center' }}
                 onClick={() => {
                   toast.success('Audio Room launched successfully!');
-                  setActiveTab('live');
+                  setActiveTab('rooms');
                 }}
               >
                 <Activity size={18} /> Launch Matrix

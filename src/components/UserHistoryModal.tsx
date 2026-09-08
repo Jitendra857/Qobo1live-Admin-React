@@ -3,8 +3,9 @@ import { adminService } from '../services/api';
 import { 
   X, Phone, Tv, Swords, Gift, Wallet, Clock, Search, 
   ArrowUpRight, ArrowDownLeft, Flame, Radio, 
-  Filter, CheckCircle, TrendingUp, TrendingDown, RefreshCw
+  Filter, CheckCircle, TrendingUp, TrendingDown, RefreshCw, LogOut
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import MediaImage from './MediaImage';
 import '../styles/UserManagement.css';
 
@@ -462,6 +463,22 @@ const UserHistoryModal: React.FC<UserHistoryModalProps> = ({ user, onClose }) =>
               style={{ background: 'rgba(139, 92, 246, 0.2)', border: '1px solid rgba(139, 92, 246, 0.4)', color: '#c084fc', width: '42px', height: '42px', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
               <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+            </button>
+
+            <button
+              onClick={async () => {
+                if (!window.confirm(`Are you sure you want to forcibly log out ${user.name || 'this user'} from the mobile app?`)) return;
+                try {
+                  await adminService.forceLogoutUser(user.id);
+                  toast.success(`User ${user.name || ''} forcibly logged out`);
+                } catch (err: any) {
+                  toast.error('Failed to log out user: ' + (err.response?.data?.message || err.message));
+                }
+              }}
+              title="Force Logout User Mobile Session"
+              style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid rgba(239, 68, 68, 0.4)', color: '#f87171', padding: '0 16px', height: '42px', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, fontSize: '0.85rem' }}
+            >
+              <LogOut size={16} /> Force Logout
             </button>
 
             <button 

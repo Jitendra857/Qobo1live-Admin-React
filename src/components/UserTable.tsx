@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit2, Trash2, Coins, History } from 'lucide-react';
+import { Edit2, Trash2, Coins, History, LogOut } from 'lucide-react';
 import MediaImage from './MediaImage';
 
 interface UserTableProps {
@@ -8,10 +8,11 @@ interface UserTableProps {
   onEdit: (user: any) => void;
   onDelete: (id: string) => void;
   onViewHistory: (user: any) => void;
+  onForceLogout: (user: any) => void;
   loading?: boolean;
 }
 
-const UserTable: React.FC<UserTableProps> = ({ users, onAddCoins, onEdit, onDelete, onViewHistory, loading = false }) => {
+const UserTable: React.FC<UserTableProps> = ({ users, onAddCoins, onEdit, onDelete, onViewHistory, onForceLogout, loading = false }) => {
   const statusClassName = (status?: string) => {
     const value = (status || 'active').toLowerCase();
     if (value === 'blocked' || value === 'inactive' || value === 'banned') return 'status-pill danger';
@@ -24,12 +25,12 @@ const UserTable: React.FC<UserTableProps> = ({ users, onAddCoins, onEdit, onDele
       <table className="modern-table">
         <thead>
           <tr>
-            <th style={{ width: '40%' }}>User</th>
-            <th style={{ width: '20%' }}>Connectivity</th>
-            <th style={{ width: '12%' }}>Assets</th>
+            <th style={{ width: '35%' }}>User</th>
+            <th style={{ width: '18%' }}>Connectivity</th>
+            <th style={{ width: '14%' }}>Assets</th>
             <th style={{ width: '10%' }}>Level</th>
             <th style={{ width: '10%' }}>Status</th>
-            <th style={{ width: '18%', textAlign: 'right' }}>Actions</th>
+            <th style={{ width: '23%', textAlign: 'right' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -95,6 +96,14 @@ const UserTable: React.FC<UserTableProps> = ({ users, onAddCoins, onEdit, onDele
                       style={{ background: 'rgba(139, 92, 246, 0.18)', color: '#a78bfa', border: '1px solid rgba(139, 92, 246, 0.35)' }}
                     >
                       <History size={18} />
+                    </button>
+                    <button 
+                      className="op-btn edit" 
+                      title="Force Logout User Mobile Session" 
+                      onClick={() => onForceLogout(user)} 
+                      style={{ background: 'rgba(239, 68, 68, 0.18)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.35)' }}
+                    >
+                      <LogOut size={18} />
                     </button>
                     <button className="op-btn edit" title="Modify" onClick={() => onEdit(user)}>
                       <Edit2 size={18} />

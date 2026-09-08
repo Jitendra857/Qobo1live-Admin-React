@@ -110,8 +110,12 @@ export const adminService = {
   // PK Battle Management
   getPKBattles: () => api.get('/admin/pk-battles'),
 
-  // Room Configuration
+  forceLogoutUser: (id: string) => api.post(`/admin/user/${id}/logout`),
   getRooms: () => api.get('/admin/rooms'),
+  deleteRoom: (id: string) => api.delete(`/admin/rooms/${id}`),
+  endRoom: (id: string) => api.post(`/admin/rooms/${id}/end`),
+  getLiveStreams: () => api.get('/admin/live-streams'),
+  endLiveStream: (id: string) => api.delete(`/admin/live-streams/${id}`),
   updateRoomConfig: (data: any) => api.put('/admin/rooms/config', data),
   getFrames: () => api.get('/frame/admin/list'),
   manageFrame: (action: string, data: any) => api.post('/frame/admin/action', data),
