@@ -1,239 +1,309 @@
 name: Deploy Qobo1live Frontend
 
 on:
-  push:
-    branches:
-      - prod
+push:
+branches:
+- prod
 
-  workflow_dispatch:
+workflow_dispatch:
 
 permissions:
-  contents: read
+contents: read
 
 jobs:
-  deploy:
-    name: Build and Deploy Frontend
-    runs-on: ubuntu-latest
+deploy:
+name: Build and Deploy Frontend
+runs-on: ubuntu-latest
 
-    steps:
+```
+steps:
 
-      # ----------------------------------------
-      # Checkout repository
-      # ----------------------------------------
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+  # ----------------------------------------
+  # Checkout repository
+  # ----------------------------------------
+  - name: Checkout Repository
+    uses: actions/checkout@v4
 
-      # ----------------------------------------
-      # Setup Node.js
-      # ----------------------------------------
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
 
-      # ----------------------------------------
-      # Install dependencies
-      # ----------------------------------------
-      - name: Install Dependencies
-        run: npm ci
+  # ----------------------------------------
+  # Setup Node.js
+  # ----------------------------------------
+  - name: Setup Node.js
+    uses: actions/setup-node@v4
+    with:
+      node-version: 22
+      cache: npm
 
-      # ----------------------------------------
-      # Build frontend
-      #
-      # .env.production already contains:
-      # VITE_BACKEND_URL=https://api.qobo1live.in
-      # ----------------------------------------
-      - name: Build Application
-        run: npm run build
 
-      # ----------------------------------------
-      # Verify build
-      # ----------------------------------------
-      - name: Verify Build
-        run: |
-          echo "Checking frontend build..."
+  # ----------------------------------------
+  # Install dependencies
+  # ----------------------------------------
+  - name: Install Dependencies
+    run: npm ci
 
-          if [ ! -f "dist/index.html" ]; then
-            echo "ERROR: dist/index.html not found"
-            exit 1
-          fi
 
-          echo "Frontend build successful."
-          echo "Build contents:"
-          ls -lah dist
+  # ----------------------------------------
+  # Build frontend
+  #
+  # .env.production already contains:
+  # VITE_BACKEND_URL=https://api.qobo1live.in
+  # ----------------------------------------
+  - name: Build Application
+    run: npm run build
 
-      # ----------------------------------------
-      # Create deployment package
-      # ----------------------------------------
-      - name: Create Deployment Package
-        run: |
-          echo "Creating deployment package..."
 
-          tar -czf qobo1live-frontend.tar.gz -C dist .
+  # ----------------------------------------
+  # Verify build
+  # ----------------------------------------
+  - name: Verify Build
+    run: |
+      echo "Checking frontend build..."
 
-          echo "Deployment package:"
-          ls -lh qobo1live-frontend.tar.gz
+      if [ ! -f "dist/index.html" ]; then
+        echo "ERROR: dist/index.html not found"
+        exit 1
+      fi
 
-      # ----------------------------------------
-      # Test VPS connectivity from GitHub Runner
-      # ----------------------------------------
-      - name: Test VPS SSH Connectivity
-        run: |
-          echo "Testing connectivity to VPS..."
-          echo "Host: ${{ secrets.VPS_HOST }}"
-          echo "Port: 22"
+      echo "Frontend build successful."
+      echo "Build contents:"
+      ls -lah dist
 
-          timeout 15 bash -c \
-            '</dev/tcp/${{ secrets.VPS_HOST }}/22' \
-            && echo "VPS port 22 is reachable from GitHub Runner" \
-            || (
-              echo "ERROR: VPS port 22 is NOT reachable from GitHub Runner"
-              exit 1
-            )
 
-      # ----------------------------------------
-      # Upload frontend package to VPS
-      # ----------------------------------------
-      - name: Upload Frontend
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: 22
+  # ----------------------------------------
+  # Create deployment package
+  # ----------------------------------------
+  - name: Create Deployment Package
+    run: |
+      echo "Creating deployment package..."
 
-          source: qobo1live-frontend.tar.gz
-          target: /tmp
+      tar -czf qobo1live-frontend.tar.gz -C dist .
 
-          timeout: 30s
-          command_timeout: 10m
+      echo "Deployment package:"
+      ls -lh qobo1live-frontend.tar.gz
 
-          overwrite: true
-          debug: true
 
-      # ----------------------------------------
-      # Deploy frontend on VPS
-      # ----------------------------------------
-      - name: Deploy Frontend on VPS
-        uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: 22
+  # ----------------------------------------
+  # Test VPS connectivity from GitHub Runner
+  # ----------------------------------------
+  - name: Test VPS SSH Connectivity
+    run: |
+      echo "Testing connectivity to VPS..."
+      echo "Host: ${{ secrets.VPS_HOST }}"
+      echo "Port: 22"
 
-          timeout: 30s
-          command_timeout: 10m
+      timeout 15 bash -c \
+        '</dev/tcp/${{ secrets.VPS_HOST }}/22' \
+        && echo "VPS port 22 is reachable from GitHub Runner" \
+        || (
+          echo "ERROR: VPS port 22 is NOT reachable from GitHub Runner"
+          exit 1
+        )
 
-          script: |
-            set -e
 
-            echo "=========================================="
-            echo "Starting Qobo1live Frontend Deployment"
-            echo "=========================================="
+  # ----------------------------------------
+  # Prepare deployment directory on VPS
+  # ----------------------------------------
+  - name: Prepare VPS Deployment Directory
+    uses: appleboy/ssh-action@v1.2.2
+    with:
+      host: ${{ secrets.VPS_HOST }}
+      username: ${{ secrets.VPS_USERNAME }}
+      key: ${{ secrets.VPS_SSH_KEY }}
+      port: 22
 
-            # ----------------------------------------
-            # Create deployment directories
-            # ----------------------------------------
-            echo "Creating deployment directories..."
+      timeout: 30s
+      command_timeout: 2m
 
-            mkdir -p /var/www/qobo1live/releases
+      script: |
+        set -e
 
-            # ----------------------------------------
-            # Generate release ID
-            # ----------------------------------------
-            RELEASE_ID=$(date +%Y%m%d%H%M%S)
-            RELEASE_DIR="/var/www/qobo1live/releases/$RELEASE_ID"
+        echo "Preparing deployment directory..."
 
-            echo "Release ID: $RELEASE_ID"
-            echo "Release directory: $RELEASE_DIR"
+        mkdir -p "$HOME/deploy-temp"
+        chmod 755 "$HOME/deploy-temp"
 
-            mkdir -p "$RELEASE_DIR"
+        echo "Deployment directory:"
+        ls -ld "$HOME/deploy-temp"
 
-            # ----------------------------------------
-            # Verify uploaded package
-            # ----------------------------------------
-            echo "Checking uploaded package..."
 
-            if [ ! -f "/tmp/qobo1live-frontend.tar.gz" ]; then
-              echo "ERROR: Deployment package not found!"
-              exit 1
-            fi
+  # ----------------------------------------
+  # Upload frontend package to VPS
+  # ----------------------------------------
+  - name: Upload Frontend
+    uses: appleboy/scp-action@v0.1.7
+    with:
+      host: ${{ secrets.VPS_HOST }}
+      username: ${{ secrets.VPS_USERNAME }}
+      key: ${{ secrets.VPS_SSH_KEY }}
+      port: 22
 
-            ls -lh /tmp/qobo1live-frontend.tar.gz
+      source: qobo1live-frontend.tar.gz
 
-            # ----------------------------------------
-            # Extract frontend
-            # ----------------------------------------
-            echo "Extracting frontend..."
+      # Do not use /tmp here.
+      # Use a dedicated directory owned by
+      # the deployment user.
+      target: deploy-temp
 
-            tar -xzf /tmp/qobo1live-frontend.tar.gz \
-              -C "$RELEASE_DIR"
+      timeout: 30s
+      command_timeout: 10m
 
-            # ----------------------------------------
-            # Verify deployment
-            # ----------------------------------------
-            echo "Verifying deployed files..."
+      overwrite: true
+      debug: true
 
-            if [ ! -f "$RELEASE_DIR/index.html" ]; then
-              echo "ERROR: index.html not found after extraction!"
-              exit 1
-            fi
 
-            echo "Frontend files:"
-            ls -lah "$RELEASE_DIR"
+  # ----------------------------------------
+  # Deploy frontend on VPS
+  # ----------------------------------------
+  - name: Deploy Frontend on VPS
+    uses: appleboy/ssh-action@v1.2.2
+    with:
+      host: ${{ secrets.VPS_HOST }}
+      username: ${{ secrets.VPS_USERNAME }}
+      key: ${{ secrets.VPS_SSH_KEY }}
+      port: 22
 
-            # ----------------------------------------
-            # Update current release symlink
-            # ----------------------------------------
-            echo "Updating current release..."
+      timeout: 30s
+      command_timeout: 10m
 
-            ln -sfn "$RELEASE_DIR" /var/www/qobo1live/current
+      script: |
+        set -e
 
-            # ----------------------------------------
-            # Set ownership
-            # ----------------------------------------
-            echo "Setting permissions..."
+        echo "=========================================="
+        echo "Starting Qobo1live Frontend Deployment"
+        echo "=========================================="
 
-            chown -R www-data:www-data "$RELEASE_DIR"
 
-            # ----------------------------------------
-            # Remove uploaded package
-            # ----------------------------------------
-            rm -f /tmp/qobo1live-frontend.tar.gz
+        # ----------------------------------------
+        # Deployment package path
+        # ----------------------------------------
+        DEPLOY_PACKAGE="$HOME/deploy-temp/qobo1live-frontend.tar.gz"
 
-            # ----------------------------------------
-            # Keep latest 3 releases
-            # ----------------------------------------
-            echo "Cleaning old releases..."
 
-            cd /var/www/qobo1live/releases
+        # ----------------------------------------
+        # Create deployment directories
+        # ----------------------------------------
+        echo "Creating deployment directories..."
 
-            ls -1dt */ 2>/dev/null | tail -n +4 | xargs -r rm -rf
+        mkdir -p /var/www/qobo1live/releases
 
-            # ----------------------------------------
-            # Validate Nginx
-            # ----------------------------------------
-            echo "Testing Nginx configuration..."
 
-            nginx -t
+        # ----------------------------------------
+        # Generate release ID
+        # ----------------------------------------
+        RELEASE_ID=$(date +%Y%m%d%H%M%S)
+        RELEASE_DIR="/var/www/qobo1live/releases/$RELEASE_ID"
 
-            # ----------------------------------------
-            # Reload Nginx
-            # ----------------------------------------
-            echo "Reloading Nginx..."
+        echo "Release ID: $RELEASE_ID"
+        echo "Release directory: $RELEASE_DIR"
 
-            systemctl reload nginx
+        mkdir -p "$RELEASE_DIR"
 
-            # ----------------------------------------
-            # Deployment information
-            # ----------------------------------------
-            echo "=========================================="
-            echo "Deployment completed successfully"
-            echo "=========================================="
 
-            echo "Current frontend release:"
-            readlink -f /var/www/qobo1live/current
+        # ----------------------------------------
+        # Verify uploaded package
+        # ----------------------------------------
+        echo "Checking uploaded package..."
 
-            echo "=========================================="
+        if [ ! -f "$DEPLOY_PACKAGE" ]; then
+          echo "ERROR: Deployment package not found!"
+          echo "Expected package:"
+          echo "$DEPLOY_PACKAGE"
+
+          echo "Deployment directory contents:"
+          ls -lah "$HOME/deploy-temp" || true
+
+          exit 1
+        fi
+
+        echo "Deployment package found:"
+        ls -lh "$DEPLOY_PACKAGE"
+
+
+        # ----------------------------------------
+        # Extract frontend
+        # ----------------------------------------
+        echo "Extracting frontend..."
+
+        tar -xzf "$DEPLOY_PACKAGE" \
+          -C "$RELEASE_DIR"
+
+
+        # ----------------------------------------
+        # Verify deployment
+        # ----------------------------------------
+        echo "Verifying deployed files..."
+
+        if [ ! -f "$RELEASE_DIR/index.html" ]; then
+          echo "ERROR: index.html not found after extraction!"
+          exit 1
+        fi
+
+        echo "Frontend files:"
+        ls -lah "$RELEASE_DIR"
+
+
+        # ----------------------------------------
+        # Update current release symlink
+        # ----------------------------------------
+        echo "Updating current release..."
+
+        ln -sfn "$RELEASE_DIR" \
+          /var/www/qobo1live/current
+
+
+        # ----------------------------------------
+        # Set ownership
+        # ----------------------------------------
+        echo "Setting permissions..."
+
+        chown -R www-data:www-data "$RELEASE_DIR"
+
+
+        # ----------------------------------------
+        # Remove uploaded package
+        # ----------------------------------------
+        echo "Removing deployment package..."
+
+        rm -f "$DEPLOY_PACKAGE"
+
+
+        # ----------------------------------------
+        # Keep latest 3 releases
+        # ----------------------------------------
+        echo "Cleaning old releases..."
+
+        cd /var/www/qobo1live/releases
+
+        ls -1dt */ 2>/dev/null \
+          | tail -n +4 \
+          | xargs -r rm -rf
+
+
+        # ----------------------------------------
+        # Validate Nginx
+        # ----------------------------------------
+        echo "Testing Nginx configuration..."
+
+        nginx -t
+
+
+        # ----------------------------------------
+        # Reload Nginx
+        # ----------------------------------------
+        echo "Reloading Nginx..."
+
+        systemctl reload nginx
+
+
+        # ----------------------------------------
+        # Deployment information
+        # ----------------------------------------
+        echo "=========================================="
+        echo "Deployment completed successfully"
+        echo "=========================================="
+
+        echo "Current frontend release:"
+        readlink -f /var/www/qobo1live/current
+
+        echo "=========================================="
+```
