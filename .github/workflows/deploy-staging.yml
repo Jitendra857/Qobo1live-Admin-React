@@ -1,0 +1,241 @@
+name: Deploy Qobo1live Frontend - Staging
+
+on:
+  push:
+    branches:
+      - staging
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build and Deploy Frontend - Staging
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # ----------------------------------------
+      # Checkout repository
+      # ----------------------------------------
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # ----------------------------------------
+      # Setup Node.js
+      # ----------------------------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # ----------------------------------------
+      # Install dependencies
+      # ----------------------------------------
+      - name: Install Dependencies
+        run: npm ci
+
+      # ----------------------------------------
+      # Build frontend
+      #
+      # IMPORTANT:
+      # .env.production on staging branch should
+      # contain the staging API URL:
+      #
+      # VITE_BACKEND_URL=https://staging-api.qobo1live.in
+      # ----------------------------------------
+      - name: Build Application
+        run: npm run build
+
+      # ----------------------------------------
+      # Verify build
+      # ----------------------------------------
+      - name: Verify Build
+        run: |
+          echo "Checking staging frontend build..."
+
+          if [ ! -f "dist/index.html" ]; then
+            echo "ERROR: dist/index.html not found"
+            exit 1
+          fi
+
+          echo "Staging frontend build successful."
+
+          echo "Build contents:"
+          ls -lah dist
+
+      # ----------------------------------------
+      # Create deployment package
+      # ----------------------------------------
+      - name: Create Deployment Package
+        run: |
+          echo "Creating staging deployment package..."
+
+          tar -czf qobo1live-staging-frontend.tar.gz -C dist .
+
+          echo "Deployment package:"
+          ls -lh qobo1live-staging-frontend.tar.gz
+
+      # ----------------------------------------
+      # Test VPS connectivity
+      # ----------------------------------------
+      - name: Test VPS SSH Connectivity
+        run: |
+          echo "Testing connectivity to VPS..."
+
+          timeout 15 bash -c \
+            '</dev/tcp/${{ secrets.VPS_HOST }}/22' \
+            && echo "VPS port 22 is reachable from GitHub Runner" \
+            || (
+              echo "ERROR: VPS port 22 is NOT reachable from GitHub Runner"
+              exit 1
+            )
+
+      # ----------------------------------------
+      # Upload staging frontend package
+      # ----------------------------------------
+      - name: Upload Staging Frontend
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+
+          source: qobo1live-staging-frontend.tar.gz
+          target: /tmp
+
+          timeout: 30s
+          command_timeout: 10m
+
+          overwrite: true
+          debug: true
+
+      # ----------------------------------------
+      # Deploy staging frontend on VPS
+      # ----------------------------------------
+      - name: Deploy Staging Frontend on VPS
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+
+          timeout: 30s
+          command_timeout: 10m
+
+          script: |
+            set -e
+
+            echo "=========================================="
+            echo "Starting Qobo1live Frontend STAGING Deployment"
+            echo "=========================================="
+
+            # ----------------------------------------
+            # Create deployment directories
+            # ----------------------------------------
+            echo "Creating staging deployment directories..."
+
+            mkdir -p /var/www/qobo1live-staging/releases
+
+            # ----------------------------------------
+            # Generate release ID
+            # ----------------------------------------
+            RELEASE_ID=$(date +%Y%m%d%H%M%S)
+            RELEASE_DIR="/var/www/qobo1live-staging/releases/$RELEASE_ID"
+
+            echo "Release ID: $RELEASE_ID"
+            echo "Release directory: $RELEASE_DIR"
+
+            mkdir -p "$RELEASE_DIR"
+
+            # ----------------------------------------
+            # Verify uploaded package
+            # ----------------------------------------
+            echo "Checking uploaded package..."
+
+            if [ ! -f "/tmp/qobo1live-staging-frontend.tar.gz" ]; then
+              echo "ERROR: Deployment package not found!"
+              exit 1
+            fi
+
+            ls -lh /tmp/qobo1live-staging-frontend.tar.gz
+
+            # ----------------------------------------
+            # Extract frontend
+            # ----------------------------------------
+            echo "Extracting staging frontend..."
+
+            tar -xzf /tmp/qobo1live-staging-frontend.tar.gz \
+              -C "$RELEASE_DIR"
+
+            # ----------------------------------------
+            # Verify deployment
+            # ----------------------------------------
+            echo "Verifying deployed files..."
+
+            if [ ! -f "$RELEASE_DIR/index.html" ]; then
+              echo "ERROR: index.html not found after extraction!"
+              exit 1
+            fi
+
+            echo "Staging frontend files:"
+            ls -lah "$RELEASE_DIR"
+
+            # ----------------------------------------
+            # Update current release symlink
+            # ----------------------------------------
+            echo "Updating staging current release..."
+
+            ln -sfn "$RELEASE_DIR" /var/www/qobo1live-staging/current
+
+            # ----------------------------------------
+            # Set ownership
+            # ----------------------------------------
+            echo "Setting permissions..."
+
+            chown -R www-data:www-data "$RELEASE_DIR"
+
+            # ----------------------------------------
+            # Remove uploaded package
+            # ----------------------------------------
+            rm -f /tmp/qobo1live-staging-frontend.tar.gz
+
+            # ----------------------------------------
+            # Keep latest 3 releases
+            # ----------------------------------------
+            echo "Cleaning old staging releases..."
+
+            cd /var/www/qobo1live-staging/releases
+
+            ls -1dt */ 2>/dev/null | tail -n +4 | xargs -r rm -rf
+
+            # ----------------------------------------
+            # Validate Nginx
+            # ----------------------------------------
+            echo "Testing Nginx configuration..."
+
+            nginx -t
+
+            # ----------------------------------------
+            # Reload Nginx
+            # ----------------------------------------
+            echo "Reloading Nginx..."
+
+            systemctl reload nginx
+
+            # ----------------------------------------
+            # Deployment information
+            # ----------------------------------------
+            echo "=========================================="
+            echo "Staging frontend deployment completed"
+            echo "=========================================="
+
+            echo "Current staging frontend release:"
+            readlink -f /var/www/qobo1live-staging/current
+
+            echo "=========================================="

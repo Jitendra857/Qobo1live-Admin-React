@@ -6,7 +6,14 @@ const isLocalhost = typeof window !== 'undefined' &&
    window.location.hostname === '127.0.0.1' || 
    window.location.hostname.startsWith('192.168.'));
 
-export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://my-backend-api-960q.onrender.com';
+let envUrl = String(import.meta.env.VITE_BACKEND_URL || '').trim();
+if (!envUrl || envUrl.includes('staging-api') || envUrl.includes('https:https:')) {
+  envUrl = 'https://dev-api.qobo1live.in';
+}
+if (typeof window !== 'undefined' && window.location.protocol === 'https:' && envUrl.startsWith('http://')) {
+  envUrl = envUrl.replace('http://', 'https://');
+}
+export const BACKEND_URL = envUrl;
 
 const api = axios.create({
   baseURL: `${BACKEND_URL}/api`,
@@ -28,7 +35,10 @@ api.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('admin_token');
-      window.location.href = '/login';
+      localStorage.removeItem('admin_user');
+      if (window.location.pathname !== '/' && !window.location.pathname.includes('/apply-super-admin')) {
+        window.location.href = '/';
+      }
     }
     return Promise.reject(error);
   }
@@ -40,6 +50,7 @@ export const adminService = {
     api.get(`/admin/leaderboard?type=${type}&period=${period}`),
   login: (data: any) => api.post('/admin/login', data),
   getUsers: (search?: string) => api.get(`/admin/user-list${search ? `?search=${search}` : ''}`),
+  getUserActivityHistory: (id: string) => api.get(`/admin/user/${id}/activity-history`),
   createUser: (data: any) => api.post('/admin/user-create', data),
   updateUser: (id: string, data: any) => api.put(`/admin/user/${id}`, data),
   deleteUser: (id: string) => api.delete(`/admin/user/${id}`),
@@ -74,9 +85,14 @@ export const adminService = {
   getAds: () => api.get('/admin/ads-config'),
   manageAd: (action: string, data: any, id?: string) => 
     api.post(`/admin/ad-action?action=${action}${id ? `&id=${id}` : ''}`, data),
+  getBanners: (type?: string, status?: string) => 
+    api.get(`/admin/banners${type || status ? `?type=${type || 'all'}&status=${status || 'all'}` : ''}`),
+  manageBanner: (action: string, data: any, id?: string) => 
+    api.post(`/admin/banner-action?action=${action}${id ? `&id=${id}` : ''}`, data),
+  deleteBanner: (id: string) => api.delete(`/admin/banners/${id}`),
   getGames: () => api.get('/admin/games'),
   updateGame: (id: string, data: any) => api.put(`/admin/game/${id}`, data),
-  getTasks: () => api.get('/admin/tasks'),
+  getTasks: (category?: string) => api.get(`/admin/tasks${category ? `?category=${category}` : ''}`),
   manageTask: (action: string, data: any, id?: string) => 
     api.post(`/admin/task-action?action=${action}${id ? `&id=${id}` : ''}`, data),
   // Simulation & Bots
@@ -94,14 +110,19 @@ export const adminService = {
   // PK Battle Management
   getPKBattles: () => api.get('/admin/pk-battles'),
 
-  // Room Configuration
+  forceLogoutUser: (id: string) => api.post(`/admin/user/${id}/logout`),
   getRooms: () => api.get('/admin/rooms'),
+  deleteRoom: (id: string) => api.delete(`/admin/rooms/${id}`),
+  endRoom: (id: string) => api.post(`/admin/rooms/${id}/end`),
+  getLiveStreams: () => api.get('/admin/live-streams'),
+  endLiveStream: (id: string) => api.delete(`/admin/live-streams/${id}`),
   updateRoomConfig: (data: any) => api.put('/admin/rooms/config', data),
   getFrames: () => api.get('/frame/admin/list'),
   manageFrame: (action: string, data: any) => api.post('/frame/admin/action', data),
   getBackgroundsList: () => api.get('/background/admin/list'),
   manageBackground: (action: string, data: any) => api.post('/background/admin/action', data),
-  getEmojis: () => api.get('/emoji/admin/list'),
+  getEmojis: () => api.get(`/emojis/public-list?t=${Date.now()}`),
+  getPublicEmojis: () => api.get(`/emojis/public-list?t=${Date.now()}`),
   manageEmoji: (action: string, data: any, id?: string) => 
     api.post(`/emoji/admin/action?action=${action}${id ? `&id=${id}` : ''}`, data),
   seedEmojis: () => api.post('/emoji/admin/seed'),

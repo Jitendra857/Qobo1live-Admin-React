@@ -2,36 +2,35 @@ import React, { useState, useEffect } from 'react';
 import { adminService } from '../../services/api';
 import { 
   Mic, MicOff, Users, Settings, Activity, Lock, Unlock, 
-  Hand, AlertTriangle, Crown, Eye, EyeOff, Shield, 
-  MoreVertical, Play, Pause, Trash2, Plus, X, Check
+  Hand, AlertTriangle, Crown, Shield, Plus, X, Gift,
+  Clock, Flame, Award, ArrowLeft, Play, Sparkles, Video,
+  Trash2, LogOut, Radio
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import '../../styles/UserManagement.css';
-
-interface MicState {
-  userId: string;
-  isMuted: boolean;
-  isDeafened: boolean;
-}
+import '../../styles/AudioRoomMatrix.css';
 
 interface RoomSeat {
   position: number;
   userId: string | null;
   userName: string | null;
+  userAvatar?: string | null;
   isLocked: boolean;
   isMuted: boolean;
   isSpeaker: boolean;
   hasRaiseHand: boolean;
+  coinsEarned?: number;
 }
 
 const AudioRoomManager: React.FC = () => {
   const [rooms, setRooms] = useState<any[]>([]);
+  const [liveStreams, setLiveStreams] = useState<any[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'live' | 'create' | 'history'>('live');
+  const [activeTab, setActiveTab] = useState<'rooms' | 'streams' | 'create'>('rooms');
 
   useEffect(() => {
     fetchRooms();
+    fetchLiveStreams();
   }, []);
 
   const fetchRooms = async () => {
@@ -46,6 +45,23 @@ const AudioRoomManager: React.FC = () => {
     }
   };
 
+  const fetchLiveStreams = async () => {
+    try {
+      const res = await adminService.getLiveStreams();
+      setLiveStreams(res.data.data || []);
+    } catch (err) {
+      console.error('Failed to fetch live streams', err);
+    }
+  };
+
+  const formatUptime = (seconds: number) => {
+    if (!seconds || seconds <= 0) return '0m uptime';
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    if (hrs > 0) return `${hrs}h ${mins}m uptime`;
+    return `${mins}m uptime`;
+  };
+
   const handleModerate = (room: any) => {
     setSelectedRoom({
       ...room,
@@ -53,13 +69,38 @@ const AudioRoomManager: React.FC = () => {
         position: i,
         userId: room.micStatus?.[i]?.userId || null,
         userName: room.micStatus?.[i]?.userName || null,
+        userAvatar: room.micStatus?.[i]?.userAvatar || null,
         isLocked: false,
         isMuted: room.micStatus?.[i]?.isMuted || false,
         isSpeaker: true,
-        hasRaiseHand: room.sosEnabled || false
+        hasRaiseHand: room.sosEnabled || false,
+        coinsEarned: room.topEarner?.userId === room.micStatus?.[i]?.userId ? room.topEarner?.coins : 0
       }))
     });
-    setActiveTab('live');
+    setActiveTab('rooms');
+  };
+
+  const handleEndRoom = async (roomId: string) => {
+    if (!window.confirm('Are you sure you want to forcibly end/remove this audio room? Participants will be disconnected.')) return;
+    try {
+      await adminService.deleteRoom(roomId);
+      toast.success('Audio room terminated and removed');
+      setSelectedRoom(null);
+      fetchRooms();
+    } catch (err: any) {
+      toast.error('Failed to end room: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleEndLiveStream = async (streamId: string) => {
+    if (!window.confirm('Are you sure you want to forcibly end/remove this live stream? Host and viewers will be disconnected.')) return;
+    try {
+      await adminService.endLiveStream(streamId);
+      toast.success('Live stream terminated successfully');
+      fetchLiveStreams();
+    } catch (err: any) {
+      toast.error('Failed to end stream: ' + (err.response?.data?.message || err.message));
+    }
   };
 
   const handleToggleMic = (seatIndex: number) => {
@@ -70,6 +111,7 @@ const AudioRoomManager: React.FC = () => {
       isMuted: !updatedSeats[seatIndex].isMuted
     };
     setSelectedRoom({ ...selectedRoom, seats: updatedSeats });
+    toast.success(`Seat #${seatIndex + 1} ${updatedSeats[seatIndex].isMuted ? 'muted' : 'unmuted'}`);
   };
 
   const handleToggleLock = (seatIndex: number) => {
@@ -80,20 +122,23 @@ const AudioRoomManager: React.FC = () => {
       isLocked: !updatedSeats[seatIndex].isLocked
     };
     setSelectedRoom({ ...selectedRoom, seats: updatedSeats });
+    toast.success(`Seat #${seatIndex + 1} ${updatedSeats[seatIndex].isLocked ? 'locked' : 'unlocked'}`);
   };
 
   const handleKickUser = (seatIndex: number) => {
     if (!selectedRoom) return;
     const updatedSeats = [...selectedRoom.seats];
+    const kickedUser = updatedSeats[seatIndex].userName;
     updatedSeats[seatIndex] = {
       ...updatedSeats[seatIndex],
       userId: null,
       userName: null,
+      userAvatar: null,
       isMuted: false,
       hasRaiseHand: false
     };
     setSelectedRoom({ ...selectedRoom, seats: updatedSeats });
-    toast.success('User removed from room');
+    toast.success(`User ${kickedUser || ''} removed from seat`);
   };
 
   const handleMuteAll = () => {
@@ -106,487 +151,515 @@ const AudioRoomManager: React.FC = () => {
     toast.success('All speakers muted');
   };
 
+  // Aggregated metrics
+  const totalJoinedUsers = rooms.reduce((acc, r) => acc + (r.joinedUsersCount || r.participants?.length || 0), 0);
+  const totalGiftsCount = rooms.reduce((acc, r) => acc + (r.totalGiftsCount || 0), 0);
+  const totalGiftCoins = rooms.reduce((acc, r) => acc + (r.totalGiftCoins || 0), 0);
+
+  const globalTopEarner = rooms.reduce((highest, r) => {
+    if (r.topEarner && r.topEarner.coins > (highest?.coins || 0)) {
+      return r.topEarner;
+    }
+    return highest;
+  }, null as any);
+
   return (
-    <div className="user-management fade-in">
-      <div className="header-actions">
-        <div>
-          <h2 className="page-title">Audio Room Matrix</h2>
-          <p style={{ color: 'var(--text-secondary)' }}>
-            8/16 Seat Rooms • Host Controls • Mic Management • Private/Public
-          </p>
+    <div className="matrix-container">
+      {/* Header */}
+      <div className="matrix-header">
+        <div className="matrix-title-wrap">
+          <h1>
+            <Mic style={{ color: '#a855f7' }} size={30} />
+            Live Broadcasting & Matrix Control
+          </h1>
+          <p>Remove Forgot/Abandoned Audio Rooms & Live Streams • Joined Users • Live Economy</p>
         </div>
-        <button className="primary flex items-center gap-2" onClick={() => setActiveTab('create')}>
-          <Plus size={20} /> Create Room
-        </button>
+
+        {/* Tab Selection */}
+        <div className="flex gap-2 items-center">
+          <button 
+            className={`btn-matrix-action ${activeTab === 'rooms' ? 'active' : ''}`}
+            style={{ background: activeTab === 'rooms' ? 'linear-gradient(135deg, #6366f1, #a855f7)' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+            onClick={() => setActiveTab('rooms')}
+          >
+            <Radio size={18} /> Audio Rooms ({rooms.length})
+          </button>
+          <button 
+            className={`btn-matrix-action ${activeTab === 'streams' ? 'active' : ''}`}
+            style={{ background: activeTab === 'streams' ? 'linear-gradient(135deg, #ef4444, #f97316)' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+            onClick={() => setActiveTab('streams')}
+          >
+            <Video size={18} /> Live Streams ({liveStreams.length})
+          </button>
+          <button 
+            className="btn-matrix-action"
+            style={{ background: activeTab === 'create' ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+            onClick={() => setActiveTab(activeTab === 'create' ? 'rooms' : 'create')}
+          >
+            {activeTab === 'create' ? <ArrowLeft size={18} /> : <Plus size={18} />} Create Room
+          </button>
+        </div>
       </div>
 
-      {/* Live Rooms Grid */}
-      {activeTab === 'live' && (
-        <div className="bento-grid mt-6">
-          {/* Stats Card */}
-          <div className="bento-card" style={{ gridColumn: 'span 2' }}>
-            <div className="card-top">
-              <div className="card-label">LIVE SESSIONS</div>
-              <div className="card-icon-wrap" style={{ color: 'var(--accent-green)' }}>
-                <Activity size={24} />
-              </div>
-            </div>
-            <div className="card-bottom">
-              <div className="card-value">{rooms.length}</div>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Active voice rooms</p>
-            </div>
-          </div>
-
-          <div className="bento-card" style={{ gridColumn: 'span 2' }}>
-            <div className="card-top">
-              <div className="card-label">TOTAL PARTICIPANTS</div>
-              <div className="card-icon-wrap" style={{ color: 'var(--accent-blue)' }}>
-                <Users size={24} />
-              </div>
-            </div>
-            <div className="card-bottom">
-              <div className="card-value">
-                {rooms.reduce((acc, r) => acc + (r.participants?.length || 0), 0)}
-              </div>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Listeners + Speakers</p>
-            </div>
-          </div>
-
-          <div className="bento-card" style={{ gridColumn: 'span 2' }}>
-            <div className="card-top">
-              <div className="card-label">SOS ALERTS</div>
-              <div className="card-icon-wrap" style={{ color: 'var(--accent-red)' }}>
-                <AlertTriangle size={24} />
-              </div>
-            </div>
-            <div className="card-bottom">
-              <div className="card-value" style={{ color: rooms.some(r => r.isSosTriggered) ? 'var(--accent-red)' : 'inherit' }}>
-                {rooms.filter(r => r.isSosTriggered).length}
-              </div>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Security alerts</p>
-            </div>
-          </div>
-
-          {/* Room Cards */}
-          {rooms.map(room => (
-            <div key={room.id} className="bento-card" style={{ gridColumn: 'span 2' }}>
-              <div className="card-top">
-                <div className="flex items-center gap-3">
-                  <div className={`status-pill ${room.isPrivate ? 'inactive' : 'active'}`} style={{
-                    background: room.isPrivate ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)',
-                    color: room.isPrivate ? '#ef4444' : '#22c55e',
-                    padding: '4px 12px',
-                    borderRadius: '20px',
-                    fontSize: '0.7rem',
-                    fontWeight: 800,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}>
-                    {room.isPrivate ? <Lock size={12} /> : <Unlock size={12} />}
-                    {room.isPrivate ? 'PRIVATE' : 'PUBLIC'}
-                  </div>
-                  {room.isPasswordProtected && (
-                    <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
-                      <Shield size={12} /> Password Protected
-                    </span>
-                  )}
+      {/* Main Audio Rooms Tab */}
+      {activeTab === 'rooms' && (
+        <>
+          {/* Bento Global Summary Cards */}
+          <div className="matrix-bento-grid">
+            <div className="matrix-bento-card">
+              <div className="matrix-bento-top">
+                <span className="matrix-bento-label">ACTIVE AUDIO ROOMS</span>
+                <div className="matrix-bento-icon" style={{ color: '#4ade80' }}>
+                  <Activity size={22} />
                 </div>
-                <div className="card-icon-wrap" style={{ color: room.isSosTriggered ? 'var(--accent-red)' : 'var(--accent-blue)' }}>
-                  {room.isSosTriggered ? <AlertTriangle size={24} /> : <Mic size={24} />}
-                </div>
-              </div>
-              
-              <div style={{ marginTop: '16px' }}>
-                <h3 style={{ fontWeight: 900, fontSize: '1.1rem', marginBottom: '4px' }}>
-                  {room.title || 'Untitled Room'}
-                </h3>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-                  Host: {room.creator?.name || 'Unknown'}
-                </div>
-                
-                <div className="flex gap-4 mb-4">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Users size={14} style={{ color: 'var(--accent-blue)' }} />
-                    <span>{room.participants?.length || 0} Participants</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Crown size={14} style={{ color: 'var(--accent-orange)' }} />
-                    <span>{room.maxSeats || 8} Seats</span>
-                  </div>
-                </div>
-
-                {room.isSosTriggered && (
-                  <div className="warning-note mb-4" style={{ 
-                    background: 'rgba(239, 68, 68, 0.1)', 
-                    border: '1px solid rgba(239, 68, 68, 0.2)',
-                    color: '#ef4444',
-                    padding: '12px',
-                    borderRadius: '12px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    <AlertTriangle size={16} />
-                    <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>SOS Alert Triggered - Immediate Attention Required</span>
-                  </div>
-                )}
-
-                <button 
-                  className="primary w-full flex-center gap-2"
-                  onClick={() => handleModerate(room)}
-                >
-                  <Settings size={16} />
-                  Moderate Room
-                </button>
-              </div>
-            </div>
-          ))}
-
-          {rooms.length === 0 && !loading && (
-            <div className="bento-card wide" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px' }}>
-              <Mic size={48} style={{ opacity: 0.2, marginBottom: '16px' }} />
-              <h3 style={{ fontWeight: 900, marginBottom: '8px' }}>No Active Audio Sessions</h3>
-              <p style={{ color: 'var(--text-secondary)' }}>Create a new room to start broadcasting</p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Room Moderation Panel */}
-      {activeTab === 'live' && selectedRoom && (
-        <div className="bento-card wide mt-8 fade-in">
-          <div className="card-top mb-6">
-            <div className="flex items-center gap-4">
-              <div className="card-icon-wrap" style={{ color: 'var(--accent-purple)' }}>
-                <Settings size={24} />
               </div>
               <div>
-                <h3 style={{ fontWeight: 900, fontSize: '1.3rem' }}>{selectedRoom.title}</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-                  Room ID: {selectedRoom.id.slice(0, 8)}... • Host: {selectedRoom.creator?.name}
+                <div className="matrix-bento-value">{rooms.length}</div>
+                <div className="matrix-bento-sub">Broadcasting Live</div>
+              </div>
+            </div>
+
+            <div className="matrix-bento-card">
+              <div className="matrix-bento-top">
+                <span className="matrix-bento-label">ACTIVE LIVE STREAMS</span>
+                <div className="matrix-bento-icon" style={{ color: '#ef4444' }}>
+                  <Video size={22} />
+                </div>
+              </div>
+              <div>
+                <div className="matrix-bento-value">{liveStreams.length}</div>
+                <div className="matrix-bento-sub">Video Broadcasts</div>
+              </div>
+            </div>
+
+            <div className="matrix-bento-card">
+              <div className="matrix-bento-top">
+                <span className="matrix-bento-label">GIFTS & REVENUE</span>
+                <div className="matrix-bento-icon" style={{ color: '#ec4899' }}>
+                  <Gift size={22} />
+                </div>
+              </div>
+              <div>
+                <div className="matrix-bento-value">{totalGiftsCount} Gifts</div>
+                <div className="matrix-bento-sub" style={{ color: '#facc15', fontWeight: 700 }}>
+                  🪙 {totalGiftCoins.toLocaleString()} Coins Spent
+                </div>
+              </div>
+            </div>
+
+            <div className="matrix-bento-card">
+              <div className="matrix-bento-top">
+                <span className="matrix-bento-label">TOP ROOM EARNER</span>
+                <div className="matrix-bento-icon" style={{ color: '#facc15' }}>
+                  <Crown size={22} />
+                </div>
+              </div>
+              <div>
+                <div className="matrix-bento-value" style={{ fontSize: '1.25rem', color: '#facc15' }}>
+                  {globalTopEarner ? globalTopEarner.name : 'None'}
+                </div>
+                <div className="matrix-bento-sub">
+                  {globalTopEarner ? `🏆 ${globalTopEarner.coins.toLocaleString()} 🪙 Earned` : 'No earnings recorded'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Rooms Grid */}
+          <div className="matrix-rooms-grid">
+            {rooms.map(room => {
+              const joinedCount = room.joinedUsersCount || room.participants?.length || 0;
+              const giftsCount = room.totalGiftsCount || 0;
+              const giftCoins = room.totalGiftCoins || 0;
+              const topEarner = room.topEarner;
+
+              return (
+                <div 
+                  key={room.id} 
+                  className={`matrix-room-card ${room.isSosTriggered ? 'sos-active' : ''}`}
+                >
+                  <div>
+                    {/* Room Header Badges */}
+                    <div className="matrix-room-header">
+                      <div className="matrix-room-badges">
+                        <span className={`badge-pill ${room.isPrivate ? 'badge-private' : 'badge-public'}`}>
+                          {room.isPrivate ? <Lock size={11} /> : <Unlock size={11} />}
+                          {room.isPrivate ? 'PRIVATE' : 'PUBLIC'}
+                        </span>
+                        <span className="badge-pill badge-category">
+                          <Flame size={11} /> {room.category || 'Chatting'}
+                        </span>
+                        <span className="badge-pill badge-uptime">
+                          <Clock size={11} /> {formatUptime(room.sessionDurationSeconds)}
+                        </span>
+                      </div>
+                      {room.isSosTriggered && (
+                        <div style={{ color: '#ef4444' }} title="SOS Triggered">
+                          <AlertTriangle size={22} />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Title & Host */}
+                    <h3 className="matrix-room-title">{room.title || 'Untitled Audio Matrix'}</h3>
+                    <div className="matrix-room-host">
+                      {room.creator?.avatar ? (
+                        <img src={room.creator.avatar} alt="Host" className="host-avatar" />
+                      ) : (
+                        <div className="host-avatar-fallback">
+                          {room.creator?.name?.[0]?.toUpperCase() || 'H'}
+                        </div>
+                      )}
+                      <span>Host: <strong>{room.creator?.name || 'Unknown Host'}</strong></span>
+                    </div>
+
+                    {/* Enriched Metrics Strip */}
+                    <div className="matrix-metrics-strip">
+                      <div className="metric-pill-row">
+                        <div className="metric-item">
+                          <Users size={14} style={{ color: '#60a5fa' }} />
+                          <span><strong>{joinedCount}</strong> Joined Participants</span>
+                        </div>
+                        <div className="metric-item">
+                          <Crown size={14} style={{ color: '#c084fc' }} />
+                          <span>{room.maxSeats || 8} Seats</span>
+                        </div>
+                      </div>
+
+                      <div className="metric-pill-row" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '6px' }}>
+                        <div className="metric-item">
+                          <Gift size={14} style={{ color: '#ec4899' }} />
+                          <span><strong>{giftsCount}</strong> Gifts Sent</span>
+                        </div>
+                        <div className="metric-item" style={{ color: '#facc15' }}>
+                          <span><strong>{giftCoins.toLocaleString()}</strong> 🪙</span>
+                        </div>
+                      </div>
+
+                      {/* Top Earner Pill */}
+                      {topEarner ? (
+                        <div className="top-earner-pill">
+                          <div className="top-earner-info">
+                            <Crown size={15} style={{ color: '#facc15' }} />
+                            <div>
+                              <div className="top-earner-label">Top Earner</div>
+                              <div className="top-earner-name">{topEarner.name}</div>
+                            </div>
+                          </div>
+                          <div className="top-earner-coins">
+                            🏆 {topEarner.coins.toLocaleString()} 🪙
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="top-earner-pill" style={{ opacity: 0.5, filter: 'grayscale(1)' }}>
+                          <div className="top-earner-info">
+                            <Crown size={15} color="#94a3b8" />
+                            <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>No gift earnings yet</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Speaker Seats Mini Indicator */}
+                    <div className="seats-mini-preview">
+                      {Array.from({ length: room.maxSeats || 8 }).map((_, idx) => {
+                        const isOccupied = room.micStatus?.[idx]?.userId != null;
+                        const isMuted = room.micStatus?.[idx]?.isMuted;
+                        const isTopEarnerSeat = topEarner && room.micStatus?.[idx]?.userId === topEarner.userId;
+
+                        return (
+                          <div 
+                            key={idx} 
+                            className={`seat-dot ${isOccupied ? 'occupied' : ''} ${isMuted ? 'muted' : ''} ${isTopEarnerSeat ? 'top-earner' : ''}`}
+                            title={isOccupied ? `Seat ${idx + 1}: ${room.micStatus[idx].userName}` : `Seat ${idx + 1}: Empty`}
+                          >
+                            {isTopEarnerSeat ? '👑' : isOccupied ? (idx + 1) : ''}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 mt-2">
+                    <button 
+                      className="btn-matrix-action flex-1 flex-center justify-center gap-2"
+                      onClick={() => handleModerate(room)}
+                    >
+                      <Settings size={16} /> Moderate
+                    </button>
+                    <button 
+                      className="btn-matrix-action"
+                      style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid rgba(239, 68, 68, 0.4)', color: '#f87171' }}
+                      onClick={() => handleEndRoom(room.id)}
+                      title="Force End/Remove Room"
+                    >
+                      <Trash2 size={16} /> End
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+
+            {rooms.length === 0 && !loading && (
+              <div className="matrix-room-card" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px' }}>
+                <Mic size={48} style={{ opacity: 0.2, margin: '0 auto 16px auto' }} />
+                <h3 style={{ fontWeight: 900, marginBottom: '8px' }}>No Active Audio Rooms</h3>
+                <p style={{ color: '#94a3b8' }}>Click "Create Room" to launch a live audio room session</p>
+              </div>
+            )}
+          </div>
+
+          {/* Room Moderation Detail View */}
+          {selectedRoom && (
+            <div className="matrix-mod-panel fade-in">
+              <div className="flex justify-between items-center mb-6 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                <div className="flex items-center gap-4">
+                  <div className="matrix-bento-icon" style={{ background: 'rgba(168,85,247,0.15)', color: '#c084fc' }}>
+                    <Settings size={24} />
+                  </div>
+                  <div>
+                    <h2 style={{ fontSize: '1.4rem', fontWeight: 800 }}>{selectedRoom.title}</h2>
+                    <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
+                      ID: {selectedRoom.id} • Host: <strong>{selectedRoom.creator?.name}</strong> • Uptime: {formatUptime(selectedRoom.sessionDurationSeconds)}
+                    </p>
+                  </div>
+                </div>
+                <button className="seat-action-btn" onClick={() => setSelectedRoom(null)}>
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Moderation Controls */}
+              <div className="flex gap-3 mb-6 flex-wrap">
+                <button className="btn-matrix-action" onClick={handleMuteAll} style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid rgba(239, 68, 68, 0.4)', color: '#f87171' }}>
+                  <MicOff size={16} /> Mute All Speakers
+                </button>
+                <button className="btn-matrix-action" style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)' }}>
+                  <Lock size={16} /> Lock All Seats
+                </button>
+                <button 
+                  className="btn-matrix-action" 
+                  style={{ background: '#ef4444', color: '#fff', marginLeft: 'auto' }}
+                  onClick={() => handleEndRoom(selectedRoom.id)}
+                >
+                  <Trash2 size={16} /> Terminate & Delete Room
+                </button>
+              </div>
+
+              {/* Speaker Seats Grid */}
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', marginBottom: '14px' }}>
+                Speaker Seats Matrix ({selectedRoom.seats?.filter((s: any) => s.userId).length || 0}/{selectedRoom.maxSeats || 8})
+              </h3>
+
+              <div className="mod-seats-grid">
+                {selectedRoom.seats?.map((seat: RoomSeat, index: number) => {
+                  const isTopEarner = selectedRoom.topEarner && seat.userId === selectedRoom.topEarner.userId;
+
+                  return (
+                    <div 
+                      key={index} 
+                      className={`mod-seat-card ${seat.userId ? 'occupied' : ''} ${seat.isMuted ? 'muted' : ''} ${seat.isLocked ? 'locked' : ''} ${isTopEarner ? 'top-earner-seat' : ''}`}
+                    >
+                      <div className="seat-avatar-wrap">
+                        {isTopEarner && (
+                          <div className="seat-earner-crown" title="Top Earner">
+                            <Crown size={12} />
+                          </div>
+                        )}
+                        {seat.userId ? (
+                          seat.userAvatar ? (
+                            <img src={seat.userAvatar} alt="Avatar" className="seat-avatar-img" />
+                          ) : (
+                            <div className="host-avatar-fallback" style={{ width: '100%', height: '100%', fontSize: '1.2rem' }}>
+                              {seat.userName?.[0]?.toUpperCase() || 'U'}
+                            </div>
+                          )
+                        ) : (
+                          <div style={{ color: '#475569', fontWeight: 800, fontSize: '1.1rem' }}>
+                            {index + 1}
+                          </div>
+                        )}
+                      </div>
+
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 700, color: seat.userId ? '#ffffff' : '#64748b' }}>
+                          {seat.userName || 'Empty Seat'}
+                        </div>
+                        {seat.hasRaiseHand && (
+                          <span style={{ fontSize: '0.65rem', background: '#ef4444', color: '#fff', padding: '1px 6px', borderRadius: '8px', fontWeight: 800, marginTop: '2px', display: 'inline-block' }}>
+                            ✋ RAISED HAND
+                          </span>
+                        )}
+                      </div>
+
+                      {seat.userId && (
+                        <div className="seat-actions-bar">
+                          <button 
+                            className={`seat-action-btn ${!seat.isMuted ? 'btn-active-mic' : ''}`}
+                            onClick={() => handleToggleMic(index)}
+                            title={seat.isMuted ? 'Unmute' : 'Mute'}
+                          >
+                            {seat.isMuted ? <MicOff size={14} /> : <Mic size={14} />}
+                          </button>
+                          <button 
+                            className="seat-action-btn"
+                            onClick={() => handleToggleLock(index)}
+                            title={seat.isLocked ? 'Unlock Seat' : 'Lock Seat'}
+                          >
+                            {seat.isLocked ? <Lock size={14} /> : <Unlock size={14} />}
+                          </button>
+                          <button 
+                            className="seat-action-btn btn-danger"
+                            onClick={() => handleKickUser(index)}
+                            title="Kick User"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Live Streams Management Tab */}
+      {activeTab === 'streams' && (
+        <div className="fade-in">
+          <div className="matrix-bento-card mb-6" style={{ background: 'rgba(239, 68, 68, 0.1)', borderColor: 'rgba(239, 68, 68, 0.3)' }}>
+            <div className="flex items-center gap-3">
+              <Video size={24} style={{ color: '#ef4444' }} />
+              <div>
+                <h3 style={{ fontWeight: 800, color: '#ffffff' }}>Live Stream Administrative Removal</h3>
+                <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
+                  Terminate abandoned or forgotten live streams directly to clean system resource allocations.
                 </p>
               </div>
             </div>
-            <button 
-              className="icon-btn"
-              onClick={() => setSelectedRoom(null)}
-            >
-              <X size={20} />
-            </button>
           </div>
 
-          {/* Quick Actions */}
-          <div className="flex gap-3 mb-8">
-            <button 
-              className="secondary-btn flex items-center gap-2"
-              onClick={handleMuteAll}
-            >
-              <MicOff size={16} /> Mute All
-            </button>
-            <button className="secondary-btn flex items-center gap-2">
-              <Lock size={16} /> Lock Room
-            </button>
-            <button className="secondary-btn flex items-center gap-2" style={{ color: 'var(--accent-red)' }}>
-              <Trash2 size={16} /> End Session
-            </button>
-          </div>
+          <div className="matrix-rooms-grid">
+            {liveStreams.map(stream => (
+              <div key={stream.id} className="matrix-room-card" style={{ borderColor: 'rgba(239, 68, 68, 0.3)' }}>
+                <div className="matrix-room-header">
+                  <div className="matrix-room-badges">
+                    <span className="badge-pill badge-private" style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#f87171' }}>
+                      <Video size={11} /> LIVE NOW
+                    </span>
+                    <span className="badge-pill badge-uptime">
+                      <Users size={11} /> {stream.viewerCount || 0} Viewers
+                    </span>
+                  </div>
+                </div>
 
-          {/* Seats Grid */}
-          <div className="mb-6">
-            <h4 style={{ fontWeight: 800, marginBottom: '16px', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)' }}>
-              Speaker Seats ({selectedRoom.seats?.length || 0}/{selectedRoom.maxSeats || 8})
-            </h4>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
-              {selectedRoom.seats?.map((seat: RoomSeat, index: number) => (
-                <div 
-                  key={index}
-                  className={`seat-card ${seat.isMuted ? 'muted' : ''} ${seat.isLocked ? 'locked' : ''} ${seat.hasRaiseHand ? 'alert' : ''}`}
-                  style={{
-                    background: seat.userId 
-                      ? (seat.isMuted ? 'rgba(239, 68, 68, 0.05)' : 'rgba(34, 197, 94, 0.05)')
-                      : 'rgba(0,0,0,0.02)',
-                    border: `2px solid ${seat.hasRaiseHand ? '#ef4444' : seat.userId ? (seat.isMuted ? '#ef4444' : '#22c55e') : '#e2e8f0'}`,
-                    borderRadius: '16px',
-                    padding: '16px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '8px',
-                    transition: 'all 0.2s',
-                    position: 'relative'
-                  }}
+                <h3 className="matrix-room-title">{stream.name || 'Live Video Stream'}</h3>
+                
+                <div className="matrix-room-host">
+                  {stream.host?.displayPicture ? (
+                    <img src={stream.host.displayPicture} alt="Host" className="host-avatar" />
+                  ) : (
+                    <div className="host-avatar-fallback">
+                      {stream.host?.name?.[0]?.toUpperCase() || 'H'}
+                    </div>
+                  )}
+                  <div>
+                    <div>Host: <strong>{stream.host?.name || 'Unknown Host'}</strong></div>
+                    <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>ID: {stream.host?.id}</div>
+                  </div>
+                </div>
+
+                <div className="matrix-metrics-strip">
+                  <div className="metric-pill-row">
+                    <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Stream ID:</span>
+                    <span style={{ fontSize: '0.8rem', color: '#fff', fontFamily: 'monospace' }}>{stream.liveStreamingId}</span>
+                  </div>
+                  <div className="metric-pill-row" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '6px' }}>
+                    <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>ZEGO ID:</span>
+                    <span style={{ fontSize: '0.8rem', color: '#60a5fa', fontFamily: 'monospace' }}>{stream.zegoLiveId}</span>
+                  </div>
+                </div>
+
+                <button 
+                  className="btn-matrix-action w-full flex-center justify-center gap-2 mt-4"
+                  style={{ background: 'linear-gradient(135deg, #ef4444, #dc2626)', boxShadow: '0 4px 15px rgba(239,68,68,0.4)' }}
+                  onClick={() => handleEndLiveStream(stream.id)}
                 >
-                  {seat.isLocked && (
-                    <div style={{ position: 'absolute', top: '8px', right: '8px' }}>
-                      <Lock size={12} color="#94a3b8" />
-                    </div>
-                  )}
-                  
-                  <div style={{ 
-                    width: '48px', 
-                    height: '48px', 
-                    borderRadius: '50%', 
-                    background: seat.userId ? 'var(--accent-blue)' : '#e2e8f0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: seat.userId ? '#fff' : '#94a3b8',
-                    fontWeight: 900
-                  }}>
-                    {seat.userId ? (seat.userName?.[0] || 'U') : index + 1}
-                  </div>
-
-                  <span style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-primary)' }}>
-                    {seat.userName || 'Empty Seat'}
-                  </span>
-
-                  {seat.hasRaiseHand && (
-                    <div style={{ 
-                      background: '#ef4444', 
-                      color: '#fff', 
-                      padding: '2px 8px', 
-                      borderRadius: '10px',
-                      fontSize: '0.65rem',
-                      fontWeight: 800,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}>
-                      <Hand size={10} /> RAISE HAND
-                    </div>
-                  )}
-
-                  {seat.userId && (
-                    <div className="flex gap-2 mt-2">
-                      <button 
-                        className="icon-btn"
-                        onClick={() => handleToggleMic(index)}
-                        style={{ 
-                          background: seat.isMuted ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)',
-                          color: seat.isMuted ? '#ef4444' : '#22c55e',
-                          padding: '8px'
-                        }}
-                        title={seat.isMuted ? 'Unmute' : 'Mute'}
-                      >
-                        {seat.isMuted ? <MicOff size={14} /> : <Mic size={14} />}
-                      </button>
-                      <button 
-                        className="icon-btn"
-                        onClick={() => handleToggleLock(index)}
-                        style={{ 
-                          background: seat.isLocked ? 'rgba(239, 68, 68, 0.1)' : 'rgba(0,0,0,0.05)',
-                          color: seat.isLocked ? '#ef4444' : '#94a3b8',
-                          padding: '8px'
-                        }}
-                        title={seat.isLocked ? 'Unlock' : 'Lock'}
-                      >
-                        {seat.isLocked ? <Lock size={14} /> : <Unlock size={14} />}
-                      </button>
-                      <button 
-                        className="icon-btn"
-                        onClick={() => handleKickUser(index)}
-                        style={{ 
-                          background: 'rgba(239, 68, 68, 0.1)',
-                          color: '#ef4444',
-                          padding: '8px'
-                        }}
-                        title="Kick User"
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Host & Co-host Management */}
-          <div className="mb-6">
-            <h4 style={{ fontWeight: 800, marginBottom: '16px', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)' }}>
-              Host & Co-Host
-            </h4>
-            <div className="flex gap-4">
-              <div className="bento-card" style={{ flex: 1, background: 'rgba(251, 191, 36, 0.1)', borderColor: '#fbbf24' }}>
-                <div className="flex items-center gap-3">
-                  <Crown size={20} style={{ color: '#f59e0b' }} />
-                  <div>
-                    <div style={{ fontWeight: 800 }}>{selectedRoom.creator?.name || 'Unknown'}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Room Host</div>
-                  </div>
-                </div>
+                  <Trash2 size={16} /> Force End Live Stream
+                </button>
               </div>
-              <div className="bento-card" style={{ flex: 1, background: 'rgba(139, 92, 246, 0.1)', borderColor: '#8b5cf6' }}>
-                <div className="flex items-center gap-3">
-                  <Shield size={20} style={{ color: '#8b5cf6' }} />
-                  <div>
-                    <div style={{ fontWeight: 800 }}>No Co-Host</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Assign from speakers</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+            ))}
 
-          {/* Room Settings */}
-          <div>
-            <h4 style={{ fontWeight: 800, marginBottom: '16px', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)' }}>
-              Room Configuration
-            </h4>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="form-group">
-                <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Room Type</label>
-                <div className="radio-group" style={{ marginTop: '8px' }}>
-                  <label className="radio-option">
-                    <input type="radio" name="roomType" checked={!selectedRoom.isPrivate} readOnly />
-                    <span>Public (1)</span>
-                  </label>
-                  <label className="radio-option">
-                    <input type="radio" name="roomType" checked={selectedRoom.isPrivate} readOnly />
-                    <span>Private (0)</span>
-                  </label>
-                </div>
+            {liveStreams.length === 0 && (
+              <div className="matrix-room-card" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px' }}>
+                <Video size={48} style={{ opacity: 0.2, margin: '0 auto 16px auto' }} />
+                <h3 style={{ fontWeight: 900, marginBottom: '8px' }}>No Active Live Video Streams</h3>
+                <p style={{ color: '#94a3b8' }}>All hosts have cleanly ended their live video sessions</p>
               </div>
-              <div className="form-group">
-                <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Password</label>
-                <input 
-                  type="text" 
-                  className="admin-input mt-2" 
-                  placeholder={selectedRoom.isPasswordProtected ? '********' : 'No password'}
-                  disabled 
-                />
-              </div>
-              <div className="form-group">
-                <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Max Seats</label>
-                <input 
-                  type="text" 
-                  className="admin-input mt-2" 
-                  value={selectedRoom.maxSeats || 8} 
-                  disabled 
-                />
-              </div>
-            </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* Create Room Tab */}
+      {/* Create Room Form Tab */}
       {activeTab === 'create' && (
-        <div style={{ background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)', borderRadius: '16px', padding: '32px', border: '1px solid #e2e8f0', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05)', marginTop: '30px' }} className="fade-in">
-          <div className="card-top" style={{ marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <button 
-                type="button"
-                onClick={() => setActiveTab('live')}
-                style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b', transition: 'all 0.2s' }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = '#e2e8f0'; e.currentTarget.style.color = '#0f172a'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#64748b'; }}
-                title="Go Back"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-              </button>
-              <div>
-                <h3 style={{ fontWeight: 900, fontSize: '1.4rem', color: '#0f172a' }}>Launch Audio Matrix</h3>
-                <p style={{ color: '#64748b', fontSize: '0.9rem', marginTop: '4px' }}>Configure new broadcasting environment</p>
-              </div>
+        <div className="matrix-mod-panel fade-in" style={{ maxWidth: '700px', margin: '30px auto' }}>
+          <div className="flex justify-between items-center mb-6 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+            <div>
+              <h2 style={{ fontSize: '1.4rem', fontWeight: 800 }}>Launch Audio Matrix Session</h2>
+              <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Configure new broadcasting environment & seat limits</p>
             </div>
-            <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '12px', borderRadius: '12px', color: '#3b82f6' }}>
+            <div className="matrix-bento-icon" style={{ color: '#60a5fa' }}>
               <Play size={24} />
             </div>
           </div>
 
-          <form style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Room Title</label>
+          <form style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div>
+              <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' }}>Room Title</label>
               <input 
-                style={{ padding: '14px 16px', borderRadius: '10px', border: '1px solid #cbd5e1', background: '#fff', color: '#0f172a', fontSize: '1rem', outline: 'none', transition: 'all 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}
-                placeholder="Enter room title..." 
+                style={{ width: '100%', marginTop: '8px', padding: '14px', borderRadius: '12px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '1rem', outline: 'none' }}
+                placeholder="e.g. VIP Music Lounge & Chill" 
                 required 
-                onFocus={(e) => { e.target.style.borderColor = '#3b82f6'; e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)'; }}
-                onBlur={(e) => { e.target.style.borderColor = '#cbd5e1'; e.target.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.02)'; }}
               />
             </div>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Max Capacity</label>
-              <select 
-                style={{ padding: '14px 16px', borderRadius: '10px', border: '1px solid #cbd5e1', background: '#fff', color: '#0f172a', fontSize: '1rem', outline: 'none', cursor: 'pointer', appearance: 'none' }}
-                onFocus={(e) => { e.target.style.borderColor = '#3b82f6'; e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)'; }}
-                onBlur={(e) => { e.target.style.borderColor = '#cbd5e1'; e.target.style.boxShadow = 'none'; }}
-              >
+
+            <div>
+              <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' }}>Category</label>
+              <select style={{ width: '100%', marginTop: '8px', padding: '14px', borderRadius: '12px', background: 'rgba(15,23,42,0.9)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '1rem', outline: 'none' }}>
+                <option value="Chatting">💬 Chatting & Talk</option>
+                <option value="Music">🎵 Music & Songs</option>
+                <option value="Gaming">🎮 Gaming & Esports</option>
+                <option value="PK Battle">⚔️ PK Battle</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' }}>Seat Capacity</label>
+              <select style={{ width: '100%', marginTop: '8px', padding: '14px', borderRadius: '12px', background: 'rgba(15,23,42,0.9)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '1rem', outline: 'none' }}>
                 <option value={8}>8 Seats (Standard Configuration)</option>
                 <option value={16}>16 Seats (Extended Matrix)</option>
               </select>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Environment Type</label>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <label style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', padding: '12px', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '10px', cursor: 'pointer' }}>
-                  <input type="radio" name="createRoomType" value="public" defaultChecked style={{ width: '18px', height: '18px', accentColor: '#3b82f6' }} />
-                  <span style={{ fontWeight: 600, color: '#334155' }}>Public</span>
-                </label>
-                <label style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', padding: '12px', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '10px', cursor: 'pointer' }}>
-                  <input type="radio" name="createRoomType" value="private" style={{ width: '18px', height: '18px', accentColor: '#3b82f6' }} />
-                  <span style={{ fontWeight: 600, color: '#334155' }}>Private</span>
-                </label>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Access Key (Optional)</label>
-              <input 
-                type="password" 
-                style={{ padding: '14px 16px', borderRadius: '10px', border: '1px solid #cbd5e1', background: '#fff', color: '#0f172a', fontSize: '1rem', outline: 'none', transition: 'all 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}
-                placeholder="Leave blank for open access"
-                onFocus={(e) => { e.target.style.borderColor = '#3b82f6'; e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)'; }}
-                onBlur={(e) => { e.target.style.borderColor = '#cbd5e1'; e.target.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.02)'; }}
-              />
-            </div>
-
-            <div style={{ gridColumn: 'span 2', marginTop: '16px', display: 'flex', justifyContent: 'flex-end', gap: '16px' }}>
+            <div className="flex gap-4">
               <button 
                 type="button" 
-                onClick={() => setActiveTab('live')}
-                style={{ 
-                  padding: '12px 24px', 
-                  borderRadius: '10px', 
-                  background: '#f1f5f9', 
-                  color: '#475569', 
-                  border: 'none', 
-                  fontWeight: 700, 
-                  fontSize: '1rem', 
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = '#e2e8f0'; e.currentTarget.style.color = '#0f172a'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#475569'; }}
+                className="btn-matrix-action"
+                style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', justifyContent: 'center' }}
+                onClick={() => setActiveTab('rooms')}
               >
                 Cancel
               </button>
               <button 
                 type="button" 
-                style={{ 
-                  padding: '12px 32px', 
-                  borderRadius: '10px', 
-                  background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', 
-                  color: 'white', 
-                  border: 'none', 
-                  fontWeight: 700, 
-                  fontSize: '1rem', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '8px',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 15px -3px rgba(37, 99, 235, 0.3)',
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                className="btn-matrix-action"
+                style={{ flex: 1, justifyContent: 'center' }}
                 onClick={() => {
-                  toast.success('Audio matrix launched successfully!');
-                  setActiveTab('live');
+                  toast.success('Audio Room launched successfully!');
+                  setActiveTab('rooms');
                 }}
               >
                 <Activity size={18} /> Launch Matrix

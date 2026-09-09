@@ -17,30 +17,42 @@ const MediaImage: React.FC<MediaImageProps> = ({
   const getFullUrl = (url?: string) => {
     if (!url) return null;
     
-    // If it's the default profile pic string, we can either point to a real default or just return null to show the letter
+    // If it's the default profile pic string, return null to show fallback
     if (url === 'default_dp.png' || url === 'default.png') return null;
 
+    let targetUrl = url;
+    const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+
+    // Upgrade http:// to https:// if window is running on https protocol
+    if (isHttps && targetUrl.startsWith('http://')) {
+      targetUrl = targetUrl.replace('http://', 'https://');
+    }
+
+    let resolvedBackend = BACKEND_URL;
+    if (isHttps && resolvedBackend.startsWith('http://')) {
+      resolvedBackend = resolvedBackend.replace('http://', 'https://');
+    }
+
     // If it's an uploaded asset, extract the clean path from '/uploads' or 'uploads' onwards
-    let path = url;
-    const uploadsIndex = url.indexOf('uploads');
+    const uploadsIndex = targetUrl.indexOf('uploads');
     if (uploadsIndex !== -1) {
-      path = url.substring(uploadsIndex);
+      let path = targetUrl.substring(uploadsIndex);
       let cleanUrl = path.startsWith('/') ? path : `/${path}`;
-      return `${BACKEND_URL}${cleanUrl}`;
+      return `${resolvedBackend}${cleanUrl}`;
     }
 
     // Keep external absolute URLs and Data URIs
-    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
-      return url;
+    if (targetUrl.startsWith('http://') || targetUrl.startsWith('https://') || targetUrl.startsWith('data:')) {
+      return targetUrl;
     }
 
     // Ensure it starts with /uploads
-    let cleanUrl = url.startsWith('/') ? url : `/${url}`;
+    let cleanUrl = targetUrl.startsWith('/') ? targetUrl : `/${targetUrl}`;
     if (!cleanUrl.startsWith('/uploads')) {
       cleanUrl = `/uploads${cleanUrl}`;
     }
 
-    return `${BACKEND_URL}${cleanUrl}`;
+    return `${resolvedBackend}${cleanUrl}`;
   };
 
   const fullUrl = getFullUrl(src);
@@ -58,12 +70,18 @@ const MediaImage: React.FC<MediaImageProps> = ({
       src={fullUrl} 
       className={className} 
       onError={(e) => {
-        // If image fails to load, show fallback
-        (e.target as HTMLImageElement).style.display = 'none';
-        const parent = (e.target as HTMLElement).parentElement;
-        if (parent) {
+        const img = e.target as HTMLImageElement;
+        // If image failed with http, try upgrading to https
+        if (img.src && img.src.startsWith('http://')) {
+          img.src = img.src.replace('http://', 'https://');
+          return;
+        }
+        // If image still fails to load, show fallback
+        img.style.display = 'none';
+        const parent = img.parentElement;
+        if (parent && !parent.querySelector('.media-image-fallback')) {
           const fallback = document.createElement('div');
-          fallback.className = className || '';
+          fallback.className = `${className || ''} media-image-fallback`;
           fallback.style.display = 'flex';
           fallback.style.alignItems = 'center';
           fallback.style.justifyContent = 'center';

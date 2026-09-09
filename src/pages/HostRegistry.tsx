@@ -199,11 +199,12 @@ const HostRegistry: React.FC = () => {
       <style>{`
         .hr-stat-grid {
           display: grid;
-          grid-template-columns: repeat(4, 1fr);
+          grid-template-columns: repeat(5, 1fr);
           gap: 16px;
           margin-bottom: 24px;
         }
-        @media(max-width:800px){ .hr-stat-grid { grid-template-columns: repeat(2,1fr); } }
+        @media(max-width:1024px){ .hr-stat-grid { grid-template-columns: repeat(3,1fr); } }
+        @media(max-width:640px){ .hr-stat-grid { grid-template-columns: repeat(2,1fr); } }
         .hr-stat-card {
           background: var(--bg-surface)!important;
           border: 1px solid var(--glass-border)!important;
@@ -318,6 +319,10 @@ const HostRegistry: React.FC = () => {
         <div className="hr-stat-card">
           <div className="hr-icon-box" style={{ background:'rgba(16,185,129,0.1)', color:'#10b981' }}><UserCheck size={20}/></div>
           <div><div className="hr-num">{approvedCount}</div><div className="hr-lbl">Active Hosts</div></div>
+        </div>
+        <div className="hr-stat-card">
+          <div className="hr-icon-box" style={{ background:'rgba(16,185,129,0.18)', color:'#059669' }}><CheckCircle size={20}/></div>
+          <div><div className="hr-num">${approvedCount}</div><div className="hr-lbl">Host Bonus ({(approvedCount * 10000).toLocaleString()} Coins)</div></div>
         </div>
         <div className="hr-stat-card">
           <div className="hr-icon-box" style={{ background:'rgba(239,68,68,0.1)', color:'#ef4444' }}><XCircle size={20}/></div>

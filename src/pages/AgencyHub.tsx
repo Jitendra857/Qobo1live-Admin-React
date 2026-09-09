@@ -311,6 +311,13 @@ const AgencyHub: React.FC = () => {
           <div className="stat-icon-box green"><CheckCircle size={22} /></div>
           <div><div className="stat-num">{approvedCount}</div><div className="stat-lbl">Active Agencies</div></div>
         </div>
+        <div className="agency-stat-card green">
+          <div className="stat-icon-box green"><DollarSign size={22} /></div>
+          <div>
+            <div className="stat-num">${approvedCount}</div>
+            <div className="stat-lbl">Super Admin Earned ({(approvedCount * 10000).toLocaleString()} Coins)</div>
+          </div>
+        </div>
         <div className="agency-stat-card purple">
           <div className="stat-icon-box purple"><UserCheck size={22} /></div>
           <div>
@@ -323,13 +330,6 @@ const AgencyHub: React.FC = () => {
           <div>
             <div className="stat-num">₹{((revenue?.pendingCommissions || 0) / 1000).toFixed(1)}k</div>
             <div className="stat-lbl">Pending Payouts</div>
-          </div>
-        </div>
-        <div className="agency-stat-card green">
-          <div className="stat-icon-box green"><TrendingUp size={22} /></div>
-          <div>
-            <div className="stat-num">₹{((revenue?.totalVolume || 0) / 1000).toFixed(1)}k</div>
-            <div className="stat-lbl">Total Revenue</div>
           </div>
         </div>
       </div>
