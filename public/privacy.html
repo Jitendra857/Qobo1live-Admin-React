@@ -3,16 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Official Privacy Policy for Qobo1live - Details on personal data, device permissions, third-party SDKs, data retention, age restrictions, and account deletion.">
     <title>Privacy Policy - Qobo1live</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-opal: #f1f5f9;
             --accent-purple: #8b5cf6;
             --accent-blue: #3b82f6;
+            --accent-emerald: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-red: #ef4444;
             --text-primary: #0f172a;
-            --text-secondary: #64748b;
-            --card-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+            --text-secondary: #475569;
+            --card-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.06);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -21,94 +25,157 @@
             font-family: 'Outfit', sans-serif;
             background-color: var(--bg-opal);
             color: var(--text-primary);
-            line-height: 1.6;
+            line-height: 1.7;
             padding: 40px 20px;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 920px;
             margin: 0 auto;
         }
 
         header {
             text-align: center;
-            margin-bottom: 50px;
+            margin-bottom: 45px;
         }
 
         .logo-icon {
             width: 64px;
             height: 64px;
-            background: var(--accent-purple);
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
             border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 20px;
             color: white;
-            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+            font-size: 2rem;
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
         }
 
-        h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 10px; }
-        .subtitle { color: var(--text-secondary); font-size: 1.1rem; font-weight: 600; }
+        h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 8px; color: #0f172a; }
+        .subtitle { color: var(--text-secondary); font-size: 1rem; font-weight: 600; }
+
+        nav {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin-bottom: 35px;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+        }
+
+        nav a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin: 0 6px;
+            display: inline-block;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
 
         .bento-grid {
             display: grid;
-            gap: 30px;
+            gap: 25px;
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(0,0,0,0.05);
             border-radius: 24px;
-            padding: 30px;
+            padding: 32px;
             box-shadow: var(--card-shadow);
+            scroll-margin-top: 20px;
         }
 
         .card-header {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 14px;
             margin-bottom: 20px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 12px;
         }
 
         .card-header h2 {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 800;
+            color: #0f172a;
         }
 
-        .card-header i {
-            font-style: normal;
-            font-size: 1.5rem;
+        .card-header .icon {
+            font-size: 1.6rem;
         }
 
-        p { color: var(--text-secondary); margin-bottom: 15px; }
+        p { color: var(--text-secondary); margin-bottom: 14px; }
         
         ul, ol {
-            padding-left: 20px;
+            padding-left: 22px;
             color: var(--text-secondary);
-            margin-bottom: 15px;
+            margin-bottom: 16px;
         }
 
         li { margin-bottom: 10px; }
 
-        .deletion-steps {
-            background: rgba(239, 68, 68, 0.05);
-            border: 1px solid rgba(239, 68, 68, 0.1);
+        dt {
+            font-weight: 800;
+            margin-top: 16px;
+            color: #1e293b;
+            font-size: 1.05rem;
         }
+
+        dd {
+            margin: 4px 0 16px 0;
+            color: var(--text-secondary);
+        }
+
+        .highlight-box {
+            background: #f8fafc;
+            border-left: 4px solid var(--accent-blue);
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+
+        .deletion-card {
+            background: rgba(239, 68, 68, 0.03);
+            border: 1px solid rgba(239, 68, 68, 0.15);
+        }
+
+        .deletion-steps-box {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 18px 22px;
+            border-radius: 14px;
+            margin-top: 14px;
+        }
+
+        a { color: var(--accent-blue); text-decoration: none; word-break: break-word; }
+        a:hover { text-decoration: underline; }
 
         footer {
             text-align: center;
-            margin-top: 60px;
+            margin-top: 50px;
             color: var(--text-secondary);
             font-size: 0.9rem;
+            font-weight: 600;
         }
 
         strong { color: var(--text-primary); font-weight: 700; }
+        code { background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-size: 0.88rem; color: #0f172a; }
 
         @media (max-width: 600px) {
             h1 { font-size: 2rem; }
-            body { padding: 20px 15px; }
+            body { padding: 20px 14px; }
+            .card { padding: 22px 18px; border-radius: 18px; }
+            nav a { margin: 4px 6px; }
         }
     </style>
 </head>
@@ -117,75 +184,183 @@
         <header>
             <div class="logo-icon">🛡️</div>
             <h1>Privacy Policy</h1>
-            <p class="subtitle">Last Updated: May 6, 2026</p>
+            <p class="subtitle">Effective Date: September 1, 2026 · Operator: Qobo1live Technologies</p>
         </header>
 
+        <nav aria-label="Policy quick links">
+            <a href="#info">Information We Collect</a> · 
+            <a href="#media">Public Media</a> · 
+            <a href="#sdks">Third-Party SDKs</a> · 
+            <a href="#permissions">Permissions</a> · 
+            <a href="#retention">Retention</a> · 
+            <a href="#deletion">Delete Account</a> · 
+            <a href="#rights">Your Rights</a> · 
+            <a href="#children">Age Eligibility (18+)</a> · 
+            <a href="#contact">Contact Us</a>
+        </nav>
+
         <div class="bento-grid">
-            <section class="card">
+            <!-- 1. Introduction -->
+            <section class="card" id="intro">
                 <div class="card-header">
-                    <span style="color: var(--accent-purple)">ℹ️</span>
-                    <h2>Introduction</h2>
+                    <span class="icon">ℹ️</span>
+                    <h2>1. Introduction</h2>
                 </div>
-                <p>Welcome to Qobo1live. We value your privacy and are committed to protecting your personal data. This Privacy Policy explains how we collect, use, and safeguard your information when you use our mobile application and website, especially in connection with Facebook Login and other social authentication methods.</p>
+                <p>Welcome to <strong>Qobo1live</strong> (“the App”, “we”, “us”, “our”). We value your privacy and are committed to protecting your personal data. This Privacy Policy explains how we collect, use, process, share, retain, and safeguard your personal information when you use our mobile application, live-streaming services, 1:1 voice and video calling, social chat messaging, interactive audio/video rooms, and virtual wallet services.</p>
+                <p>The legal operator responsible for your information is <strong>Qobo1live Technologies</strong> (India). For privacy inquiries or support, contact us at <a href="mailto:support@qobo1live.com">support@qobo1live.com</a>.</p>
             </section>
 
-            <section class="card">
+            <!-- 2. Information We Collect -->
+            <section class="card" id="info">
                 <div class="card-header">
-                    <span style="color: var(--accent-blue)">👁️</span>
-                    <h2>Information We Collect</h2>
+                    <span class="icon">👁️</span>
+                    <h2>2. Information We Collect and Why</h2>
                 </div>
-                <p>When you use Facebook Login, we may collect the following information:</p>
+                <p>We collect personal information to provide core features, authenticate users, process virtual currency transactions, maintain platform safety, and satisfy regulatory obligations.</p>
+                <dl>
+                    <dt>Account & Profile Information</dt>
+                    <dd>When you register or edit your profile, we collect your display name, phone number, email address, profile picture, poster image, date of birth (for age verification), gender, bio, country, state, city, language preferences, and personal interests. When using Google or Facebook sign-in, we collect authorized account identifiers and profile information provided by those services.</dd>
+
+                    <dt>Content & Interactive Media</dt>
+                    <dd>We process direct messages, uploaded media, live audio/video streams, 1:1 voice and video call metadata, room participation events, follows, favorites, block lists, virtual gift transfers, avatar frames, and chat bubbles to operate social rooms, deliver streams, and enforce community standards.</dd>
+
+                    <dt>Wallet, Coins & Payout Records</dt>
+                    <dd>We process coin and diamond balances, purchase history via Razorpay, virtual gift logs, reward allocations, and payout requests. If you request a payout, we process the bank account details, IFSC code, account holder name, or UPI ID you provide. Financial providers process credit/debit card details in their secure checkout windows.</dd>
+
+                    <dt>Host & Agency Application Verification Details</dt>
+                    <dd>When applying for Host or Agency status, we collect your full legal name, date of birth, government identity card details (including front and back document photos such as Aadhaar, PAN, or National ID), WhatsApp contact number, email, real photo, postal address, and agency affiliation code. This sensitive data is processed strictly for identity verification, host eligibility review, commission payouts, and fraud prevention.</dd>
+
+                    <dt>Technical, Diagnostic & Device Information</dt>
+                    <dd>Our servers and integrated SDKs process technical operational data, including IP address, hardware model, operating system version, app build version, session tokens, device identifiers, Firebase Cloud Messaging (FCM) tokens, connection timestamps, and diagnostic crash logs to maintain connection stability, single-device login restrictions, and security enforcement.</dd>
+                </dl>
+            </section>
+
+            <!-- 3. Public Media & Content -->
+            <section class="card" id="media">
+                <div class="card-header">
+                    <span class="icon">🎙️</span>
+                    <h2>3. Public Content, Messages, and Live Media</h2>
+                </div>
+                <p>Your displayed public profile (including display name, profile photo, level, bio, country, equipped avatar frame/background, and live status) is visible to other users. Activity inside public audio rooms and live streams—such as seat status, public room chat, sending virtual gifts, and leaderboard rankings—is visible to participants in that room or stream.</p>
+                <p>Direct chat messages and 1:1 voice/video calls are private between participants. If a user submits a safety report, compliance moderators review relevant chat logs or media to investigate policy violations. Real-time audio and video streams are transmitted through secure ZEGOCLOUD channels; call duration and session timestamps are logged. We do not perform permanent server-side video recording of direct 1:1 calls unless required for law enforcement compliance or safety investigations.</p>
+            </section>
+
+            <!-- 4. Third-Party SDKs & Data Sharing -->
+            <section class="card" id="sdks">
+                <div class="card-header">
+                    <span class="icon">🤝</span>
+                    <h2>4. Data Sharing & Third-Party SDKs</h2>
+                </div>
+                <p>We share information with third-party service providers strictly as required to operate the App. We do <strong>NOT</strong> sell personal information. We do <strong>NOT</strong> share user data with third-party advertising networks for cross-app tracking or targeted advertising.</p>
+                <p>Our integrated production providers include:</p>
                 <ul>
-                    <li><strong>Public Profile Information:</strong> Name, profile picture, and gender.</li>
-                    <li><strong>Email Address:</strong> Used for account creation and communication.</li>
-                    <li><strong>User ID:</strong> A unique identifier provided by Facebook to link your account.</li>
+                    <li><strong>Google / Firebase (Google LLC):</strong> Used for secure user authentication, database operations, Firebase Storage, and FCM push notification delivery for incoming call alerts.</li>
+                    <li><strong>Google & Meta / Facebook:</strong> Used solely for social single sign-in authentication.</li>
+                    <li><strong>ZEGOCLOUD (ZEGO Express SDK):</strong> Used for real-time audio/video streaming, 1:1 voice/video calling, room audio routing, and signaling.</li>
+                    <li><strong>Razorpay:</strong> Used for secure in-app purchase checkout when buying coin packages or VIP passes.</li>
+                    <li><strong>Render & Cloud Infrastructure:</strong> Used for secure API server hosting, PostgreSQL database, WebSockets, and media storage.</li>
+                    <li><strong>Bank & UPI Gateways:</strong> Used to execute verified host and agency withdrawal payouts.</li>
                 </ul>
             </section>
 
-            <section class="card">
+            <!-- 5. Device Permissions -->
+            <section class="card" id="permissions">
                 <div class="card-header">
-                    <span style="color: #10b981">🔒</span>
-                    <h2>How We Use Your Data</h2>
+                    <span class="icon">📱</span>
+                    <h2>5. Device Permissions</h2>
                 </div>
-                <p>We use the collected data for the following purposes:</p>
+                <p>To support live streaming, calling, and profile customization, Qobo1live requests the following device permissions:</p>
                 <ul>
-                    <li>To provide and maintain our Service.</li>
-                    <li>To authenticate your identity via social login providers.</li>
-                    <li>To personalize your user experience within the application.</li>
-                    <li>To provide customer support and respond to your inquiries.</li>
+                    <li><strong>Camera (<code>android.permission.CAMERA</code>):</strong> Required to broadcast live video streams and make 1:1 video calls.</li>
+                    <li><strong>Microphone (<code>android.permission.RECORD_AUDIO</code>):</strong> Required to transmit audio during live streams, audio rooms, and 1:1 calls.</li>
+                    <li><strong>Photos & Storage (<code>android.permission.READ_MEDIA_IMAGES</code> / <code>READ_EXTERNAL_STORAGE</code>):</strong> Required to select and upload profile photos, poster images, room backgrounds, and verification documents.</li>
+                    <li><strong>Push Notifications (<code>android.permission.POST_NOTIFICATIONS</code>):</strong> Required on Android 13+ for incoming call alerts and direct chat notifications.</li>
+                    <li><strong>Bluetooth & Audio Settings (<code>android.permission.BLUETOOTH_CONNECT</code> / <code>MODIFY_AUDIO_SETTINGS</code>):</strong> Required to route audio to Bluetooth headsets and speakerphones.</li>
+                    <li><strong>Incoming Call Alerts & Background Execution (<code>USE_FULL_SCREEN_INTENT</code> / <code>SYSTEM_ALERT_WINDOW</code> / <code>FOREGROUND_SERVICE</code>):</strong> Required to show full-screen incoming call UI and maintain background stream connections.</li>
                 </ul>
             </section>
 
-            <section class="card deletion-steps">
+            <!-- 6. Retention & Security -->
+            <section class="card" id="retention">
                 <div class="card-header">
-                    <span style="color: #ef4444">🗑️</span>
-                    <h2>Data Deletion Rights</h2>
+                    <span class="icon">🔒</span>
+                    <h2>6. Retention and Security</h2>
                 </div>
-                <p>According to Facebook's Platform Rules, we provide instructions on how users can delete their activities. If you want to delete your activities for Qobo1live, follow these steps:</p>
-                <ol>
-                    <li>Go to your Facebook Account's "Settings & Privacy" menu. Click "Settings".</li>
-                    <li>Look for "Apps and Websites" and you will see all of the apps and websites linked with your Facebook.</li>
-                    <li>Search and tap "Qobo1live" in the search bar.</li>
-                    <li>Scroll and tap "Remove".</li>
-                </ol>
-                <p>Alternatively, you can contact us directly at <strong>support@qobo1live.com</strong> to request data deletion from our systems.</p>
+                <p>We retain personal data only as long as necessary for legitimate service operations or legal requirements:</p>
+                <ul>
+                    <li><strong>Account & Profile Data:</strong> Retained while your account is active. Purged immediately upon account deletion confirmation.</li>
+                    <li><strong>Messages & Call Logs:</strong> Retained up to 12 months for messaging history and safety compliance.</li>
+                    <li><strong>Financial & Payout Records:</strong> In-app purchase history, coin transactions, and payout records are retained for <strong>7 years</strong> to comply with statutory accounting, banking, and tax laws.</li>
+                    <li><strong>Security Logs & Reports:</strong> System logs and safety reports are retained up to 24 months.</li>
+                    <li><strong>System Backups:</strong> Encrypted backups automatically expire and overwrite within <strong>30 days</strong>.</li>
+                </ul>
+                <p>We enforce transport layer encryption (HTTPS/TLS 1.3, WSS), hashed user passwords (bcrypt), database access controls, and secure session tokens.</p>
             </section>
 
-            <section class="card">
+            <!-- 7. Account Deletion -->
+            <section class="card deletion-card" id="deletion">
                 <div class="card-header">
-                    <span style="color: #f59e0b">✉️</span>
-                    <h2>Contact Us</h2>
+                    <span class="icon">🗑️</span>
+                    <h2>7. Delete Your Qobo1live Account</h2>
                 </div>
-                <p>If you have any questions or suggestions about our Privacy Policy, do not hesitate to contact us at:</p>
+                <p>In compliance with Google Play Developer Policies and Facebook Platform Rules, Qobo1live provides multiple simple ways to delete your account and personal data:</p>
+
+                <div class="deletion-steps-box">
+                    <p><strong>Option A: In the App (Instant Deletion)</strong></p>
+                    <p>Open the Qobo1live App → Go to <strong>Profile / Settings</strong> → Tap <strong>Delete Account</strong> → Confirm your request. Your account and associated profile, messages, wallet balances, and social links are purged immediately.</p>
+                </div>
+
+                <div class="deletion-steps-box">
+                    <p><strong>Option B: Web / Email Request (Without App)</strong></p>
+                    <p>Send an email to <a href="mailto:support@qobo1live.com?subject=Qobo1live%20Account%20Deletion">support@qobo1live.com</a> with the subject line <strong>“Qobo1live Account Deletion”</strong>. Include your User ID and registered Phone Number or Email. Verified email deletion requests are completed within <strong>3 to 7 business days</strong>.</p>
+                </div>
+
+                <div class="deletion-steps-box">
+                    <p><strong>Option C: Facebook Login Activity Removal</strong></p>
+                    <ol>
+                        <li>Go to your Facebook Account's "Settings & Privacy" menu → Click "Settings".</li>
+                        <li>Look for "Apps and Websites" to view connected services.</li>
+                        <li>Search for "Qobo1live" and click "Remove".</li>
+                    </ol>
+                </div>
+                <p style="margin-top: 14px;"><em>Scope of Deletion: Account deletion purges profile data, photos, chat messages, FCM tokens, wallet balances, backpack items, and host applications across our database and Firebase. Statutory financial records are retained separately as described in Section 6.</em></p>
+            </section>
+
+            <!-- 8. Your Rights -->
+            <section class="card" id="rights">
+                <div class="card-header">
+                    <span class="icon">⚙️</span>
+                    <h2>8. Your Rights and Choices</h2>
+                </div>
+                <p>You have the right to access, export, correct, or request deletion of your personal data, or revoke granted device permissions at any time. To submit a request, contact <a href="mailto:support@qobo1live.com">support@qobo1live.com</a>.</p>
+            </section>
+
+            <!-- 9. Age Eligibility (18+) -->
+            <section class="card" id="children">
+                <div class="card-header">
+                    <span class="icon">🔞</span>
+                    <h2>9. Age Eligibility (18+ Requirement)</h2>
+                </div>
+                <p>Qobo1live is strictly intended for individuals aged <strong>18 and older</strong>. We do not knowingly collect personal data from or register minors under 18 years old. Accounts discovered to belong to minors are immediately suspended and purged. If you suspect an underage user on Qobo1live, notify us immediately at <a href="mailto:support@qobo1live.com">support@qobo1live.com</a>.</p>
+            </section>
+
+            <!-- 10. Contact Us -->
+            <section class="card" id="contact">
+                <div class="card-header">
+                    <span class="icon">✉️</span>
+                    <h2>10. Contact Us & Legal Operator</h2>
+                </div>
+                <p>For privacy inquiries, grievance redressal, or data requests, contact our team at:</p>
                 <p>
-                    <strong>Email:</strong> support@qobo1live.com<br>
-                    <strong>Website:</strong> www.qobo1live.com
+                    <strong>Email:</strong> <a href="mailto:support@qobo1live.com">support@qobo1live.com</a><br>
+                    <strong>Website:</strong> <a href="https://www.qobo1live.com" target="_blank">www.qobo1live.com</a><br>
+                    <strong>Legal Operator:</strong> Qobo1live Technologies, India
                 </p>
             </section>
         </div>
 
         <footer>
-            &copy; 2026 Qobo1live. All rights reserved.
+            &copy; 2026 Qobo1live Technologies. All rights reserved. · Privacy Policy
         </footer>
     </div>
 </body>
