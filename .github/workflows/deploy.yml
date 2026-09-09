@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - prod
-
   workflow_dispatch:
 
 permissions:
@@ -16,40 +15,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
-      # ----------------------------------------
-      # Checkout repository
-      # ----------------------------------------
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # ----------------------------------------
-      # Setup Node.js
-      # ----------------------------------------
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
 
-      # ----------------------------------------
-      # Install dependencies
-      # ----------------------------------------
       - name: Install Dependencies
         run: npm ci
 
-      # ----------------------------------------
-      # Build frontend
-      #
-      # .env.production already contains:
-      # VITE_BACKEND_URL=https://api.qobo1live.in
-      # ----------------------------------------
       - name: Build Application
         run: npm run build
 
-      # ----------------------------------------
-      # Verify build
-      # ----------------------------------------
       - name: Verify Build
         run: |
           echo "Checking frontend build..."
@@ -63,9 +43,6 @@ jobs:
           echo "Build contents:"
           ls -lah dist
 
-      # ----------------------------------------
-      # Create deployment package
-      # ----------------------------------------
       - name: Create Deployment Package
         run: |
           echo "Creating deployment package..."
@@ -75,26 +52,37 @@ jobs:
           echo "Deployment package:"
           ls -lh qobo1live-frontend.tar.gz
 
-      # ----------------------------------------
-      # Test VPS connectivity from GitHub Runner
-      # ----------------------------------------
       - name: Test VPS SSH Connectivity
         run: |
           echo "Testing connectivity to VPS..."
           echo "Host: ${{ secrets.VPS_HOST }}"
           echo "Port: 22"
 
-          timeout 15 bash -c \
-            '</dev/tcp/${{ secrets.VPS_HOST }}/22' \
+          timeout 15 bash -c '</dev/tcp/${{ secrets.VPS_HOST }}/22' \
             && echo "VPS port 22 is reachable from GitHub Runner" \
             || (
               echo "ERROR: VPS port 22 is NOT reachable from GitHub Runner"
               exit 1
             )
 
-      # ----------------------------------------
-      # Upload frontend package to VPS
-      # ----------------------------------------
+      - name: Prepare VPS Deployment Directory
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          timeout: 30s
+          command_timeout: 2m
+          script: |
+            set -e
+
+            mkdir -p /home/ubuntu/deploy-temp
+            chmod 755 /home/ubuntu/deploy-temp
+
+            echo "Deployment directory ready:"
+            ls -ld /home/ubuntu/deploy-temp
+
       - name: Upload Frontend
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -102,19 +90,13 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
-
           source: qobo1live-frontend.tar.gz
-          target: /tmp
-
+          target: /home/ubuntu/deploy-temp
           timeout: 30s
           command_timeout: 10m
-
           overwrite: true
           debug: true
 
-      # ----------------------------------------
-      # Deploy frontend on VPS
-      # ----------------------------------------
       - name: Deploy Frontend on VPS
         uses: appleboy/ssh-action@v1.2.2
         with:
@@ -122,10 +104,8 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
-
           timeout: 30s
           command_timeout: 10m
-
           script: |
             set -e
 
@@ -133,16 +113,12 @@ jobs:
             echo "Starting Qobo1live Frontend Deployment"
             echo "=========================================="
 
-            # ----------------------------------------
-            # Create deployment directories
-            # ----------------------------------------
+            DEPLOY_PACKAGE="/home/ubuntu/deploy-temp/qobo1live-frontend.tar.gz"
+
             echo "Creating deployment directories..."
 
             mkdir -p /var/www/qobo1live/releases
 
-            # ----------------------------------------
-            # Generate release ID
-            # ----------------------------------------
             RELEASE_ID=$(date +%Y%m%d%H%M%S)
             RELEASE_DIR="/var/www/qobo1live/releases/$RELEASE_ID"
 
@@ -151,29 +127,23 @@ jobs:
 
             mkdir -p "$RELEASE_DIR"
 
-            # ----------------------------------------
-            # Verify uploaded package
-            # ----------------------------------------
             echo "Checking uploaded package..."
 
-            if [ ! -f "/tmp/qobo1live-frontend.tar.gz" ]; then
+            if [ ! -f "$DEPLOY_PACKAGE" ]; then
               echo "ERROR: Deployment package not found!"
+              echo "Expected: $DEPLOY_PACKAGE"
+              echo "Directory contents:"
+              ls -lah /home/ubuntu/deploy-temp || true
               exit 1
             fi
 
-            ls -lh /tmp/qobo1live-frontend.tar.gz
+            echo "Deployment package found:"
+            ls -lh "$DEPLOY_PACKAGE"
 
-            # ----------------------------------------
-            # Extract frontend
-            # ----------------------------------------
             echo "Extracting frontend..."
 
-            tar -xzf /tmp/qobo1live-frontend.tar.gz \
-              -C "$RELEASE_DIR"
+            tar -xzf "$DEPLOY_PACKAGE" -C "$RELEASE_DIR"
 
-            # ----------------------------------------
-            # Verify deployment
-            # ----------------------------------------
             echo "Verifying deployed files..."
 
             if [ ! -f "$RELEASE_DIR/index.html" ]; then
@@ -184,51 +154,32 @@ jobs:
             echo "Frontend files:"
             ls -lah "$RELEASE_DIR"
 
-            # ----------------------------------------
-            # Update current release symlink
-            # ----------------------------------------
             echo "Updating current release..."
 
             ln -sfn "$RELEASE_DIR" /var/www/qobo1live/current
 
-            # ----------------------------------------
-            # Set ownership
-            # ----------------------------------------
             echo "Setting permissions..."
 
             chown -R www-data:www-data "$RELEASE_DIR"
 
-            # ----------------------------------------
-            # Remove uploaded package
-            # ----------------------------------------
-            rm -f /tmp/qobo1live-frontend.tar.gz
+            echo "Removing deployment package..."
 
-            # ----------------------------------------
-            # Keep latest 3 releases
-            # ----------------------------------------
+            rm -f "$DEPLOY_PACKAGE"
+
             echo "Cleaning old releases..."
 
             cd /var/www/qobo1live/releases
 
             ls -1dt */ 2>/dev/null | tail -n +4 | xargs -r rm -rf
 
-            # ----------------------------------------
-            # Validate Nginx
-            # ----------------------------------------
             echo "Testing Nginx configuration..."
 
-            nginx -t
+            sudo nginx -t
 
-            # ----------------------------------------
-            # Reload Nginx
-            # ----------------------------------------
             echo "Reloading Nginx..."
 
-            systemctl reload nginx
+            sudo systemctl reload nginx
 
-            # ----------------------------------------
-            # Deployment information
-            # ----------------------------------------
             echo "=========================================="
             echo "Deployment completed successfully"
             echo "=========================================="
