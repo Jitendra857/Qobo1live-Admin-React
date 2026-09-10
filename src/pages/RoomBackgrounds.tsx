@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { adminService } from '../services/api';
 import { toast } from 'react-hot-toast';
-import { Sparkles, Plus, Trash2, Edit, X, Image as ImageIcon } from 'lucide-react';
+import { Sparkles, Plus, Trash2, Edit, X, Image as ImageIcon, ShieldAlert } from 'lucide-react';
 import ConfirmationModal from '../components/ConfirmationModal';
 import MediaImage from '../components/MediaImage';
+import SvgaPlayer from '../components/SvgaPlayer';
 import '../styles/UserManagement.css';
+
+const isSvgaBg = (url?: string) => {
+    if (!url) return false;
+    const lower = url.toLowerCase();
+    return lower.includes('.svga') || (lower.includes('/raw/upload/') && lower.includes('/backgrounds/'));
+};
 
 const RoomBackgrounds: React.FC = () => {
     const [backgrounds, setBackgrounds] = useState<any[]>([]);
@@ -28,10 +35,10 @@ const RoomBackgrounds: React.FC = () => {
             setLoading(true);
             const res = await adminService.getRoomBackgrounds();
             const data = res.data;
-            if (data.statusCode === 1) {
+            if (data && (data.statusCode === 1 || data.success)) {
                 setBackgrounds(data.data || []);
             } else {
-                toast.error(data.message || 'Failed to fetch room backgrounds');
+                toast.error(data?.message || 'Failed to fetch room backgrounds');
             }
         } catch (err: any) {
             console.error('Failed to fetch room backgrounds:', err);
@@ -111,12 +118,12 @@ const RoomBackgrounds: React.FC = () => {
                 : await adminService.createRoomBackground(form);
 
             const data = res.data;
-            if (data.statusCode === 1) {
+            if (data && (data.statusCode === 1 || data.success)) {
                 toast.success(editingBg ? 'Background updated!' : 'Background added!');
                 setIsModalOpen(false);
                 fetchBackgrounds();
             } else {
-                toast.error(data.message || 'Operation failed');
+                toast.error(data?.message || 'Operation failed');
             }
         } catch (err: any) {
             console.error('Error submitting form:', err);
@@ -127,16 +134,17 @@ const RoomBackgrounds: React.FC = () => {
         }
     };
 
-    const handleDelete = async (id: string) => {
+    const handleDelete = async () => {
+        if (!showDeleteConfirm) return;
         try {
             setIsDeleting(true);
-            const res = await adminService.deleteRoomBackground(id);
+            const res = await adminService.deleteRoomBackground(showDeleteConfirm);
             const data = res.data;
-            if (data.statusCode === 1) {
+            if (data && (data.statusCode === 1 || data.success)) {
                 toast.success('Room background deleted');
                 fetchBackgrounds();
             } else {
-                toast.error(data.message || 'Failed to delete');
+                toast.error(data?.message || 'Failed to delete');
             }
         } catch (err: any) {
             console.error('Error deleting background:', err);
@@ -149,189 +157,224 @@ const RoomBackgrounds: React.FC = () => {
     };
 
     return (
-        <div className="user-management-container dark-theme page-padding">
-            <div className="flex justify-between items-center mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                        <Sparkles className="text-purple-400" /> Audio Room Backgrounds Catalog
+        <div className="dashboard-page users-page">
+            {/* Header section */}
+            <div className="dashboard-header">
+                <div className="header-text-group">
+                    <h1 className="flex items-center gap-2">
+                        <Sparkles size={28} className="text-purple-400" /> Audio Room Backgrounds Catalog
                     </h1>
-                    <p className="text-gray-400 text-sm mt-1">
+                    <p className="subtitle">
                         Manage background themes for Live Audio Rooms and Video Streams. Hosts can switch to these themes in-room.
                     </p>
                 </div>
-                <button
-                    onClick={handleOpenCreateModal}
-                    className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-lg transition-all"
-                >
-                    <Plus size={18} /> Add Room Background
-                </button>
+                <div className="header-actions">
+                    <button className="primary flex items-center gap-2" onClick={handleOpenCreateModal}>
+                        <Plus size={20} />
+                        <span>Add Room Background</span>
+                    </button>
+                </div>
             </div>
 
-            {loading ? (
-                <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
-                </div>
-            ) : backgrounds.length === 0 ? (
-                <div className="bg-gray-800/40 rounded-xl p-12 text-center border border-gray-700">
-                    <ImageIcon className="mx-auto text-gray-500 mb-4" size={48} />
-                    <h3 className="text-lg font-medium text-gray-300">No Room Backgrounds Found</h3>
-                    <p className="text-gray-500 text-sm mt-1">Add background themes for hosts to customize audio rooms.</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {backgrounds.map((bg) => (
-                        <div key={bg.id} className="bg-gray-800/60 border border-gray-700/60 rounded-xl overflow-hidden shadow-md hover:border-purple-500/50 transition-all flex flex-col">
-                            <div className="relative h-44 bg-gray-900 overflow-hidden">
-                                <MediaImage
-                                    src={bg.image}
-                                    alt={bg.name}
-                                    className="w-full h-full object-cover"
-                                />
-                                <div className="absolute top-2 right-2 flex gap-1">
-                                    {bg.isDefault && (
-                                        <span className="bg-amber-500 text-black text-xs font-bold px-2 py-0.5 rounded shadow">
-                                            DEFAULT
+            {/* Content list */}
+            <div className="table-container-premium">
+                {loading ? (
+                    <div className="loading-state">
+                        <div className="loading-spinner"></div>
+                        <p>Syncing room backgrounds catalog...</p>
+                    </div>
+                ) : backgrounds.length === 0 ? (
+                    <div className="empty-state">
+                        <ShieldAlert size={48} className="text-muted" />
+                        <h3>No Room Backgrounds Configured</h3>
+                        <p>Configure background themes so hosts can select them inside audio rooms.</p>
+                    </div>
+                ) : (
+                    <table className="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Background Preview</th>
+                                <th>Background Name</th>
+                                <th>Default Status</th>
+                                <th>Sort Order</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {backgrounds.map((bg) => (
+                                <tr key={bg.id} className="row-premium">
+                                    <td>
+                                        <div 
+                                            className="avatar-wrapper" 
+                                            style={{ 
+                                                width: '90px', 
+                                                height: '56px', 
+                                                padding: '2px', 
+                                                border: '1px solid #e2e8f0', 
+                                                borderRadius: '8px', 
+                                                background: '#111827', 
+                                                display: 'flex', 
+                                                alignItems: 'center', 
+                                                justifyContent: 'center',
+                                                overflow: 'hidden'
+                                            }}
+                                        >
+                                            {isSvgaBg(bg.image) ? (
+                                                <SvgaPlayer 
+                                                    src={bg.image} 
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                    mute={true}
+                                                />
+                                            ) : (
+                                                <MediaImage 
+                                                    src={bg.image} 
+                                                    alt={bg.name} 
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px' }}
+                                                    fallbackIcon={<ImageIcon size={20} className="text-slate-400" />}
+                                                    fallbackText="Bg"
+                                                />
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td><strong>{bg.name}</strong></td>
+                                    <td>
+                                        {bg.isDefault ? (
+                                            <span className="badge badge-warning" style={{ background: '#f59e0b', color: '#000', fontWeight: 'bold' }}>
+                                                DEFAULT
+                                            </span>
+                                        ) : (
+                                            <span style={{ color: '#94a3b8', fontSize: '13px' }}>Standard</span>
+                                        )}
+                                    </td>
+                                    <td>
+                                        <span style={{ fontWeight: 600, color: '#64748b' }}>
+                                            {bg.sortOrder || 0}
                                         </span>
-                                    )}
-                                    <span className={`text-xs font-bold px-2 py-0.5 rounded shadow ${bg.isActive ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'}`}>
-                                        {bg.isActive ? 'ACTIVE' : 'INACTIVE'}
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="p-4 flex-1 flex flex-col justify-between">
-                                <div>
-                                    <h3 className="text-base font-semibold text-white truncate">{bg.name}</h3>
-                                    <p className="text-xs text-gray-400 mt-1">Sort Order: {bg.sortOrder || 0}</p>
-                                </div>
+                                    </td>
+                                    <td>
+                                        <span className={`badge ${bg.isActive ? 'badge-success' : 'badge-danger'}`}>
+                                            {bg.isActive ? 'Active' : 'Inactive'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div className="ops-cluster">
+                                            <button className="op-btn edit" onClick={() => handleOpenEditModal(bg)} title="Edit Background">
+                                                <Edit size={14} />
+                                            </button>
+                                            <button className="op-btn delete" onClick={() => setShowDeleteConfirm(bg.id)} title="Delete Background">
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
+            </div>
 
-                                <div className="flex justify-end gap-2 mt-4 pt-3 border-t border-gray-700/40">
-                                    <button
-                                        onClick={() => handleOpenEditModal(bg)}
-                                        className="p-2 bg-gray-700/50 hover:bg-gray-700 text-gray-300 hover:text-white rounded-lg transition-colors"
-                                        title="Edit Background"
-                                    >
-                                        <Edit size={16} />
-                                    </button>
-                                    <button
-                                        onClick={() => setShowDeleteConfirm(bg.id)}
-                                        className="p-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg transition-colors"
-                                        title="Delete Background"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            {/* Create/Edit Modal */}
+            {/* Modal for Create / Edit */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-                    <div className="bg-gray-800 border border-gray-700 rounded-xl w-full max-w-lg p-6 shadow-2xl relative">
-                        <button
-                            onClick={() => setIsModalOpen(false)}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-white"
-                        >
-                            <X size={20} />
-                        </button>
-                        <h2 className="text-xl font-bold text-white mb-4">
-                            {editingBg ? 'Edit Room Background' : 'Add Room Background'}
-                        </h2>
-
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-semibold text-gray-300 uppercase mb-1">Background Name</label>
+                <div className="modal-overlay">
+                    <form onSubmit={handleSubmit} className="modal-content glass-panel slide-up" style={{ maxWidth: '500px' }}>
+                        <div className="modal-header">
+                            <h3>{editingBg ? 'Edit Room Background' : 'Add Room Background'}</h3>
+                            <button className="close-btn" type="button" onClick={() => setIsModalOpen(false)}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="form-group">
+                                <label>Background Name *</label>
                                 <input
                                     type="text"
+                                    className="admin-input"
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     placeholder="e.g. Royal Purple Lounge"
-                                    className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-purple-500"
                                     required
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-semibold text-gray-300 uppercase mb-1">Image Upload (PNG / JPG / SVG)</label>
+                            <div className="form-group" style={{ marginTop: '16px' }}>
+                                <label>Image File (PNG / JPG / SVG) *</label>
                                 <input
                                     type="file"
-                                    accept="image/*,.svg"
+                                    accept="image/*,.svg,.svga"
+                                    className="admin-input"
                                     onChange={handleFileChange}
-                                    className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-300 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700"
+                                    required={!editingBg && !formData.image}
                                 />
+                                {editingBg && <small style={{ color: '#888', marginTop: '4px', display: 'block' }}>Leave empty to keep existing background file.</small>}
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-semibold text-gray-300 uppercase mb-1">Or Image URL</label>
+                            <div className="form-group" style={{ marginTop: '16px' }}>
+                                <label>Or Image / SVGA URL</label>
                                 <input
                                     type="text"
+                                    className="admin-input"
                                     value={formData.image}
                                     onChange={(e) => setFormData({ ...formData, image: e.target.value })}
                                     placeholder="https://..."
-                                    className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-purple-500"
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-semibold text-gray-300 uppercase mb-1">Sort Order</label>
+                            <div className="modal-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
+                                <div className="form-group" style={{ marginBottom: '0px' }}>
+                                    <label>Sort Order</label>
                                     <input
                                         type="number"
+                                        className="admin-input"
                                         value={formData.sortOrder}
                                         onChange={(e) => setFormData({ ...formData, sortOrder: e.target.value })}
-                                        className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-purple-500"
+                                        placeholder="0"
                                     />
                                 </div>
-                                <div className="flex flex-col justify-end space-y-2">
-                                    <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-300">
-                                        <input
-                                            type="checkbox"
-                                            checked={formData.isDefault}
-                                            onChange={(e) => setFormData({ ...formData, isDefault: e.target.checked })}
-                                            className="rounded border-gray-700 text-purple-600 focus:ring-purple-500"
-                                        />
-                                        Set as Default
-                                    </label>
-                                    <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-300">
-                                        <input
-                                            type="checkbox"
-                                            checked={formData.isActive}
-                                            onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                                            className="rounded border-gray-700 text-purple-600 focus:ring-purple-500"
-                                        />
-                                        Active
-                                    </label>
+                                <div className="form-group" style={{ marginBottom: '0px' }}>
+                                    <label>Status</label>
+                                    <select
+                                        className="admin-input"
+                                        value={formData.isActive ? 'active' : 'inactive'}
+                                        onChange={(e) => setFormData({ ...formData, isActive: e.target.value === 'active' })}
+                                    >
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                    </select>
                                 </div>
                             </div>
 
-                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-700">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsModalOpen(false)}
-                                    className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium flex items-center gap-2"
-                                >
-                                    {isSubmitting ? 'Saving...' : 'Save Background'}
-                                </button>
+                            <div className="form-group" style={{ marginTop: '16px' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: '500' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.isDefault}
+                                        onChange={(e) => setFormData({ ...formData, isDefault: e.target.checked })}
+                                        style={{ width: '18px', height: '18px' }}
+                                    />
+                                    <span>Set as Default Background for Audio Rooms</span>
+                                </label>
                             </div>
-                        </form>
-                    </div>
+                        </div>
+
+                        <div className="modal-footer">
+                            <button type="button" className="secondary-btn" onClick={() => setIsModalOpen(false)}>
+                                Cancel
+                            </button>
+                            <button type="submit" className="primary-btn" disabled={isSubmitting}>
+                                {isSubmitting ? 'Saving...' : 'Save Background'}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             )}
 
+            {/* Delete confirmation modal */}
             {showDeleteConfirm && (
                 <ConfirmationModal
                     title="Delete Room Background"
                     message="Are you sure you want to delete this room background? Rooms currently using it will revert to default."
-                    onConfirm={() => handleDelete(showDeleteConfirm)}
+                    onConfirm={handleDelete}
                     onClose={() => setShowDeleteConfirm(null)}
                 />
             )}
