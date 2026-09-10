@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { adminService, BACKEND_URL } from '../services/api';
+import { adminService } from '../services/api';
 import { toast } from 'react-hot-toast';
-import { Sparkles, Plus, Trash2, Edit, X, Image as ImageIcon, CheckCircle, Power } from 'lucide-react';
+import { Sparkles, Plus, Trash2, Edit, X, Image as ImageIcon } from 'lucide-react';
 import ConfirmationModal from '../components/ConfirmationModal';
 import MediaImage from '../components/MediaImage';
 import '../styles/UserManagement.css';
@@ -26,19 +26,17 @@ const RoomBackgrounds: React.FC = () => {
     const fetchBackgrounds = async () => {
         try {
             setLoading(true);
-            const token = localStorage.getItem('token');
-            const res = await fetch(`${BACKEND_URL}/api/admin/room-backgrounds`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
+            const res = await adminService.getRoomBackgrounds();
+            const data = res.data;
             if (data.statusCode === 1) {
                 setBackgrounds(data.data || []);
             } else {
                 toast.error(data.message || 'Failed to fetch room backgrounds');
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Failed to fetch room backgrounds:', err);
-            toast.error('Error connecting to backend server');
+            const msg = err.response?.data?.message || err.message || 'Error connecting to backend server';
+            toast.error(msg);
         } finally {
             setLoading(false);
         }
@@ -94,7 +92,6 @@ const RoomBackgrounds: React.FC = () => {
 
         try {
             setIsSubmitting(true);
-            const token = localStorage.getItem('token');
             const form = new FormData();
             form.append('name', formData.name);
             form.append('isDefault', String(formData.isDefault));
@@ -109,19 +106,11 @@ const RoomBackgrounds: React.FC = () => {
                 form.append('image', selectedFile);
             }
 
-            const url = editingBg 
-                ? `${BACKEND_URL}/api/admin/room-backgrounds/${editingBg.id}`
-                : `${BACKEND_URL}/api/admin/room-backgrounds`;
-            
-            const method = editingBg ? 'PUT' : 'POST';
+            const res = editingBg 
+                ? await adminService.updateRoomBackground(editingBg.id, form)
+                : await adminService.createRoomBackground(form);
 
-            const res = await fetch(url, {
-                method,
-                headers: { 'Authorization': `Bearer ${token}` },
-                body: form
-            });
-
-            const data = await res.json();
+            const data = res.data;
             if (data.statusCode === 1) {
                 toast.success(editingBg ? 'Background updated!' : 'Background added!');
                 setIsModalOpen(false);
@@ -129,9 +118,10 @@ const RoomBackgrounds: React.FC = () => {
             } else {
                 toast.error(data.message || 'Operation failed');
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error submitting form:', err);
-            toast.error('Network error during save');
+            const msg = err.response?.data?.message || err.message || 'Network error during save';
+            toast.error(msg);
         } finally {
             setIsSubmitting(false);
         }
@@ -140,21 +130,18 @@ const RoomBackgrounds: React.FC = () => {
     const handleDelete = async (id: string) => {
         try {
             setIsDeleting(true);
-            const token = localStorage.getItem('token');
-            const res = await fetch(`${BACKEND_URL}/api/admin/room-backgrounds/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
+            const res = await adminService.deleteRoomBackground(id);
+            const data = res.data;
             if (data.statusCode === 1) {
                 toast.success('Room background deleted');
                 fetchBackgrounds();
             } else {
                 toast.error(data.message || 'Failed to delete');
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error deleting background:', err);
-            toast.error('Network error deleting background');
+            const msg = err.response?.data?.message || err.message || 'Network error deleting background';
+            toast.error(msg);
         } finally {
             setIsDeleting(false);
             setShowDeleteConfirm(null);
@@ -267,10 +254,10 @@ const RoomBackgrounds: React.FC = () => {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-gray-300 uppercase mb-1">Image Upload (PNG / JPG)</label>
+                                <label className="block text-xs font-semibold text-gray-300 uppercase mb-1">Image Upload (PNG / JPG / SVG)</label>
                                 <input
                                     type="file"
-                                    accept="image/*"
+                                    accept="image/*,.svg"
                                     onChange={handleFileChange}
                                     className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-300 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700"
                                 />
