@@ -87,7 +87,7 @@ const PrivacyPolicy: React.FC = () => {
               <li>Congratulations, you have successfully removed your app activities.</li>
             </ol>
             <p style={{ marginTop: '15px' }}>
-              Alternatively, you can contact us directly at <strong>qobolive916@gmail.com</strong> or call/WhatsApp <strong>+91 9725112791</strong> to request data deletion.
+              Alternatively, you can contact us directly at <strong>qobolive916@gmail.com</strong> or call/WhatsApp <strong>+91 6351894341</strong> to request data deletion.
             </p>
           </div>
         </section>
@@ -104,7 +104,7 @@ const PrivacyPolicy: React.FC = () => {
             If you have any questions or suggestions about our Privacy Policy, do not hesitate to contact us at:
             <br /><br />
             <strong>Email:</strong> <a href="mailto:qobolive916@gmail.com" style={{ color: 'var(--accent-blue)' }}>qobolive916@gmail.com</a><br />
-            <strong>Mobile Number:</strong> <a href="tel:+919725112791" style={{ color: 'var(--accent-blue)' }}>+91 9725112791</a><br />
+            <strong>Mobile Number:</strong> <a href="tel:+916351894341" style={{ color: 'var(--accent-blue)' }}>+91 6351894341</a><br />
             <strong>Website:</strong> <a href="https://www.qobo1live.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-blue)' }}>www.qobo1live.com</a>
           </p>
         </section>
