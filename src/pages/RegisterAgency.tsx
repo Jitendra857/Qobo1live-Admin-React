@@ -1,75 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BACKEND_URL } from '../services/api';
-import { Building2, AlertCircle, CheckCircle2, X, Upload, UserCheck } from 'lucide-react';
+import { Building2, AlertCircle, CheckCircle2, X, Upload, Search } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-
-const countryStateData: { [key: string]: string[] } = {
-  "India": ["Andhra Pradesh", "Delhi", "Gujarat", "Karnataka", "Maharashtra", "Punjab", "Rajasthan", "Tamil Nadu", "Uttar Pradesh", "West Bengal"],
-  "United States": ["California", "Texas", "New York", "Florida", "Illinois", "Pennsylvania", "Ohio", "Georgia", "North Carolina", "Michigan"],
-  "Pakistan": ["Punjab", "Sindh", "Khyber Pakhtunkhwa", "Balochistan", "Gilgit-Baltistan", "Azad Kashmir"],
-  "Bangladesh": ["Dhaka", "Chittagong", "Rajshahi", "Khulna", "Barisal", "Sylhet", "Rangpur", "Mymensingh"],
-  "Saudi Arabia": ["Riyadh", "Makkah", "Madinah", "Eastern Province", "Asir", "Tabuk", "Hail", "Jazan"],
-  "United Arab Emirates": ["Abu Dhabi", "Dubai", "Sharjah", "Ajman", "Umm Al Quwain", "Ras Al Khaimah", "Fujairah"],
-  "United Kingdom": ["England", "Scotland", "Wales", "Northern Ireland"],
-  "Canada": ["Ontario", "Quebec", "British Columbia", "Alberta", "Manitoba", "Nova Scotia", "Saskatchewan"],
-  "Nepal": ["Province No. 1", "Madhesh Province", "Bagmati Province", "Gandaki Province", "Lumbini Province", "Karnali Province", "Sudurpashchim Province"]
-};
-
-const countryCodes = [
-  { code: "+91", country: "India" },
-  { code: "+1", country: "USA/Canada" },
-  { code: "+92", country: "Pakistan" },
-  { code: "+880", country: "Bangladesh" },
-  { code: "+966", country: "Saudi Arabia" },
-  { code: "+971", country: "UAE" },
-  { code: "+44", country: "UK" },
-  { code: "+977", country: "Nepal" },
-  { code: "+62", country: "Indonesia" },
-  { code: "+63", country: "Philippines" },
-  { code: "+20", country: "Egypt" },
-  { code: "+234", country: "Nigeria" }
-];
 
 const RegisterAgency: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const invitedByParam = searchParams.get('invitedBy') || '';
 
-  const [agencyName, setAgencyName] = useState('');
-  const [ownerName, setOwnerName] = useState('');
+  const [invitedBy, setInvitedBy] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [countryCode, setCountryCode] = useState('+91');
-  const [invitedBy, setInvitedBy] = useState('');
 
-  // Country & State Cascading
-  const [selectedCountry, setSelectedCountry] = useState('India');
-  const [customCountry, setCustomCountry] = useState('');
-  const [selectedState, setSelectedState] = useState('');
-  const [customState, setCustomState] = useState('');
-  const [city, setCity] = useState('');
-  const [address, setAddress] = useState('');
-
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-
-  // File states
-  const [agencyLogo, setAgencyLogo] = useState<File | null>(null);
+  // Document files (Front & Back)
   const [docPhotoFront, setDocPhotoFront] = useState<File | null>(null);
   const [docPhotoBack, setDocPhotoBack] = useState<File | null>(null);
 
-  // Autofill states
-  const [isPreExistingUser, setIsPreExistingUser] = useState(false);
-  const [hasExistingPassword, setHasExistingPassword] = useState(false);
-
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; content: string } | null>(null);
-
-  // Password checks
-  const hasMinLength = password.length >= 8;
-  const hasSpecialChar = /[\!\@\#\$\%\^\&\*\(\)\_\+\-\=\[\]\{\}\;\:\'\"\,\<\>\.\?\/\~\\\|]/.test(password);
+  
+  // Status View state
+  const [statusView, setStatusView] = useState<any>(null);
+  const [statusSearchQuery, setStatusSearchQuery] = useState('');
+  const [checkingStatus, setCheckingStatus] = useState(false);
 
   useEffect(() => {
     if (invitedByParam) {
@@ -86,41 +41,26 @@ const RegisterAgency: React.FC = () => {
     }
   };
 
-  const checkExistingEmail = async (emailVal: string) => {
-    if (!emailVal || !emailVal.includes('@')) return;
+  const handleCheckStatus = async (queryVal?: string) => {
+    const q = (queryVal || statusSearchQuery || email || phone || invitedBy).trim();
+    if (!q) {
+      toast.error("Please enter your Email, Phone, or Super Admin Code to check status.");
+      return;
+    }
+    setCheckingStatus(true);
     try {
-      const res = await axios.get(`${BACKEND_URL}/api/auth/check-email?email=${encodeURIComponent(emailVal.trim())}`);
-      if (res.data.statusCode === 1 && res.data.data.exists) {
-        const u = res.data.data.user;
-        toast.success("Existing profile found! Auto-filling your details.");
-        
-        if (u.name) setOwnerName(u.name);
-        if (u.phone) setPhone(u.phone.replace(/\D/g, ''));
-        if (u.countryCode) setCountryCode(u.countryCode);
-        
-        if (u.country) {
-          setSelectedCountry(u.country);
-          if (countryStateData[u.country]) {
-            if (u.state) setSelectedState(u.state);
-          } else {
-            setSelectedCountry('Other');
-            setCustomCountry(u.country);
-            setCustomState(u.state || '');
-          }
-        }
-        
-        if (u.city) setCity(u.city);
-        if (u.address) setAddress(u.address);
-        setIsPreExistingUser(true);
-        if (u.hasPassword) {
-          setHasExistingPassword(true);
-        }
+      const res = await axios.get(`${BACKEND_URL}/api/agency/agency-verify-status?query=${encodeURIComponent(q)}`);
+      if (res.data.statusCode === 1 && res.data.data) {
+        setStatusView(res.data.data);
+        toast.success("Agency status retrieved!");
       } else {
-        setIsPreExistingUser(false);
-        setHasExistingPassword(false);
+        toast.error(res.data.message || "No application found for this query.");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      toast.error(err.response?.data?.message || "Failed to fetch application status.");
+    } finally {
+      setCheckingStatus(false);
     }
   };
 
@@ -128,69 +68,29 @@ const RegisterAgency: React.FC = () => {
     e.preventDefault();
     setMessage(null);
 
-    // Form validations
-    if (!agencyName.trim()) {
-      return triggerScrollAndFocus('agencyName', 'Please enter the Agency Name.');
+    // Validations: Super Admin Code + 2 Documents + Contact identifier
+    if (!invitedBy.trim()) {
+      return triggerScrollAndFocus('invitedBy', 'Please enter the Super Admin Code.');
     }
-    if (!ownerName.trim()) {
-      return triggerScrollAndFocus('ownerName', 'Please enter the Owner Full Name.');
-    }
-    if (!email.trim()) {
-      return triggerScrollAndFocus('email', 'Please enter your Email Address.');
-    }
-    if (!phone.trim() || !/^\d+$/.test(phone)) {
-      return triggerScrollAndFocus('phone', 'Please enter a valid digits-only Phone Number.');
-    }
-    if (!city.trim()) {
-      return triggerScrollAndFocus('city', 'Please enter your City.');
-    }
-    if (!address.trim()) {
-      return triggerScrollAndFocus('address', 'Please enter your Full Address.');
-    }
-
-    // Password validations (skipped if user has existing password)
-    if (!hasExistingPassword) {
-      if (!hasMinLength) {
-        return triggerScrollAndFocus('password', 'Password must be at least 8 characters long.');
-      }
-      if (!hasSpecialChar) {
-        return triggerScrollAndFocus('password', 'Password must contain at least one special character.');
-      }
-      if (password !== confirmPassword) {
-        return triggerScrollAndFocus('confirmPassword', 'Passwords do not match.');
-      }
-    }
-
-    // Check files
-    if (!agencyLogo) {
-      return triggerScrollAndFocus('logoLabel', 'Please upload your Agency Logo / Profile photo.');
+    if (!email.trim() && !phone.trim()) {
+      return triggerScrollAndFocus('email', 'Please enter your Email Address or Phone Number.');
     }
     if (!docPhotoFront) {
-      return triggerScrollAndFocus('docFrontLabel', 'Please upload verification Document Front side.');
+      return triggerScrollAndFocus('docFrontLabel', 'Please upload Document Front side.');
     }
     if (!docPhotoBack) {
-      return triggerScrollAndFocus('docBackLabel', 'Please upload verification Document Back side.');
+      return triggerScrollAndFocus('docBackLabel', 'Please upload Document Back side.');
     }
 
     setLoading(true);
 
-    const finalCountry = selectedCountry === 'Other' ? customCountry : selectedCountry;
-    const finalState = selectedCountry === 'Other' ? customState : (selectedState === 'Other' ? customState : selectedState);
-
     const formData = new FormData();
-    formData.append('agency_name', agencyName);
-    formData.append('owner_name', ownerName);
+    formData.append('invitedBy', invitedBy.trim());
     formData.append('email', email.toLowerCase().trim());
-    formData.append('phone', phone);
-    formData.append('countryCode', countryCode);
-    formData.append('country', finalCountry);
-    formData.append('state', finalState);
-    formData.append('city', city);
-    formData.append('address', address);
-    formData.append('password', !hasExistingPassword ? password : '');
-    formData.append('invitedBy', invitedBy);
+    formData.append('phone', phone.trim());
+    formData.append('agency_name', `Agency (${invitedBy.trim()})`);
+    formData.append('owner_name', email ? email.split('@')[0] : 'Agency Owner');
     
-    formData.append('agency_logo', agencyLogo);
     formData.append('doc_photo_front', docPhotoFront);
     formData.append('doc_photo_back', docPhotoBack);
 
@@ -200,28 +100,27 @@ const RegisterAgency: React.FC = () => {
       });
 
       if (res.data.statusCode === 1) {
-        setMessage({
-          type: 'success',
-          content: 'Agency registered successfully! You can now log into the application once reviewed.'
+        const payload = res.data.data;
+        setStatusView({
+          status: payload?.status || 'pending',
+          invitedBy: invitedBy,
+          email: email,
+          phone: phone,
+          code: payload?.code || '',
+          createdAt: new Date().toISOString(),
+          feedback: payload?.feedback
         });
-        
+        toast.success("Agency request submitted successfully!");
         window.scrollTo({ top: 0, behavior: 'smooth' });
-
-        setAgencyName(''); setOwnerName(''); setEmail('');
-        setPhone(''); setPassword(''); setConfirmPassword('');
-        setCustomCountry(''); setCustomState(''); setCity(''); setAddress('');
-        setAgencyLogo(null); setDocPhotoFront(null); setDocPhotoBack(null);
-        setIsPreExistingUser(false); setHasExistingPassword(false);
-        if (!invitedByParam) setInvitedBy('');
       } else {
-        setMessage({ type: 'error', content: res.data.message || 'Registration failed' });
+        setMessage({ type: 'error', content: res.data.message || 'Submission failed' });
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err: any) {
       console.error(err);
       setMessage({
         type: 'error',
-        content: err.response?.data?.message || 'Server error occurred during registration.'
+        content: err.response?.data?.message || 'Server error occurred during submission.'
       });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
@@ -229,312 +128,192 @@ const RegisterAgency: React.FC = () => {
     }
   };
 
-  const handleCountryChange = (c: string) => {
-    setSelectedCountry(c);
-    setSelectedState('');
-    setCustomState('');
-    if (c !== 'Other' && countryStateData[c]) {
-      setSelectedState(countryStateData[c][0]);
-    }
-  };
+  if (statusView) {
+    const isApproved = statusView.status === 'approved' || statusView.status === 'active';
+    const isRejected = statusView.status === 'rejected';
+    const statusColor = isApproved ? '#15803d' : isRejected ? '#b91c1c' : '#0369a1';
+    const statusBg = isApproved ? '#dcfce7' : isRejected ? '#fee2e2' : '#e0f2fe';
 
-  const states = selectedCountry !== 'Other' ? (countryStateData[selectedCountry] || []) : [];
+    return (
+      <div className="public-onboarding-page" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 16px', fontFamily: 'Inter, sans-serif' }}>
+        <div style={{ textAlign: 'center', marginBottom: '30px', width: '100%', maxWidth: '700px' }}>
+          <img src="/logo.svg" alt="Qobo1Live Logo" style={{ height: '48px', marginBottom: '16px', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))' }} />
+          <h1 style={{ fontSize: '2rem', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.03em', margin: 0 }}>Agency Application Status</h1>
+          <p style={{ color: '#64748b', fontSize: '1rem', marginTop: '8px', fontWeight: 500 }}>
+            Track your recruitment agency onboarding application.
+          </p>
+        </div>
+
+        <div style={{ background: '#ffffff', width: '100%', maxWidth: '650px', borderRadius: '20px', boxShadow: '0 20px 50px -12px rgba(0,0,0,0.1)', overflow: 'hidden', padding: '36px 28px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+            
+            <div style={{ width: '74px', height: '74px', borderRadius: '50%', background: statusBg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
+              {isApproved ? <CheckCircle2 size={40} color={statusColor} /> : isRejected ? <AlertCircle size={40} color={statusColor} /> : <Building2 size={40} color={statusColor} />}
+            </div>
+
+            <span style={{ padding: '8px 20px', borderRadius: '20px', fontSize: '0.9rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', background: statusBg, color: statusColor, marginBottom: '24px' }}>
+              STATUS: {statusView.status || 'PENDING'}
+            </span>
+
+            <div style={{ background: '#f8fafc', borderRadius: '14px', border: '1.5px solid #e2e8f0', padding: '24px', width: '100%', textAlign: 'left', marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {statusView.invitedBy && <div style={{ fontSize: '0.95rem', color: '#334155' }}><strong>Super Admin Code:</strong> {statusView.invitedBy}</div>}
+              {statusView.code && <div style={{ fontSize: '0.95rem', color: '#334155' }}><strong>Agency Code:</strong> {statusView.code}</div>}
+              {statusView.email && <div style={{ fontSize: '0.95rem', color: '#334155' }}><strong>Applicant Email:</strong> {statusView.email}</div>}
+              {statusView.phone && <div style={{ fontSize: '0.95rem', color: '#334155' }}><strong>Phone Number:</strong> {statusView.phone}</div>}
+              {statusView.createdAt && <div style={{ fontSize: '0.95rem', color: '#334155' }}><strong>Submitted Date:</strong> {new Date(statusView.createdAt).toLocaleDateString()}</div>}
+              {statusView.feedback && (
+                <div style={{ marginTop: '8px', padding: '14px', background: '#fef2f2', borderLeft: '4px solid #ef4444', borderRadius: '8px', fontSize: '0.9rem', color: '#991b1b' }}>
+                  <strong>Admin Feedback:</strong> {statusView.feedback}
+                </div>
+              )}
+            </div>
+
+            <button 
+              onClick={() => { setStatusView(null); setDocPhotoFront(null); setDocPhotoBack(null); }} 
+              style={{ padding: '14px 28px', background: '#f1f5f9', border: '1.5px solid #cbd5e1', borderRadius: '12px', fontWeight: 800, color: '#334155', cursor: 'pointer', fontSize: '0.95rem', transition: 'all 0.2s' }}
+              onMouseOver={(e) => { e.currentTarget.style.background = '#e2e8f0'; }}
+              onMouseOut={(e) => { e.currentTarget.style.background = '#f1f5f9'; }}
+            >
+              Back to Agency Application
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="public-onboarding-page" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 16px', fontFamily: 'Inter, sans-serif' }}>
       
       {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: '30px', width: '100%', maxWidth: '800px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '24px', width: '100%', maxWidth: '650px' }}>
         <img src="/logo.svg" alt="Qobo1Live Logo" style={{ height: '48px', marginBottom: '16px', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))' }} />
-        <h1 style={{ fontSize: '2rem', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.03em', margin: 0 }}>Register Agency</h1>
+        <h1 style={{ fontSize: '2rem', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.03em', margin: 0 }}>Agency Request</h1>
         <p style={{ color: '#64748b', fontSize: '1rem', marginTop: '8px', fontWeight: 500 }}>
-          Establish a new recruitment node inside Qobo1live network.
+          Submit your verification documents under Super Admin Code.
         </p>
       </div>
 
       {/* Main Form Page Container */}
-      <div style={{ background: '#ffffff', width: '100%', maxWidth: '800px', borderRadius: '20px', boxShadow: '0 20px 50px -12px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+      <div style={{ background: '#ffffff', width: '100%', maxWidth: '650px', borderRadius: '20px', boxShadow: '0 20px 50px -12px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
         
         {/* Top Accent Bar */}
         <div style={{ height: '6px', background: 'linear-gradient(90deg, #06b6d4, #3b82f6)' }}></div>
 
-        <div style={{ padding: '24px' }} className="form-content-wrap">
+        <div style={{ padding: '28px' }} className="form-content-wrap">
+          
+          {/* Status Search Quick Bar */}
+          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '12px 16px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Search size={18} color="#64748b" />
+            <input 
+              type="text" 
+              placeholder="Check Status by Email / Phone / Super Admin Code..." 
+              value={statusSearchQuery}
+              onChange={(e) => setStatusSearchQuery(e.target.value)}
+              style={{ border: 'none', background: 'transparent', outline: 'none', flex: 1, fontSize: '0.9rem', color: '#0f172a' }}
+            />
+            <button 
+              type="button"
+              onClick={() => handleCheckStatus()}
+              disabled={checkingStatus}
+              style={{ padding: '6px 14px', background: '#06b6d4', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '0.85rem', cursor: checkingStatus ? 'not-allowed' : 'pointer' }}
+            >
+              {checkingStatus ? 'Checking...' : 'Check Status'}
+            </button>
+          </div>
+
           {message && (
-            <div style={{ color: message.type === 'success' ? '#15803d' : '#b91c1c', background: message.type === 'success' ? '#dcfce7' : '#fee2e2', padding: '16px 20px', borderRadius: '12px', marginBottom: '30px', fontSize: '0.95rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px', border: `1px solid ${message.type === 'success' ? '#bbf7d0' : '#fecaca'}` }}>
+            <div style={{ color: message.type === 'success' ? '#15803d' : '#b91c1c', background: message.type === 'success' ? '#dcfce7' : '#fee2e2', padding: '16px 20px', borderRadius: '12px', marginBottom: '24px', fontSize: '0.95rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px', border: `1px solid ${message.type === 'success' ? '#bbf7d0' : '#fecaca'}` }}>
               {message.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
               <span>{message.content}</span>
             </div>
           )}
 
-          {isPreExistingUser && (
-            <div style={{ color: '#16a34a', background: '#f0fdf4', padding: '12px 18px', borderRadius: '10px', marginBottom: '24px', fontSize: '0.88rem', fontWeight: 700, border: '1px solid #bbf7d0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Building2 size={18} />
-              <span>Registered account detected! Pre-filling profile details. Just enter your Agency details and submit.</span>
-            </div>
-          )}
-
-          {invitedByParam && (
-            <div style={{ color: '#0369a1', background: '#e0f2fe', padding: '12px 18px', borderRadius: '10px', marginBottom: '24px', fontSize: '0.88rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #bae6fd' }}>
-              <Building2 size={16} />
-              <span>You are registering under Super Admin: <strong>{invitedByParam}</strong></span>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="responsive-form-grid" noValidate>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }} noValidate>
             
-            {/* Section 1: Logo Photo */}
-            <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '15px' }}>
-              <label 
-                id="logoLabel"
-                className="logo-upload-circle"
-                style={{ 
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
-                  width: '120px', height: '120px', borderRadius: '50%', border: '3px dashed #cbd5e1', 
-                  cursor: 'pointer', background: '#f8fafc', transition: 'all 0.2s', position: 'relative', overflow: 'hidden'
-                }}
-              >
-                {agencyLogo ? (
-                  <img src={URL.createObjectURL(agencyLogo)} alt="Logo Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  <>
-                    <Upload size={30} color="#64748b" style={{ marginBottom: '8px' }} />
-                    <span style={{ fontSize: '0.75rem', color: '#475569', fontWeight: 700, textAlign: 'center', lineHeight: '1.2' }}>
-                      Agency<br/>Logo
-                    </span>
-                  </>
-                )}
-                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => e.target.files && setAgencyLogo(e.target.files[0])} />
-              </label>
-            </div>
-
-            {/* Section 2: Referral Code */}
-            <div style={{ gridColumn: '1 / -1', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginBottom: '8px' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><Building2 size={20} color="#06b6d4" /> Agency Information</h3>
-            </div>
-
-            <div style={{ gridColumn: '1 / -1' }} className="form-item-full">
-              <label className="input-label-premium">Super Admin Referral / Invited By</label>
+            {/* Field 1: Super Admin Code */}
+            <div>
+              <label className="input-label-premium">Super Admin Code</label>
               <input 
                 type="text" 
                 id="invitedBy" 
                 value={invitedBy} 
                 onChange={(e) => setInvitedBy(e.target.value)}
+                placeholder="Enter Super Admin Referral Code"
                 disabled={!!invitedByParam} 
-                required={!!invitedByParam}
+                required
                 className="input-field-premium" 
                 style={invitedByParam ? { background: '#f1f5f9', cursor: 'not-allowed', color: '#64748b', fontWeight: 'bold' } : {}}
               />
             </div>
 
-            <div style={{ gridColumn: '1 / -1' }} className="form-item-full">
-              <label className="input-label-premium">Agency Name</label>
-              <input type="text" id="agencyName" value={agencyName} onChange={(e) => setAgencyName(e.target.value)} required className="input-field-premium" />
-            </div>
-
-            <div className="form-item-half">
-              <label className="input-label-premium">Owner Email Address</label>
+            {/* Contact Email / Phone for identification & checking status */}
+            <div>
+              <label className="input-label-premium">Email Address or Phone Number</label>
               <input 
                 type="email" 
                 id="email" 
                 value={email} 
                 onChange={(e) => setEmail(e.target.value)} 
-                onBlur={() => checkExistingEmail(email)}
+                placeholder="Required for checking application status"
                 required 
                 className="input-field-premium" 
               />
             </div>
 
-            <div className="form-item-half">
-              <label className="input-label-premium">Owner Full Name</label>
-              <input type="text" id="ownerName" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} disabled={isPreExistingUser} required className="input-field-premium" />
-            </div>
+            {/* Field 2: Upload Document (Front / Back) 2 */}
+            <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
+              <label className="input-label-premium" style={{ marginBottom: '12px' }}>Upload Document (Front / Back)</label>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+                <div>
+                  <label id="docFrontLabel" className="upload-box-premium">
+                    {docPhotoFront ? (
+                      <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold', textAlign: 'center', padding: '0 8px' }}>✓ Front Loaded ({docPhotoFront.name.substring(0, 14)}...)</span>
+                    ) : (
+                      <>
+                        <Upload size={24} color="#64748b" style={{ marginBottom: '6px' }} />
+                        <span style={{ fontSize: '0.8rem', color: '#475569', fontWeight: 700 }}>Document Front</span>
+                      </>
+                    )}
+                    <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => e.target.files && setDocPhotoFront(e.target.files[0])} />
+                  </label>
+                </div>
 
-            <div style={{ gridColumn: '1 / -1' }} className="form-item-full">
-              <label className="input-label-premium">Owner Phone Number</label>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <select 
-                  value={countryCode} 
-                  onChange={(e) => setCountryCode(e.target.value)} 
-                  disabled={isPreExistingUser}
-                  className="input-field-premium" 
-                  style={{ width: '90px', paddingRight: '4px', flexShrink: 0 }}
-                >
-                  {countryCodes.map((item, idx) => (
-                    <option key={idx} value={item.code}>{item.code} ({item.country})</option>
-                  ))}
-                </select>
-                <input 
-                  type="text" 
-                  id="phone" 
-                  value={phone} 
-                  placeholder="Digits only" 
-                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))} 
-                  disabled={isPreExistingUser}
-                  required 
-                  className="input-field-premium" 
-                  style={{ flexGrow: 1 }}
-                />
+                <div>
+                  <label id="docBackLabel" className="upload-box-premium">
+                    {docPhotoBack ? (
+                      <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold', textAlign: 'center', padding: '0 8px' }}>✓ Back Loaded ({docPhotoBack.name.substring(0, 14)}...)</span>
+                    ) : (
+                      <>
+                        <Upload size={24} color="#64748b" style={{ marginBottom: '6px' }} />
+                        <span style={{ fontSize: '0.8rem', color: '#475569', fontWeight: 700 }}>Document Back</span>
+                      </>
+                    )}
+                    <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => e.target.files && setDocPhotoBack(e.target.files[0])} />
+                  </label>
+                </div>
               </div>
             </div>
 
-            {/* Cascading Country & State */}
-            <div className="form-item-half">
-              <label className="input-label-premium">Country</label>
-              <select 
-                value={selectedCountry} 
-                onChange={(e) => handleCountryChange(e.target.value)} 
-                disabled={isPreExistingUser}
-                className="input-field-premium"
-              >
-                {Object.keys(countryStateData).map((c, idx) => (
-                  <option key={idx} value={c}>{c}</option>
-                ))}
-                <option value="Other">Other (Custom Write-in)</option>
-              </select>
-              {selectedCountry === 'Other' && (
-                <input 
-                  type="text" 
-                  placeholder="Type country" 
-                  value={customCountry} 
-                  onChange={(e) => setCustomCountry(e.target.value)} 
-                  disabled={isPreExistingUser}
-                  required
-                  className="input-field-premium" 
-                  style={{ marginTop: '8px' }}
-                />
-              )}
-            </div>
-
-            <div className="form-item-half">
-              <label className="input-label-premium">State / Region</label>
-              {selectedCountry !== 'Other' ? (
-                <select 
-                  value={selectedState} 
-                  onChange={(e) => setSelectedState(e.target.value)} 
-                  disabled={isPreExistingUser}
-                  className="input-field-premium"
-                >
-                  {states.map((st, idx) => (
-                    <option key={idx} value={st}>{st}</option>
-                  ))}
-                  <option value="Other">Other (Custom Write-in)</option>
-                </select>
-              ) : (
-                <input 
-                  type="text" 
-                  placeholder="Type state/region" 
-                  value={customState} 
-                  onChange={(e) => setCustomState(e.target.value)} 
-                  disabled={isPreExistingUser}
-                  required
-                  className="input-field-premium" 
-                />
-              )}
-              {selectedCountry !== 'Other' && selectedState === 'Other' && (
-                <input 
-                  type="text" 
-                  placeholder="Type state/region" 
-                  value={customState} 
-                  onChange={(e) => setCustomState(e.target.value)} 
-                  disabled={isPreExistingUser}
-                  required
-                  className="input-field-premium" 
-                  style={{ marginTop: '8px' }}
-                />
-              )}
-            </div>
-
-            <div className="form-item-half">
-              <label className="input-label-premium">City</label>
-              <input type="text" id="city" value={city} onChange={(e) => setCity(e.target.value)} disabled={isPreExistingUser} required className="input-field-premium" />
-            </div>
-
-            <div style={{ gridColumn: '1 / -1' }} className="form-item-full">
-              <label className="input-label-premium">Full Address</label>
-              <input type="text" id="address" value={address} onChange={(e) => setAddress(e.target.value)} disabled={isPreExistingUser} required className="input-field-premium" />
-            </div>
-
-            {/* Section 3: Security (Only visible if password needs setting) */}
-            {!hasExistingPassword && (
-              <>
-                <div style={{ gridColumn: '1 / -1', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginTop: '10px', marginBottom: '8px' }}>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Security Configuration</h3>
-                </div>
-
-                <div className="form-item-half">
-                  <label className="input-label-premium">Create Password</label>
-                  <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="input-field-premium" />
-                  
-                  <div style={{ marginTop: '8px', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <span style={{ color: hasMinLength ? '#10b981' : '#f43f5e', fontWeight: 600 }}>
-                      {hasMinLength ? '✓' : '✗'} Minimum 8 characters
-                    </span>
-                    <span style={{ color: hasSpecialChar ? '#10b981' : '#f43f5e', fontWeight: 600 }}>
-                      {hasSpecialChar ? '✓' : '✗'} Contains a special character (e.g. @, #, $, !)
-                    </span>
-                  </div>
-                </div>
-
-                <div className="form-item-half">
-                  <label className="input-label-premium">Confirm Password</label>
-                  <input type="password" id="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className="input-field-premium" />
-                </div>
-              </>
-            )}
-
-            {/* Section 4: Document Verification */}
-            <div style={{ gridColumn: '1 / -1', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginTop: '10px', marginBottom: '8px' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Verification Documents</h3>
-            </div>
-
-            <div className="form-item-half">
-              <label className="input-label-premium">ID Document Front side</label>
-              <label id="docFrontLabel" className="upload-box-premium">
-                {docPhotoFront ? (
-                  <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold' }}>✓ Front Side Loaded ({docPhotoFront.name.substring(0, 18)}...)</span>
-                ) : (
-                  <>
-                    <Upload size={22} color="#64748b" style={{ marginBottom: '6px' }} />
-                    <span style={{ fontSize: '0.78rem', color: '#475569', fontWeight: 700 }}>Upload Front Side</span>
-                  </>
-                )}
-                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => e.target.files && setDocPhotoFront(e.target.files[0])} />
-              </label>
-            </div>
-
-            <div className="form-item-half">
-              <label className="input-label-premium">ID Document Back side</label>
-              <label id="docBackLabel" className="upload-box-premium">
-                {docPhotoBack ? (
-                  <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold' }}>✓ Back Side Loaded ({docPhotoBack.name.substring(0, 18)}...)</span>
-                ) : (
-                  <>
-                    <Upload size={22} color="#64748b" style={{ marginBottom: '6px' }} />
-                    <span style={{ fontSize: '0.78rem', color: '#475569', fontWeight: 700 }}>Upload Back Side</span>
-                  </>
-                )}
-                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => e.target.files && setDocPhotoBack(e.target.files[0])} />
-              </label>
-            </div>
-
-            {/* Actions */}
-            <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '16px', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #e2e8f0' }} className="action-buttons-wrap">
+            {/* Field 3: Submit */}
+            <div style={{ display: 'flex', gap: '16px', marginTop: '12px', paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
               <button 
                 type="button" 
                 onClick={() => navigate('/')}
-                style={{ flex: 1, padding: '14px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', color: '#dc2626', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }}
+                style={{ flex: 1, padding: '14px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', color: '#dc2626', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
               >
                 <X size={18} /> Cancel
               </button>
               <button 
                 type="submit" 
                 disabled={loading} 
-                style={{ flex: 2, padding: '14px', background: 'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, fontSize: '0.95rem', cursor: loading ? 'not-allowed' : 'pointer', transition: 'all 0.3s', boxShadow: '0 10px 25px -5px rgba(6, 182, 212, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                style={{ flex: 2, padding: '14px', background: 'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, fontSize: '0.95rem', cursor: loading ? 'not-allowed' : 'pointer', boxShadow: '0 10px 25px -5px rgba(6, 182, 212, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
               >
                 {loading ? (
                   <><div className="spinner" /> Processing...</>
                 ) : (
-                  <><Building2 size={20} /> Register Agency</>
+                  <><Building2 size={20} /> Submit Agency Request</>
                 )}
               </button>
             </div>
@@ -544,11 +323,6 @@ const RegisterAgency: React.FC = () => {
       </div>
 
       <style>{`
-        .responsive-form-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 20px;
-        }
         .input-field-premium {
           width: 100%; padding: 12px 14px; borderRadius: 10px; border: 1.5px solid #cbd5e1;
           background: #f8fafc; fontSize: 0.95rem; color: #0f172a; transition: all 0.2s; outline: none;
@@ -556,17 +330,11 @@ const RegisterAgency: React.FC = () => {
         .input-field-premium:focus {
           border-color: #06b6d4; background: #fff; box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.15);
         }
-        .input-field-premium:disabled {
-          background-color: #f1f5f9 !important;
-          color: #64748b !important;
-          cursor: not-allowed !important;
-          border-color: #e2e8f0 !important;
-        }
         .input-label-premium {
           display: block; fontSize: 0.78rem; fontWeight: 800; color: #475569; marginBottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;
         }
         .upload-box-premium {
-          display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100px;
+          display: flex; flex-direction: column; align-items: center; justify-content: center; height: 110px;
           border: 2.5px dashed #cbd5e1; borderRadius: 12px; cursor: pointer; background: #f8fafc; transition: all 0.2s;
         }
         .upload-box-premium:hover {
@@ -575,60 +343,7 @@ const RegisterAgency: React.FC = () => {
         .spinner {
           width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #fff; border-radius: 50%; animation: spin 1s linear infinite;
         }
-        .logo-upload-circle:hover {
-          border-color: #06b6d4 !important;
-          background: #f0fdfa !important;
-        }
-        @media (max-width: 600px) {
-          .responsive-form-grid {
-            grid-template-columns: 1fr;
-            gap: 16px;
-          }
-          .form-item-half {
-            grid-column: 1 / -1;
-          }
-          .action-buttons-wrap {
-            flex-direction: column-reverse;
-          }
-          .form-content-wrap {
-            padding: 16px !important;
-          }
-        }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Force light theme elements on mobile/email webviews to prevent forced dark mode bugs */
-        .public-onboarding-page {
-          background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%) !important;
-          color: #0f172a !important;
-        }
-        .public-onboarding-page h1,
-        .public-onboarding-page h2,
-        .public-onboarding-page h3,
-        .public-onboarding-page h4,
-        .public-onboarding-page p,
-        .public-onboarding-page label,
-        .public-onboarding-page span {
-          color: #0f172a !important;
-        }
-        .public-onboarding-page p {
-          color: #64748b !important;
-        }
-        .public-onboarding-page .input-label-premium {
-          color: #475569 !important;
-        }
-        .public-onboarding-page input,
-        .public-onboarding-page select,
-        .public-onboarding-page textarea {
-          color: #0f172a !important;
-          background-color: #f8fafc !important;
-          border-color: #cbd5e1 !important;
-        }
-        .public-onboarding-page input:focus,
-        .public-onboarding-page select:focus,
-        .public-onboarding-page textarea:focus {
-          background-color: #ffffff !important;
-          border-color: #06b6d4 !important;
-        }
       `}</style>
     </div>
   );

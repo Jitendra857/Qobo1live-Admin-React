@@ -3,96 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Official Privacy Policy for Qobo1live - Details on personal data, device permissions, third-party SDKs, data retention, age restrictions, and account deletion.">
+    <meta name="description" content="Official Privacy Policy for Qobo1live - Comprehensive details on data collection, Google Play Data Safety, device permissions, third-party SDKs, data retention, age restrictions, and account deletion.">
     <title>Privacy Policy - Qobo1live</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-opal: #f1f5f9;
-            --accent-purple: #8b5cf6;
-            --accent-blue: #3b82f6;
-            --accent-emerald: #10b981;
-            --accent-amber: #f59e0b;
-            --accent-red: #ef4444;
+            --bg-opal: #f8fafc;
+            --card-bg: #ffffff;
+            --accent-purple: #7c3aed;
+            --accent-purple-light: #f3e8ff;
+            --accent-blue: #2563eb;
+            --accent-blue-light: #dbeafe;
+            --accent-emerald: #059669;
+            --accent-emerald-light: #d1fae5;
+            --accent-amber: #d97706;
+            --accent-amber-light: #fef3c7;
+            --accent-red: #dc2626;
+            --accent-red-light: #fee2e2;
             --text-primary: #0f172a;
             --text-secondary: #475569;
-            --card-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.06);
+            --border-color: #e2e8f0;
+            --card-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.05), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-opal);
             color: var(--text-primary);
             line-height: 1.7;
             padding: 40px 20px;
+            -webkit-font-smoothing: antialiased;
         }
 
         .container {
-            max-width: 920px;
+            max-width: 960px;
             margin: 0 auto;
         }
 
+        /* Hero Header */
         header {
             text-align: center;
-            margin-bottom: 45px;
+            margin-bottom: 35px;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+            border-radius: 28px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--card-shadow);
         }
 
-        .logo-icon {
-            width: 64px;
-            height: 64px;
-            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
-            border-radius: 20px;
-            display: flex;
+        .logo-wrapper {
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 20px;
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            border-radius: 22px;
+            margin-bottom: 18px;
             color: white;
-            font-size: 2rem;
-            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+            font-size: 2.2rem;
+            box-shadow: 0 12px 25px -5px rgba(124, 58, 237, 0.35);
         }
 
-        h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 8px; color: #0f172a; }
-        .subtitle { color: var(--text-secondary); font-size: 1rem; font-weight: 600; }
+        h1 {
+            font-size: 2.6rem;
+            font-weight: 900;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+            margin-bottom: 10px;
+        }
 
-        nav {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(0,0,0,0.05);
+        .badge-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .badge-green { background: var(--accent-emerald-light); color: var(--accent-emerald); border: 1px solid #a7f3d0; }
+        .badge-purple { background: var(--accent-purple-light); color: var(--accent-purple); border: 1px solid #ddd6fe; }
+        .badge-blue { background: var(--accent-blue-light); color: var(--accent-blue); border: 1px solid #bfdbfe; }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-top: 12px;
+        }
+
+        /* Play Store Data Safety Quick Box */
+        .playstore-summary {
+            background: #ffffff;
+            border: 2px solid #3b82f6;
+            border-radius: 24px;
+            padding: 24px 28px;
+            margin-bottom: 35px;
+            box-shadow: 0 12px 35px -8px rgba(37, 99, 235, 0.12);
+        }
+
+        .playstore-summary-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .playstore-summary-header h3 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #1e3a8a;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .summary-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
             border-radius: 16px;
-            padding: 16px 20px;
+            padding: 16px;
+        }
+
+        .summary-item-title {
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .summary-item-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Navigation Bar */
+        nav {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 14px 20px;
             margin-bottom: 35px;
             text-align: center;
             box-shadow: var(--card-shadow);
+            position: sticky;
+            top: 15px;
+            z-index: 100;
         }
 
         nav a {
             color: var(--accent-blue);
             text-decoration: none;
-            font-weight: 600;
-            font-size: 0.95rem;
-            margin: 0 6px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin: 4px 8px;
             display: inline-block;
+            transition: color 0.2s;
         }
 
         nav a:hover {
+            color: var(--accent-purple);
             text-decoration: underline;
         }
 
+        /* Bento Cards */
         .bento-grid {
             display: grid;
             gap: 25px;
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(0,0,0,0.05);
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
             border-radius: 24px;
             padding: 32px;
             box-shadow: var(--card-shadow);
-            scroll-margin-top: 20px;
+            scroll-margin-top: 80px;
         }
 
         .card-header {
@@ -101,20 +212,28 @@
             gap: 14px;
             margin-bottom: 20px;
             border-bottom: 2px solid #f1f5f9;
-            padding-bottom: 12px;
+            padding-bottom: 14px;
         }
 
         .card-header h2 {
             font-size: 1.4rem;
             font-weight: 800;
-            color: #0f172a;
+            color: var(--text-primary);
         }
 
         .card-header .icon {
-            font-size: 1.6rem;
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            background: #f1f5f9;
+            flex-shrink: 0;
         }
 
-        p { color: var(--text-secondary); margin-bottom: 14px; }
+        p { color: var(--text-secondary); margin-bottom: 14px; font-size: 0.98rem; }
         
         ul, ol {
             padding-left: 22px;
@@ -122,80 +241,214 @@
             margin-bottom: 16px;
         }
 
-        li { margin-bottom: 10px; }
+        li { margin-bottom: 10px; font-size: 0.96rem; }
 
         dt {
             font-weight: 800;
-            margin-top: 16px;
-            color: #1e293b;
+            margin-top: 18px;
+            color: var(--text-primary);
             font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         dd {
             margin: 4px 0 16px 0;
             color: var(--text-secondary);
+            font-size: 0.95rem;
         }
 
-        .highlight-box {
+        /* SDK List & Badges */
+        .sdk-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .sdk-card {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 18px;
+        }
+
+        .sdk-title {
+            font-weight: 800;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sdk-purpose {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Permissions Pill Badges */
+        .permission-item {
             background: #f8fafc;
             border-left: 4px solid var(--accent-blue);
-            padding: 16px 20px;
-            border-radius: 8px;
-            margin: 16px 0;
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 12px;
         }
 
+        .permission-title {
+            font-weight: 800;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .permission-desc {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+        }
+
+        /* Account Deletion Highlight Card */
         .deletion-card {
-            background: rgba(239, 68, 68, 0.03);
-            border: 1px solid rgba(239, 68, 68, 0.15);
+            background: #fef2f2;
+            border: 2px solid #fca5a5;
+        }
+
+        .deletion-card .card-header h2 {
+            color: #991b1b;
         }
 
         .deletion-steps-box {
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            padding: 18px 22px;
-            border-radius: 14px;
-            margin-top: 14px;
+            background: #ffffff;
+            border: 1px solid #fecaca;
+            padding: 20px;
+            border-radius: 16px;
+            margin-top: 16px;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.04);
         }
 
-        a { color: var(--accent-blue); text-decoration: none; word-break: break-word; }
+        .deletion-steps-box p {
+            color: #7f1d1d;
+            margin-bottom: 8px;
+        }
+
+        /* Links & Buttons */
+        a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 600;
+            word-break: break-word;
+        }
+
         a:hover { text-decoration: underline; }
+
+        .contact-box {
+            background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+            border: 1.5px solid #bfdbfe;
+            border-radius: 20px;
+            padding: 24px;
+            margin-top: 16px;
+        }
+
+        .contact-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
+
+        .contact-row strong {
+            width: 140px;
+            color: var(--text-primary);
+            flex-shrink: 0;
+        }
 
         footer {
             text-align: center;
-            margin-top: 50px;
+            margin-top: 45px;
+            padding-top: 25px;
+            border-top: 1px solid var(--border-color);
             color: var(--text-secondary);
             font-size: 0.9rem;
             font-weight: 600;
         }
 
         strong { color: var(--text-primary); font-weight: 700; }
-        code { background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-size: 0.88rem; color: #0f172a; }
+        code { background: #e2e8f0; padding: 2px 7px; border-radius: 6px; font-size: 0.86rem; color: #0f172a; font-family: monospace; }
 
-        @media (max-width: 600px) {
+        @media (max-width: 640px) {
             h1 { font-size: 2rem; }
-            body { padding: 20px 14px; }
-            .card { padding: 22px 18px; border-radius: 18px; }
-            nav a { margin: 4px 6px; }
+            body { padding: 16px 10px; }
+            .card { padding: 20px 16px; border-radius: 20px; }
+            nav { padding: 10px; }
+            nav a { margin: 3px 5px; font-size: 0.82rem; }
+            .contact-row { flex-direction: column; align-items: flex-start; gap: 2px; }
+            .contact-row strong { width: auto; }
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Hero Header -->
         <header>
-            <div class="logo-icon">🛡️</div>
+            <div class="logo-wrapper">🛡️</div>
             <h1>Privacy Policy</h1>
-            <p class="subtitle">Effective Date: September 1, 2026 · Operator: Qobo1live Technologies</p>
+            <p class="subtitle">Official Data Safety & Privacy Policy for <strong>Qobo1live</strong></p>
+            
+            <div class="badge-row">
+                <span class="status-badge badge-green">✓ Google Play Compliant</span>
+                <span class="status-badge badge-purple">🔞 Age 18+ Only</span>
+                <span class="status-badge badge-blue">🔒 Encrypted Data</span>
+            </div>
+            
+            <p class="subtitle" style="margin-top: 16px;">
+                <strong>Effective Date:</strong> September 1, 2026 &nbsp;|&nbsp; <strong>Legal Operator:</strong> Qobo1live Technologies, India
+            </p>
         </header>
 
+        <!-- Google Play Data Safety At-A-Glance Summary -->
+        <section class="playstore-summary">
+            <div class="playstore-summary-header">
+                <span style="font-size: 1.6rem;">📱</span>
+                <div>
+                    <h3>Google Play Data Safety Summary</h3>
+                    <p style="margin: 0; font-size: 0.88rem; color: #475569;">Quick reference guide for Play Store reviewers and Qobo1live users.</p>
+                </div>
+            </div>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-item-title">🔒 Data Encryption</div>
+                    <div class="summary-item-desc">All user data is encrypted in transit using industry-standard HTTPS/TLS 1.3 and WSS protocols.</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-item-title">🗑️ Account Deletion</div>
+                    <div class="summary-item-desc">Users can delete their account instantly in-app or request email deletion without requiring the app.</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-item-title">🚫 Zero Data Sales</div>
+                    <div class="summary-item-desc">We do NOT sell personal data or share user information with third-party ad tracking networks.</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-item-title">📞 Customer Support</div>
+                    <div class="summary-item-desc">Direct support via Email (<a href="mailto:qobolive916@gmail.com">qobolive916@gmail.com</a>) or Phone (<a href="tel:+919725112791">+91 9725112791</a>).</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Jump Navigation -->
         <nav aria-label="Policy quick links">
-            <a href="#info">Information We Collect</a> · 
-            <a href="#media">Public Media</a> · 
+            <a href="#intro">Introduction</a> · 
+            <a href="#info">Data We Collect</a> · 
+            <a href="#media">Public vs Private</a> · 
             <a href="#sdks">Third-Party SDKs</a> · 
             <a href="#permissions">Permissions</a> · 
             <a href="#retention">Retention</a> · 
-            <a href="#deletion">Delete Account</a> · 
-            <a href="#rights">Your Rights</a> · 
-            <a href="#children">Age Eligibility (18+)</a> · 
+            <a href="#deletion" style="color: #dc2626;">Delete Account</a> · 
+            <a href="#children">Age (18+)</a> · 
             <a href="#contact">Contact Us</a>
         </nav>
 
@@ -203,34 +456,34 @@
             <!-- 1. Introduction -->
             <section class="card" id="intro">
                 <div class="card-header">
-                    <span class="icon">ℹ️</span>
+                    <div class="icon">ℹ️</div>
                     <h2>1. Introduction</h2>
                 </div>
                 <p>Welcome to <strong>Qobo1live</strong> (“the App”, “we”, “us”, “our”). We value your privacy and are committed to protecting your personal data. This Privacy Policy explains how we collect, use, process, share, retain, and safeguard your personal information when you use our mobile application, live-streaming services, 1:1 voice and video calling, social chat messaging, interactive audio/video rooms, and virtual wallet services.</p>
-                <p>The legal operator responsible for your information is <strong>Qobo1live Technologies</strong> (India). For privacy inquiries or support, contact us at <a href="mailto:support@qobo1live.com">support@qobo1live.com</a>.</p>
+                <p>The legal operator responsible for your information is <strong>Qobo1live Technologies</strong> (India). For privacy inquiries or support, contact us at <a href="mailto:qobolive916@gmail.com">qobolive916@gmail.com</a> or phone <a href="tel:+919725112791">+91 9725112791</a>.</p>
             </section>
 
             <!-- 2. Information We Collect -->
             <section class="card" id="info">
                 <div class="card-header">
-                    <span class="icon">👁️</span>
+                    <div class="icon">👁️</div>
                     <h2>2. Information We Collect and Why</h2>
                 </div>
-                <p>We collect personal information to provide core features, authenticate users, process virtual currency transactions, maintain platform safety, and satisfy regulatory obligations.</p>
+                <p>We collect personal information strictly to provide core app features, authenticate users, process virtual currency transactions, maintain platform safety, and satisfy regulatory obligations.</p>
                 <dl>
-                    <dt>Account & Profile Information</dt>
+                    <dt>👤 Account & Profile Information</dt>
                     <dd>When you register or edit your profile, we collect your display name, phone number, email address, profile picture, poster image, date of birth (for age verification), gender, bio, country, state, city, language preferences, and personal interests. When using Google or Facebook sign-in, we collect authorized account identifiers and profile information provided by those services.</dd>
 
-                    <dt>Content & Interactive Media</dt>
+                    <dt>💬 Content & Interactive Media</dt>
                     <dd>We process direct messages, uploaded media, live audio/video streams, 1:1 voice and video call metadata, room participation events, follows, favorites, block lists, virtual gift transfers, avatar frames, and chat bubbles to operate social rooms, deliver streams, and enforce community standards.</dd>
 
-                    <dt>Wallet, Coins & Payout Records</dt>
+                    <dt>💳 Wallet, Coins & Payout Records</dt>
                     <dd>We process coin and diamond balances, purchase history via Razorpay, virtual gift logs, reward allocations, and payout requests. If you request a payout, we process the bank account details, IFSC code, account holder name, or UPI ID you provide. Financial providers process credit/debit card details in their secure checkout windows.</dd>
 
-                    <dt>Host & Agency Application Verification Details</dt>
+                    <dt>🆔 Host & Agency Verification Details</dt>
                     <dd>When applying for Host or Agency status, we collect your full legal name, date of birth, government identity card details (including front and back document photos such as Aadhaar, PAN, or National ID), WhatsApp contact number, email, real photo, postal address, and agency affiliation code. This sensitive data is processed strictly for identity verification, host eligibility review, commission payouts, and fraud prevention.</dd>
 
-                    <dt>Technical, Diagnostic & Device Information</dt>
+                    <dt>⚙️ Technical, Diagnostic & Device Information</dt>
                     <dd>Our servers and integrated SDKs process technical operational data, including IP address, hardware model, operating system version, app build version, session tokens, device identifiers, Firebase Cloud Messaging (FCM) tokens, connection timestamps, and diagnostic crash logs to maintain connection stability, single-device login restrictions, and security enforcement.</dd>
                 </dl>
             </section>
@@ -238,8 +491,8 @@
             <!-- 3. Public Media & Content -->
             <section class="card" id="media">
                 <div class="card-header">
-                    <span class="icon">🎙️</span>
-                    <h2>3. Public Content, Messages, and Live Media</h2>
+                    <div class="icon">🎙️</div>
+                    <h2>3. Public Content vs Private 1:1 Media</h2>
                 </div>
                 <p>Your displayed public profile (including display name, profile photo, level, bio, country, equipped avatar frame/background, and live status) is visible to other users. Activity inside public audio rooms and live streams—such as seat status, public room chat, sending virtual gifts, and leaderboard rankings—is visible to participants in that room or stream.</p>
                 <p>Direct chat messages and 1:1 voice/video calls are private between participants. If a user submits a safety report, compliance moderators review relevant chat logs or media to investigate policy violations. Real-time audio and video streams are transmitted through secure ZEGOCLOUD channels; call duration and session timestamps are logged. We do not perform permanent server-side video recording of direct 1:1 calls unless required for law enforcement compliance or safety investigations.</p>
@@ -248,42 +501,89 @@
             <!-- 4. Third-Party SDKs & Data Sharing -->
             <section class="card" id="sdks">
                 <div class="card-header">
-                    <span class="icon">🤝</span>
+                    <div class="icon">🤝</div>
                     <h2>4. Data Sharing & Third-Party SDKs</h2>
                 </div>
                 <p>We share information with third-party service providers strictly as required to operate the App. We do <strong>NOT</strong> sell personal information. We do <strong>NOT</strong> share user data with third-party advertising networks for cross-app tracking or targeted advertising.</p>
-                <p>Our integrated production providers include:</p>
-                <ul>
-                    <li><strong>Google / Firebase (Google LLC):</strong> Used for secure user authentication, database operations, Firebase Storage, and FCM push notification delivery for incoming call alerts.</li>
-                    <li><strong>Google & Meta / Facebook:</strong> Used solely for social single sign-in authentication.</li>
-                    <li><strong>ZEGOCLOUD (ZEGO Express SDK):</strong> Used for real-time audio/video streaming, 1:1 voice/video calling, room audio routing, and signaling.</li>
-                    <li><strong>Razorpay:</strong> Used for secure in-app purchase checkout when buying coin packages or VIP passes.</li>
-                    <li><strong>Render & Cloud Infrastructure:</strong> Used for secure API server hosting, PostgreSQL database, WebSockets, and media storage.</li>
-                    <li><strong>Bank & UPI Gateways:</strong> Used to execute verified host and agency withdrawal payouts.</li>
-                </ul>
+
+                <div class="sdk-grid">
+                    <div class="sdk-card">
+                        <div class="sdk-title">
+                            <span>Google / Firebase</span>
+                            <span class="status-badge badge-blue">Authentication & FCM</span>
+                        </div>
+                        <div class="sdk-purpose">Used for secure user login, database operations, Firebase Storage, and FCM push notification delivery for call alerts.</div>
+                    </div>
+
+                    <div class="sdk-card">
+                        <div class="sdk-title">
+                            <span>ZEGOCLOUD (ZEGO Express)</span>
+                            <span class="status-badge badge-purple">Audio / Video RTC</span>
+                        </div>
+                        <div class="sdk-purpose">Used for real-time audio/video streaming, 1:1 voice/video calling, room audio routing, and signaling.</div>
+                    </div>
+
+                    <div class="sdk-card">
+                        <div class="sdk-title">
+                            <span>Razorpay</span>
+                            <span class="status-badge badge-green">In-App Purchases</span>
+                        </div>
+                        <div class="sdk-purpose">Used for secure in-app purchase checkout when buying coin packages or VIP passes.</div>
+                    </div>
+
+                    <div class="sdk-card">
+                        <div class="sdk-title">
+                            <span>Google & Meta (Facebook)</span>
+                            <span class="status-badge badge-blue">Social Login</span>
+                        </div>
+                        <div class="sdk-purpose">Used solely for social single sign-in authentication.</div>
+                    </div>
+                </div>
             </section>
 
             <!-- 5. Device Permissions -->
             <section class="card" id="permissions">
                 <div class="card-header">
-                    <span class="icon">📱</span>
+                    <div class="icon">📱</div>
                     <h2>5. Device Permissions</h2>
                 </div>
                 <p>To support live streaming, calling, and profile customization, Qobo1live requests the following device permissions:</p>
-                <ul>
-                    <li><strong>Camera (<code>android.permission.CAMERA</code>):</strong> Required to broadcast live video streams and make 1:1 video calls.</li>
-                    <li><strong>Microphone (<code>android.permission.RECORD_AUDIO</code>):</strong> Required to transmit audio during live streams, audio rooms, and 1:1 calls.</li>
-                    <li><strong>Photos & Storage (<code>android.permission.READ_MEDIA_IMAGES</code> / <code>READ_EXTERNAL_STORAGE</code>):</strong> Required to select and upload profile photos, poster images, room backgrounds, and verification documents.</li>
-                    <li><strong>Push Notifications (<code>android.permission.POST_NOTIFICATIONS</code>):</strong> Required on Android 13+ for incoming call alerts and direct chat notifications.</li>
-                    <li><strong>Bluetooth & Audio Settings (<code>android.permission.BLUETOOTH_CONNECT</code> / <code>MODIFY_AUDIO_SETTINGS</code>):</strong> Required to route audio to Bluetooth headsets and speakerphones.</li>
-                    <li><strong>Incoming Call Alerts & Background Execution (<code>USE_FULL_SCREEN_INTENT</code> / <code>SYSTEM_ALERT_WINDOW</code> / <code>FOREGROUND_SERVICE</code>):</strong> Required to show full-screen incoming call UI and maintain background stream connections.</li>
-                </ul>
+
+                <div class="permission-item">
+                    <div class="permission-title">📷 Camera (<code>android.permission.CAMERA</code>)</div>
+                    <div class="permission-desc">Required to broadcast live video streams and make 1:1 video calls.</div>
+                </div>
+
+                <div class="permission-item">
+                    <div class="permission-title">🎤 Microphone (<code>android.permission.RECORD_AUDIO</code>)</div>
+                    <div class="permission-desc">Required to transmit audio during live streams, audio rooms, and 1:1 calls.</div>
+                </div>
+
+                <div class="permission-item">
+                    <div class="permission-title">🖼️ Photos & Media (<code>READ_MEDIA_IMAGES</code> / <code>READ_EXTERNAL_STORAGE</code>)</div>
+                    <div class="permission-desc">Required to select and upload profile photos, poster images, room backgrounds, and verification documents.</div>
+                </div>
+
+                <div class="permission-item">
+                    <div class="permission-title">🔔 Notifications (<code>android.permission.POST_NOTIFICATIONS</code>)</div>
+                    <div class="permission-desc">Required on Android 13+ for incoming call alerts and direct chat notifications.</div>
+                </div>
+
+                <div class="permission-item">
+                    <div class="permission-title">🎧 Bluetooth & Audio (<code>BLUETOOTH_CONNECT</code> / <code>MODIFY_AUDIO_SETTINGS</code>)</div>
+                    <div class="permission-desc">Required to route audio to Bluetooth headsets and speakerphones.</div>
+                </div>
+
+                <div class="permission-item">
+                    <div class="permission-title">⚡ Call Ring Screen & Foreground Execution</div>
+                    <div class="permission-desc"><code>USE_FULL_SCREEN_INTENT</code>, <code>SYSTEM_ALERT_WINDOW</code>, and <code>FOREGROUND_SERVICE</code> are required to display full-screen incoming call UI and maintain active background streams.</div>
+                </div>
             </section>
 
             <!-- 6. Retention & Security -->
             <section class="card" id="retention">
                 <div class="card-header">
-                    <span class="icon">🔒</span>
+                    <div class="icon">🔒</div>
                     <h2>6. Retention and Security</h2>
                 </div>
                 <p>We retain personal data only as long as necessary for legitimate service operations or legal requirements:</p>
@@ -300,67 +600,83 @@
             <!-- 7. Account Deletion -->
             <section class="card deletion-card" id="deletion">
                 <div class="card-header">
-                    <span class="icon">🗑️</span>
-                    <h2>7. Delete Your Qobo1live Account</h2>
+                    <div class="icon" style="background: #fee2e2; color: #dc2626;">🗑️</div>
+                    <h2>7. Delete Your Qobo1live Account & Data</h2>
                 </div>
                 <p>In compliance with Google Play Developer Policies and Facebook Platform Rules, Qobo1live provides multiple simple ways to delete your account and personal data:</p>
 
                 <div class="deletion-steps-box">
-                    <p><strong>Option A: In the App (Instant Deletion)</strong></p>
-                    <p>Open the Qobo1live App → Go to <strong>Profile / Settings</strong> → Tap <strong>Delete Account</strong> → Confirm your request. Your account and associated profile, messages, wallet balances, and social links are purged immediately.</p>
+                    <p><strong>Option A: In the App (Instant Self-Service Deletion)</strong></p>
+                    <p style="color: #475569; margin: 0;">Open the Qobo1live App → Go to <strong>Profile / Settings</strong> → Tap <strong>Delete Account</strong> → Confirm your request. Your account and associated profile, messages, wallet balances, and social links are purged immediately.</p>
                 </div>
 
                 <div class="deletion-steps-box">
-                    <p><strong>Option B: Web / Email Request (Without App)</strong></p>
-                    <p>Send an email to <a href="mailto:support@qobo1live.com?subject=Qobo1live%20Account%20Deletion">support@qobo1live.com</a> with the subject line <strong>“Qobo1live Account Deletion”</strong>. Include your User ID and registered Phone Number or Email. Verified email deletion requests are completed within <strong>3 to 7 business days</strong>.</p>
+                    <p><strong>Option B: Web / Email Request (Without Requiring App)</strong></p>
+                    <p style="color: #475569; margin: 0;">
+                        Send an email to <a href="mailto:qobolive916@gmail.com?subject=Qobo1live%20Account%20Deletion">qobolive916@gmail.com</a> with the subject line <strong>“Qobo1live Account Deletion”</strong>. Include your User ID and registered Phone Number or Email. Alternatively, call or WhatsApp customer support at <a href="tel:+919725112791">+91 9725112791</a>. Verified deletion requests are completed within <strong>3 to 7 business days</strong>.
+                    </p>
                 </div>
 
                 <div class="deletion-steps-box">
                     <p><strong>Option C: Facebook Login Activity Removal</strong></p>
-                    <ol>
+                    <ol style="margin-bottom: 0; margin-top: 6px;">
                         <li>Go to your Facebook Account's "Settings & Privacy" menu → Click "Settings".</li>
                         <li>Look for "Apps and Websites" to view connected services.</li>
                         <li>Search for "Qobo1live" and click "Remove".</li>
                     </ol>
                 </div>
-                <p style="margin-top: 14px;"><em>Scope of Deletion: Account deletion purges profile data, photos, chat messages, FCM tokens, wallet balances, backpack items, and host applications across our database and Firebase. Statutory financial records are retained separately as described in Section 6.</em></p>
+                <p style="margin-top: 16px; font-size: 0.88rem; color: #7f1d1d;"><em>Scope of Deletion: Account deletion purges profile data, photos, chat messages, FCM tokens, wallet balances, backpack items, and host applications across our database and Firebase. Statutory financial records are retained separately as described in Section 6.</em></p>
             </section>
 
             <!-- 8. Your Rights -->
             <section class="card" id="rights">
                 <div class="card-header">
-                    <span class="icon">⚙️</span>
+                    <div class="icon">⚙️</div>
                     <h2>8. Your Rights and Choices</h2>
                 </div>
-                <p>You have the right to access, export, correct, or request deletion of your personal data, or revoke granted device permissions at any time. To submit a request, contact <a href="mailto:support@qobo1live.com">support@qobo1live.com</a>.</p>
+                <p>You have the right to access, export, correct, or request deletion of your personal data, or revoke granted device permissions at any time. To submit a request, contact <a href="mailto:qobolive916@gmail.com">qobolive916@gmail.com</a> or phone <a href="tel:+919725112791">+91 9725112791</a>.</p>
             </section>
 
             <!-- 9. Age Eligibility (18+) -->
             <section class="card" id="children">
                 <div class="card-header">
-                    <span class="icon">🔞</span>
-                    <h2>9. Age Eligibility (18+ Requirement)</h2>
+                    <div class="icon">🔞</div>
+                    <h2>9. Age Eligibility (Strictly 18+ Requirement)</h2>
                 </div>
-                <p>Qobo1live is strictly intended for individuals aged <strong>18 and older</strong>. We do not knowingly collect personal data from or register minors under 18 years old. Accounts discovered to belong to minors are immediately suspended and purged. If you suspect an underage user on Qobo1live, notify us immediately at <a href="mailto:support@qobo1live.com">support@qobo1live.com</a>.</p>
+                <p>Qobo1live is strictly intended for individuals aged <strong>18 and older</strong>. We do not knowingly collect personal data from or register minors under 18 years old. Accounts discovered to belong to minors are immediately suspended and purged. If you suspect an underage user on Qobo1live, notify us immediately at <a href="mailto:qobolive916@gmail.com">qobolive916@gmail.com</a>.</p>
             </section>
 
             <!-- 10. Contact Us -->
             <section class="card" id="contact">
                 <div class="card-header">
-                    <span class="icon">✉️</span>
+                    <div class="icon">✉️</div>
                     <h2>10. Contact Us & Legal Operator</h2>
                 </div>
-                <p>For privacy inquiries, grievance redressal, or data requests, contact our team at:</p>
-                <p>
-                    <strong>Email:</strong> <a href="mailto:support@qobo1live.com">support@qobo1live.com</a><br>
-                    <strong>Website:</strong> <a href="https://www.qobo1live.com" target="_blank">www.qobo1live.com</a><br>
-                    <strong>Legal Operator:</strong> Qobo1live Technologies, India
-                </p>
+                <p>For privacy inquiries, grievance redressal, or data deletion requests, contact our team at:</p>
+
+                <div class="contact-box">
+                    <div class="contact-row">
+                        <strong>📧 Support Email:</strong>
+                        <a href="mailto:qobolive916@gmail.com">qobolive916@gmail.com</a>
+                    </div>
+                    <div class="contact-row">
+                        <strong>📱 Phone / Mobile:</strong>
+                        <a href="tel:+919725112791">+91 9725112791</a>
+                    </div>
+                    <div class="contact-row">
+                        <strong>🌐 Website:</strong>
+                        <a href="https://www.qobo1live.com" target="_blank">www.qobo1live.com</a>
+                    </div>
+                    <div class="contact-row" style="margin-bottom: 0;">
+                        <strong>🏢 Legal Operator:</strong>
+                        <span>Qobo1live Technologies, India</span>
+                    </div>
+                </div>
             </section>
         </div>
 
         <footer>
-            &copy; 2026 Qobo1live Technologies. All rights reserved. · Privacy Policy
+            &copy; 2026 Qobo1live Technologies. All rights reserved. · Official Privacy Policy
         </footer>
     </div>
 </body>

@@ -69,6 +69,8 @@ const ApplySuperAdmin: React.FC = () => {
   const hasMinLength = password.length >= 8;
   const hasSpecialChar = /[\!\@\#\$\%\^\&\*\(\)\_\+\-\=\[\]\{\}\;\:\'\"\,\<\>\.\?\/\~\\\|]/.test(password);
 
+  const [existingStatus, setExistingStatus] = useState<any>(null);
+
   const triggerScrollAndFocus = (id: string, errorMessage: string) => {
     setMessage({ type: 'error', content: errorMessage });
     const target = document.getElementById(id);
@@ -81,6 +83,13 @@ const ApplySuperAdmin: React.FC = () => {
   const checkExistingEmail = async (emailVal: string) => {
     if (!emailVal || !emailVal.includes('@')) return;
     try {
+      // First check if an application has already been submitted for this email
+      const statusRes = await axios.get(`${BACKEND_URL}/api/admin/super-admin-request/status?email=${encodeURIComponent(emailVal.trim())}`);
+      if (statusRes.data.statusCode === 1 && statusRes.data.data) {
+        setExistingStatus(statusRes.data.data);
+        return;
+      }
+
       const res = await axios.get(`${BACKEND_URL}/api/auth/check-email?email=${encodeURIComponent(emailVal.trim())}`);
       if (res.data.statusCode === 1 && res.data.data.exists) {
         const u = res.data.data.user;
@@ -196,17 +205,21 @@ const ApplySuperAdmin: React.FC = () => {
       });
 
       if (res.data.statusCode === 1) {
-        setMessage({
-          type: 'success',
-          content: 'Application submitted successfully! It will be reviewed by the system administrator.'
-        });
-        
+        const payload = res.data.data;
+        if (payload?.alreadySubmitted) {
+          setExistingStatus(payload);
+          toast.error("Application already submitted! You cannot send again.");
+        } else {
+          setExistingStatus({
+            status: payload?.status || 'pending',
+            email: email.toLowerCase().trim(),
+            fullName: fullName,
+            phone: phone,
+            createdAt: new Date().toISOString()
+          });
+          toast.success("Application submitted successfully!");
+        }
         window.scrollTo({ top: 0, behavior: 'smooth' });
-
-        setFullName(''); setEmail(''); setPhone(''); setIdNumber('');
-        setBirthday(''); setPassword(''); setConfirmPassword('');
-        setOriginalPhoto(null); setGovernmentDoc(null); setAadharPan(null);
-        setIsPreExistingUser(false); setHasExistingPassword(false);
       } else {
         setMessage({ type: 'error', content: res.data.message || 'Submission failed' });
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -233,6 +246,64 @@ const ApplySuperAdmin: React.FC = () => {
   };
 
   const states = selectedCountry !== 'Other' ? (countryStateData[selectedCountry] || []) : [];
+
+  if (existingStatus) {
+    const isApproved = existingStatus.status === 'approved';
+    const isRejected = existingStatus.status === 'rejected';
+    const statusColor = isApproved ? '#15803d' : isRejected ? '#b91c1c' : '#b45309';
+    const statusBg = isApproved ? '#dcfce7' : isRejected ? '#fee2e2' : '#fef3c7';
+
+    return (
+      <div className="public-onboarding-page" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 16px', fontFamily: 'Inter, sans-serif' }}>
+        <div style={{ textAlign: 'center', marginBottom: '30px', width: '100%', maxWidth: '850px' }}>
+          <img src="/logo.svg" alt="Qobo1Live Logo" style={{ height: '48px', marginBottom: '16px', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))' }} />
+          <h1 style={{ fontSize: '2rem', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.03em', margin: 0 }}>Super Admin Application Status</h1>
+          <p style={{ color: '#64748b', fontSize: '1rem', marginTop: '8px', fontWeight: 500 }}>
+            Your application details and current review status.
+          </p>
+        </div>
+
+        <div style={{ background: '#ffffff', width: '100%', maxWidth: '650px', borderRadius: '20px', boxShadow: '0 20px 50px -12px rgba(0,0,0,0.1)', overflow: 'hidden', padding: '36px 28px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+            
+            <div style={{ width: '74px', height: '74px', borderRadius: '50%', background: statusBg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
+              {isApproved ? <CheckCircle2 size={40} color={statusColor} /> : isRejected ? <AlertCircle size={40} color={statusColor} /> : <ShieldCheck size={40} color={statusColor} />}
+            </div>
+
+            <span style={{ padding: '8px 20px', borderRadius: '20px', fontSize: '0.9rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', background: statusBg, color: statusColor, marginBottom: '24px' }}>
+              STATUS: {existingStatus.status || 'PENDING REVIEW'}
+            </span>
+
+            <div style={{ background: '#f8fafc', borderRadius: '14px', border: '1.5px solid #e2e8f0', padding: '24px', width: '100%', textAlign: 'left', marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ fontSize: '0.95rem', color: '#334155' }}><strong>Applicant Email:</strong> {existingStatus.email}</div>
+              {existingStatus.fullName && <div style={{ fontSize: '0.95rem', color: '#334155' }}><strong>Full Name:</strong> {existingStatus.fullName}</div>}
+              {existingStatus.phone && <div style={{ fontSize: '0.95rem', color: '#334155' }}><strong>Mobile Phone:</strong> {existingStatus.phone}</div>}
+              {existingStatus.createdAt && <div style={{ fontSize: '0.95rem', color: '#334155' }}><strong>Submitted Date:</strong> {new Date(existingStatus.createdAt).toLocaleDateString()}</div>}
+              {existingStatus.feedback && (
+                <div style={{ marginTop: '8px', padding: '14px', background: '#fef2f2', borderLeft: '4px solid #ef4444', borderRadius: '8px', fontSize: '0.9rem', color: '#991b1b' }}>
+                  <strong>Admin Feedback:</strong> {existingStatus.feedback}
+                </div>
+              )}
+            </div>
+
+            <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '12px', padding: '16px 20px', color: '#1e40af', fontSize: '0.9rem', fontWeight: 700, width: '100%', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+              <AlertCircle size={20} color="#1d4ed8" />
+              <span>Application already sent. You cannot submit again.</span>
+            </div>
+
+            <button 
+              onClick={() => { setExistingStatus(null); setEmail(''); }} 
+              style={{ padding: '14px 28px', background: '#f1f5f9', border: '1.5px solid #cbd5e1', borderRadius: '12px', fontWeight: 800, color: '#334155', cursor: 'pointer', fontSize: '0.95rem', transition: 'all 0.2s' }}
+              onMouseOver={(e) => { e.currentTarget.style.background = '#e2e8f0'; }}
+              onMouseOut={(e) => { e.currentTarget.style.background = '#f1f5f9'; }}
+            >
+              Check Another Application
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="public-onboarding-page" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 16px', fontFamily: 'Inter, sans-serif' }}>
