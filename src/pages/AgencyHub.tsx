@@ -315,6 +315,39 @@ const AgencyHub: React.FC = () => {
         </div>
       </div>
 
+      {/* ── Filter Tabs ──────────────────────────────────────────────────────── */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
+        {[
+          { id: 'all', label: 'All Agencies', count: agencies.length, color: '#3b82f6' },
+          { id: 'active', label: 'Active', count: approvedCount, color: '#10b981' },
+          { id: 'pending', label: 'Pending Review', count: pendingCount, color: '#f59e0b' },
+          { id: 'rejected', label: 'Rejected', count: agencies.filter(a => a.status === 'rejected').length, color: '#ef4444' }
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setStatusFilter(tab.id)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '10px 18px', borderRadius: '12px',
+              border: statusFilter === tab.id ? `2px solid ${tab.color}` : '1px solid var(--glass-border)',
+              background: statusFilter === tab.id ? `${tab.color}15` : 'var(--bg-surface)',
+              color: statusFilter === tab.id ? tab.color : 'var(--text-secondary)',
+              fontWeight: 800, fontSize: '0.88rem', cursor: 'pointer',
+              transition: 'all 0.2s ease', boxShadow: statusFilter === tab.id ? `0 4px 12px ${tab.color}25` : 'none'
+            }}
+          >
+            <span>{tab.label}</span>
+            <span style={{
+              background: statusFilter === tab.id ? tab.color : 'rgba(148, 163, 184, 0.2)',
+              color: statusFilter === tab.id ? '#ffffff' : 'var(--text-secondary)',
+              padding: '2px 8px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 900
+            }}>
+              {tab.count}
+            </span>
+          </button>
+        ))}
+      </div>
+
       {/* ── Toolbar ─────────────────────────────────────────────────────────── */}
       <div className="agency-toolbar">
         <div className="agency-search">
@@ -334,16 +367,6 @@ const AgencyHub: React.FC = () => {
           {superAdmins.map(sa => (
             <option key={sa.id} value={sa.email}>{sa.name || sa.email}</option>
           ))}
-        </select>
-        <select
-          className="filter-select"
-          value={statusFilter}
-          onChange={e => setStatusFilter(e.target.value)}
-        >
-          <option value="all">All Status</option>
-          <option value="pending">Pending</option>
-          <option value="active">Active</option>
-          <option value="rejected">Rejected</option>
         </select>
       </div>
 

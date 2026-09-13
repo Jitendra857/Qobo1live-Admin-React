@@ -162,10 +162,10 @@ const HostRegistry: React.FC = () => {
   };
 
   const tabs = [
-    { key: 'all',      label: 'All',      count: totalCount,    color: '#3b82f6' },
-    { key: 'pending',  label: 'Pending',  count: pendingCount,  color: '#f59e0b' },
-    { key: 'approved', label: 'Approved', count: approvedCount, color: '#10b981' },
-    { key: 'rejected', label: 'Rejected', count: rejectedCount, color: '#ef4444' },
+    { key: 'all',      label: 'All Hosts',      count: totalCount,    color: '#3b82f6' },
+    { key: 'approved', label: 'Active Hosts',   count: approvedCount, color: '#10b981' },
+    { key: 'pending',  label: 'Pending Review', count: pendingCount,  color: '#f59e0b' },
+    { key: 'rejected', label: 'Rejected',       count: rejectedCount, color: '#ef4444' },
   ] as const;
 
   const statusColor = (s: string) => {
@@ -311,6 +311,34 @@ const HostRegistry: React.FC = () => {
         </div>
       </div>
 
+      {/* ── Filter Tabs ──────────────────────────────────────────────────────── */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
+        {tabs.map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '10px 18px', borderRadius: '12px',
+              border: activeTab === tab.key ? `2px solid ${tab.color}` : '1px solid var(--glass-border)',
+              background: activeTab === tab.key ? `${tab.color}15` : 'var(--bg-surface)',
+              color: activeTab === tab.key ? tab.color : 'var(--text-secondary)',
+              fontWeight: 800, fontSize: '0.88rem', cursor: 'pointer',
+              transition: 'all 0.2s ease', boxShadow: activeTab === tab.key ? `0 4px 12px ${tab.color}25` : 'none'
+            }}
+          >
+            <span>{tab.label}</span>
+            <span style={{
+              background: activeTab === tab.key ? tab.color : 'rgba(148, 163, 184, 0.2)',
+              color: activeTab === tab.key ? '#ffffff' : 'var(--text-secondary)',
+              padding: '2px 8px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 900
+            }}>
+              {tab.count}
+            </span>
+          </button>
+        ))}
+      </div>
+
       {/* ── Toolbar ─────────────────────────────────────────────────────────── */}
       <div className="hr-toolbar">
         <div className="hr-search">
@@ -332,18 +360,6 @@ const HostRegistry: React.FC = () => {
             <option key={sa.id} value={sa.email}>{sa.name || sa.email}</option>
           ))}
         </select>
-        <div className="hr-tabs">
-          {tabs.map(tab => (
-            <button
-              key={tab.key}
-              className={`hr-tab${activeTab === tab.key ? ' active-tab' : ''}`}
-              onClick={() => setActiveTab(tab.key)}
-            >
-              {tab.label}
-              <span className="hr-tab-count">{tab.count}</span>
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* ── Table ───────────────────────────────────────────────────────────── */}
