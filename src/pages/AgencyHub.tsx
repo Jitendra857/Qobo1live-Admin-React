@@ -17,9 +17,7 @@ const AgencyHub: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [payoutLoading, setPayoutLoading] = useState(false);
 
-  // Invite state
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviting, setInviting] = useState(false);
+  // Super Admins state
   const [superAdmins, setSuperAdmins] = useState<any[]>([]);
   const [selectedSuperAdmin, setSelectedSuperAdmin] = useState<string>('all');
 
@@ -110,23 +108,6 @@ const AgencyHub: React.FC = () => {
       fetchData();
     } catch (err: any) {
       toast.error('Failed to remove agency.');
-    }
-  };
-
-  const handleSendInvite = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inviteEmail.trim()) return;
-
-    setInviting(true);
-    try {
-      await adminService.inviteAgency({ email: inviteEmail.trim().toLowerCase() });
-      toast.success(`Invitation successfully dispatched to ${inviteEmail}`);
-      setInviteEmail('');
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err.response?.data?.message || 'Failed to send invitation link.');
-    } finally {
-      setInviting(false);
     }
   };
 
@@ -332,53 +313,6 @@ const AgencyHub: React.FC = () => {
             <div className="stat-lbl">Pending Payouts</div>
           </div>
         </div>
-      </div>
-
-      {/* ── Email Invite Section ────────────────────────────────────────────── */}
-      <div style={{
-        background: '#ffffff', borderRadius: '16px', padding: '24px',
-        border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
-        marginBottom: '30px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-          <div style={{ background: '#fef3c7', padding: '10px', borderRadius: '12px', color: '#d97706' }}>
-            <Mail size={20} />
-          </div>
-          <div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Dispatch Agency Application Link</h3>
-            <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '4px 0 0 0' }}>
-              Send an official secure email directly to a potential agency owner.
-            </p>
-          </div>
-        </div>
-        <form onSubmit={handleSendInvite} style={{ display: 'flex', gap: '12px', maxWidth: '600px' }}>
-          <input
-            type="email"
-            required
-            placeholder="Enter agency owner's email address..."
-            value={inviteEmail}
-            onChange={(e) => setInviteEmail(e.target.value)}
-            style={{
-              flex: 1, padding: '12px 16px', borderRadius: '10px', border: '1px solid #cbd5e1',
-              fontSize: '0.95rem', outline: 'none', transition: 'border-color 0.2s', background: '#f8fafc'
-            }}
-            onFocus={(e) => { e.currentTarget.style.borderColor = '#f59e0b'; e.currentTarget.style.background = '#ffffff'; }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = '#cbd5e1'; e.currentTarget.style.background = '#f8fafc'; }}
-          />
-          <button
-            type="submit"
-            disabled={inviting || !inviteEmail.trim()}
-            style={{
-              padding: '0 24px', background: '#f59e0b', color: 'white', border: 'none', borderRadius: '10px',
-              fontWeight: 700, fontSize: '0.95rem', cursor: inviting || !inviteEmail.trim() ? 'not-allowed' : 'pointer',
-              display: 'flex', alignItems: 'center', gap: '8px', opacity: inviting || !inviteEmail.trim() ? 0.7 : 1,
-              transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(245, 158, 11, 0.2)'
-            }}
-          >
-            {inviting ? <RefreshCw size={18} className="spin" /> : <Send size={18} />}
-            {inviting ? 'Dispatching...' : 'Send Link'}
-          </button>
-        </form>
       </div>
 
       {/* ── Toolbar ─────────────────────────────────────────────────────────── */}
