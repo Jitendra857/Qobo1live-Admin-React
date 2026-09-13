@@ -292,7 +292,7 @@ const CoinsSellerRequests: React.FC = () => {
       {/* ── Stat Cards ──────────────────────────────────────────────────────── */}
       <div className="agency-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '18px', marginBottom: '24px' }}>
         <div className="agency-stat-card blue" style={{ background: 'var(--bg-surface)', padding: '20px', borderRadius: '20px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', gap: '16px', boxShadow: 'var(--card-shadow)' }}>
-          <div className="stat-icon-box blue" style={{ background: 'rgba(59,130,246,0.1)', color: '#3b82f6', width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyCenter: 'center', flexShrink: 0 }}>
+          <div className="stat-icon-box blue" style={{ background: 'rgba(59,130,246,0.1)', color: '#3b82f6', width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <ShoppingCart size={22} />
           </div>
           <div>
@@ -301,7 +301,7 @@ const CoinsSellerRequests: React.FC = () => {
           </div>
         </div>
         <div className="agency-stat-card green" style={{ background: 'var(--bg-surface)', padding: '20px', borderRadius: '20px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', gap: '16px', boxShadow: 'var(--card-shadow)' }}>
-          <div className="stat-icon-box green" style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981', width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyCenter: 'center', flexShrink: 0 }}>
+          <div className="stat-icon-box green" style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981', width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <ShieldCheck size={22} />
           </div>
           <div>
@@ -310,7 +310,7 @@ const CoinsSellerRequests: React.FC = () => {
           </div>
         </div>
         <div className="agency-stat-card amber" style={{ background: 'var(--bg-surface)', padding: '20px', borderRadius: '20px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', gap: '16px', boxShadow: 'var(--card-shadow)' }}>
-          <div className="stat-icon-box amber" style={{ background: 'rgba(245,158,11,0.1)', color: '#f59e0b', width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyCenter: 'center', flexShrink: 0 }}>
+          <div className="stat-icon-box amber" style={{ background: 'rgba(245,158,11,0.1)', color: '#f59e0b', width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <Activity size={22} />
           </div>
           <div>
@@ -319,7 +319,7 @@ const CoinsSellerRequests: React.FC = () => {
           </div>
         </div>
         <div className="agency-stat-card purple" style={{ background: 'var(--bg-surface)', padding: '20px', borderRadius: '20px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', gap: '16px', boxShadow: 'var(--card-shadow)' }}>
-          <div className="stat-icon-box purple" style={{ background: 'rgba(139,92,246,0.1)', color: '#8b5cf6', width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyCenter: 'center', flexShrink: 0 }}>
+          <div className="stat-icon-box purple" style={{ background: 'rgba(139,92,246,0.1)', color: '#8b5cf6', width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <Wallet size={22} />
           </div>
           <div>
