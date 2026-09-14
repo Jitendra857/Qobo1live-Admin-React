@@ -221,8 +221,8 @@ const SuperAdminRequests: React.FC = () => {
                     <Mail size={18} />
                   </div>
                   <input 
-                    type="email"
-                    placeholder="Enter prospective super admin email..." 
+                    type="text"
+                    placeholder="Enter prospective super admin phone or identifier..." 
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
                     required
@@ -510,7 +510,7 @@ const SuperAdminRequests: React.FC = () => {
                 <thead>
                   <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
                     <th style={{ padding: '16px 24px', color: '#475569', fontWeight: 800, fontSize: '0.85rem' }}>Name</th>
-                    <th style={{ padding: '16px 24px', color: '#475569', fontWeight: 800, fontSize: '0.85rem' }}>Email</th>
+                    <th style={{ padding: '16px 24px', color: '#475569', fontWeight: 800, fontSize: '0.85rem' }}>Phone</th>
                     <th style={{ padding: '16px 24px', color: '#475569', fontWeight: 800, fontSize: '0.85rem' }}>Role</th>
                     <th style={{ padding: '16px 24px', color: '#475569', fontWeight: 800, fontSize: '0.85rem', textAlign: 'right' }}>Actions</th>
                   </tr>
@@ -519,7 +519,7 @@ const SuperAdminRequests: React.FC = () => {
                   {users.map((u: any) => (
                     <tr key={u.id} style={{ borderBottom: '1px solid #f1f5f9', transition: 'all 0.2s' }} className="table-row-hover">
                       <td style={{ padding: '16px 24px', color: '#0f172a', fontWeight: 700 }}>{u.name || 'Unnamed User'}</td>
-                      <td style={{ padding: '16px 24px', color: '#475569' }}>{u.email || <em style={{ color: '#94a3b8' }}>No email</em>}</td>
+                      <td style={{ padding: '16px 24px', color: '#475569' }}>{u.phone || <em style={{ color: '#94a3b8' }}>No phone</em>}</td>
                       <td style={{ padding: '16px 24px' }}>
                         <span style={{
                           padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase',
@@ -531,12 +531,11 @@ const SuperAdminRequests: React.FC = () => {
                       </td>
                       <td style={{ padding: '16px 24px', textAlign: 'right' }}>
                         <button 
-                          onClick={() => handleInviteUser(u.email)}
-                          disabled={!u.email}
+                          onClick={() => handleInviteUser(u.phone || u.id)}
                           style={{
-                            padding: '8px 14px', background: u.email ? 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' : '#e2e8f0',
-                            color: u.email ? '#fff' : '#94a3b8', border: 'none', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 700,
-                            cursor: u.email ? 'pointer' : 'not-allowed', boxShadow: u.email ? '0 4px 10px rgba(99, 102, 241, 0.2)' : 'none',
+                            padding: '8px 14px', background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                            color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 700,
+                            cursor: 'pointer', boxShadow: '0 4px 10px rgba(99, 102, 241, 0.2)',
                             display: 'inline-flex', alignItems: 'center', gap: '6px'
                           }}
                         >

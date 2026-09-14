@@ -17,9 +17,7 @@ const AgencyHub: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [payoutLoading, setPayoutLoading] = useState(false);
 
-  // Invite state
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviting, setInviting] = useState(false);
+  // Super Admins state
   const [superAdmins, setSuperAdmins] = useState<any[]>([]);
   const [selectedSuperAdmin, setSelectedSuperAdmin] = useState<string>('all');
 
@@ -110,23 +108,6 @@ const AgencyHub: React.FC = () => {
       fetchData();
     } catch (err: any) {
       toast.error('Failed to remove agency.');
-    }
-  };
-
-  const handleSendInvite = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inviteEmail.trim()) return;
-
-    setInviting(true);
-    try {
-      await adminService.inviteAgency({ email: inviteEmail.trim().toLowerCase() });
-      toast.success(`Invitation successfully dispatched to ${inviteEmail}`);
-      setInviteEmail('');
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err.response?.data?.message || 'Failed to send invitation link.');
-    } finally {
-      setInviting(false);
     }
   };
 
@@ -334,51 +315,37 @@ const AgencyHub: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Email Invite Section ────────────────────────────────────────────── */}
-      <div style={{
-        background: '#ffffff', borderRadius: '16px', padding: '24px',
-        border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
-        marginBottom: '30px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-          <div style={{ background: '#fef3c7', padding: '10px', borderRadius: '12px', color: '#d97706' }}>
-            <Mail size={20} />
-          </div>
-          <div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Dispatch Agency Application Link</h3>
-            <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '4px 0 0 0' }}>
-              Send an official secure email directly to a potential agency owner.
-            </p>
-          </div>
-        </div>
-        <form onSubmit={handleSendInvite} style={{ display: 'flex', gap: '12px', maxWidth: '600px' }}>
-          <input
-            type="email"
-            required
-            placeholder="Enter agency owner's email address..."
-            value={inviteEmail}
-            onChange={(e) => setInviteEmail(e.target.value)}
-            style={{
-              flex: 1, padding: '12px 16px', borderRadius: '10px', border: '1px solid #cbd5e1',
-              fontSize: '0.95rem', outline: 'none', transition: 'border-color 0.2s', background: '#f8fafc'
-            }}
-            onFocus={(e) => { e.currentTarget.style.borderColor = '#f59e0b'; e.currentTarget.style.background = '#ffffff'; }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = '#cbd5e1'; e.currentTarget.style.background = '#f8fafc'; }}
-          />
+      {/* ── Filter Tabs ──────────────────────────────────────────────────────── */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
+        {[
+          { id: 'all', label: 'All Agencies', count: agencies.length, color: '#3b82f6' },
+          { id: 'active', label: 'Active', count: approvedCount, color: '#10b981' },
+          { id: 'pending', label: 'Pending Review', count: pendingCount, color: '#f59e0b' },
+          { id: 'rejected', label: 'Rejected', count: agencies.filter(a => a.status === 'rejected').length, color: '#ef4444' }
+        ].map(tab => (
           <button
-            type="submit"
-            disabled={inviting || !inviteEmail.trim()}
+            key={tab.id}
+            onClick={() => setStatusFilter(tab.id)}
             style={{
-              padding: '0 24px', background: '#f59e0b', color: 'white', border: 'none', borderRadius: '10px',
-              fontWeight: 700, fontSize: '0.95rem', cursor: inviting || !inviteEmail.trim() ? 'not-allowed' : 'pointer',
-              display: 'flex', alignItems: 'center', gap: '8px', opacity: inviting || !inviteEmail.trim() ? 0.7 : 1,
-              transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(245, 158, 11, 0.2)'
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '10px 18px', borderRadius: '12px',
+              border: statusFilter === tab.id ? `2px solid ${tab.color}` : '1px solid var(--glass-border)',
+              background: statusFilter === tab.id ? `${tab.color}15` : 'var(--bg-surface)',
+              color: statusFilter === tab.id ? tab.color : 'var(--text-secondary)',
+              fontWeight: 800, fontSize: '0.88rem', cursor: 'pointer',
+              transition: 'all 0.2s ease', boxShadow: statusFilter === tab.id ? `0 4px 12px ${tab.color}25` : 'none'
             }}
           >
-            {inviting ? <RefreshCw size={18} className="spin" /> : <Send size={18} />}
-            {inviting ? 'Dispatching...' : 'Send Link'}
+            <span>{tab.label}</span>
+            <span style={{
+              background: statusFilter === tab.id ? tab.color : 'rgba(148, 163, 184, 0.2)',
+              color: statusFilter === tab.id ? '#ffffff' : 'var(--text-secondary)',
+              padding: '2px 8px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 900
+            }}>
+              {tab.count}
+            </span>
           </button>
-        </form>
+        ))}
       </div>
 
       {/* ── Toolbar ─────────────────────────────────────────────────────────── */}
@@ -400,16 +367,6 @@ const AgencyHub: React.FC = () => {
           {superAdmins.map(sa => (
             <option key={sa.id} value={sa.email}>{sa.name || sa.email}</option>
           ))}
-        </select>
-        <select
-          className="filter-select"
-          value={statusFilter}
-          onChange={e => setStatusFilter(e.target.value)}
-        >
-          <option value="all">All Status</option>
-          <option value="pending">Pending</option>
-          <option value="active">Active</option>
-          <option value="rejected">Rejected</option>
         </select>
       </div>
 

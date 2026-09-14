@@ -92,18 +92,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onSuccess })
               />
             </div>
 
-            <div className="form-group" style={{ marginBottom: '0px' }}>
-              <label>
-                <Mail size={16} color="var(--accent-blue)" /> Email Address
-              </label>
-              <input 
-                type="email" 
-                className="admin-input" 
-                placeholder="user@qobo1.com"
-                value={formData.email}
-                onChange={e => setFormData({...formData, email: e.target.value})}
-              />
-            </div>
+
 
             <div className="form-group" style={{ marginBottom: '0px' }}>
               <label>

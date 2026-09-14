@@ -114,14 +114,14 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
           
           <div className="input-container">
             <input 
-              type="email" 
+              type="text" 
               className="auth-input" 
               placeholder=" " 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required 
             />
-            <label className="input-label">Email Address</label>
+            <label className="input-label">Account / Phone</label>
           </div>
 
           <div className="input-container">
