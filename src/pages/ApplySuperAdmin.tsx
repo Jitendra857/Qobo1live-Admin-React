@@ -372,13 +372,13 @@ const ApplySuperAdmin: React.FC = () => {
             </div>
 
             <div className="form-item-half">
-              <label className="input-label-premium">Email Address</label>
+              <label className="input-label-premium">Phone Number</label>
               <input 
-                type="email" 
-                id="email" 
+                type="text" 
+                id="phone" 
                 value={email} 
                 onChange={(e) => setEmail(e.target.value)} 
-                onBlur={() => checkExistingEmail(email)}
+                placeholder="Enter phone number"
                 required 
                 className="input-field-premium" 
               />

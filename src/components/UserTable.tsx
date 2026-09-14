@@ -59,7 +59,6 @@ const UserTable: React.FC<UserTableProps> = ({ users, onAddCoins, onEdit, onDele
                     />
                     <div className="identity-text">
                       <span className="name-bold">{user.name || 'Anonymous User'}</span>
-                      <span className="email-sub">{user.email || 'N/A'}</span>
                     </div>
                   </div>
                 </td>

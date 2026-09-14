@@ -344,7 +344,7 @@ const HostRegistry: React.FC = () => {
         <div className="hr-search">
           <Search size={15} style={{ color:'var(--text-secondary)', flexShrink:0 }}/>
           <input
-            placeholder="Search by name, phone, email, agency code..."
+            placeholder="Search by name, phone, agency code..."
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
@@ -558,10 +558,6 @@ const HostRegistry: React.FC = () => {
               <div className="detail-item">
                 <div className="detail-label">WhatsApp</div>
                 <div className="detail-value">{selectedApp.whatsapp || 'N/A'}</div>
-              </div>
-              <div className="detail-item">
-                <div className="detail-label">Email / Gmail</div>
-                <div className="detail-value">{selectedApp.gmail || 'N/A'}</div>
               </div>
               <div className="detail-item">
                 <div className="detail-label">National ID</div>

@@ -439,7 +439,6 @@ const UserHistoryModal: React.FC<UserHistoryModalProps> = ({ user, onClose }) =>
               <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '6px', display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
                 <span>User ID: <strong style={{ color: '#cbd5e1' }}>{user.id}</strong></span>
                 <span>Phone: <strong style={{ color: '#cbd5e1' }}>{user.phone || 'N/A'}</strong></span>
-                <span>Email: <strong style={{ color: '#cbd5e1' }}>{user.email || 'N/A'}</strong></span>
               </div>
             </div>
           </div>

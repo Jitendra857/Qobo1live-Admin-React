@@ -261,17 +261,7 @@ const RegisterHost: React.FC = () => {
                   className="input-field-premium" 
                 />
               </div>
-              <div>
-                <label className="input-label-premium">Gmail Address</label>
-                <input 
-                  type="email" 
-                  id="gmail" 
-                  value={gmail} 
-                  onChange={(e) => setGmail(e.target.value)} 
-                  placeholder="Required for status check"
-                  className="input-field-premium" 
-                />
-              </div>
+
             </div>
 
             {/* Field 2: Upload Document (Front / Back) 2 foto */}

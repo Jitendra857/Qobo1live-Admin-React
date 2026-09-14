@@ -207,7 +207,7 @@ const RegisterAgency: React.FC = () => {
             <Search size={18} color="#64748b" />
             <input 
               type="text" 
-              placeholder="Check Status by Email / Phone / Super Admin Code..." 
+              placeholder="Check Status by Phone / Super Admin Code..." 
               value={statusSearchQuery}
               onChange={(e) => setStatusSearchQuery(e.target.value)}
               style={{ border: 'none', background: 'transparent', outline: 'none', flex: 1, fontSize: '0.9rem', color: '#0f172a' }}
@@ -247,15 +247,15 @@ const RegisterAgency: React.FC = () => {
               />
             </div>
 
-            {/* Contact Email / Phone for identification & checking status */}
+            {/* Contact Phone for identification & checking status */}
             <div>
-              <label className="input-label-premium">Email Address or Phone Number</label>
+              <label className="input-label-premium">Phone Number</label>
               <input 
-                type="email" 
-                id="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-                placeholder="Required for checking application status"
+                type="text" 
+                id="phone" 
+                value={phone} 
+                onChange={(e) => setPhone(e.target.value)} 
+                placeholder="Enter your phone number"
                 required 
                 className="input-field-premium" 
               />
