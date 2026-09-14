@@ -120,15 +120,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
               />
             </div>
 
-            <div className="form-group" style={{ marginBottom: '0px' }}>
-              <label><Mail size={14} /> Email</label>
-              <input 
-                type="email" 
-                className="admin-input" 
-                value={formData.email}
-                onChange={e => setFormData({...formData, email: e.target.value})}
-              />
-            </div>
+
 
             <div className="form-group" style={{ marginBottom: '0px' }}>
               <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

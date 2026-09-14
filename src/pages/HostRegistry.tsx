@@ -19,9 +19,7 @@ const HostRegistry: React.FC = () => {
   const [search, setSearch]       = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
 
-  // Invite state
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviting, setInviting] = useState(false);
+  // Super Admins state
   const [superAdmins, setSuperAdmins] = useState<any[]>([]);
   const [selectedSuperAdmin, setSelectedSuperAdmin] = useState<string>('all');
   const [agenciesList, setAgenciesList] = useState<any[]>([]);
@@ -163,28 +161,11 @@ const HostRegistry: React.FC = () => {
     }
   };
 
-  const handleSendInvite = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inviteEmail.trim()) return;
-
-    setInviting(true);
-    try {
-      await adminService.inviteHost({ email: inviteEmail.trim().toLowerCase() });
-      toast.success(`Invitation successfully dispatched to ${inviteEmail}`);
-      setInviteEmail('');
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err.response?.data?.message || 'Failed to send invitation link.');
-    } finally {
-      setInviting(false);
-    }
-  };
-
   const tabs = [
-    { key: 'all',      label: 'All',      count: totalCount,    color: '#3b82f6' },
-    { key: 'pending',  label: 'Pending',  count: pendingCount,  color: '#f59e0b' },
-    { key: 'approved', label: 'Approved', count: approvedCount, color: '#10b981' },
-    { key: 'rejected', label: 'Rejected', count: rejectedCount, color: '#ef4444' },
+    { key: 'all',      label: 'All Hosts',      count: totalCount,    color: '#3b82f6' },
+    { key: 'approved', label: 'Active Hosts',   count: approvedCount, color: '#10b981' },
+    { key: 'pending',  label: 'Pending Review', count: pendingCount,  color: '#f59e0b' },
+    { key: 'rejected', label: 'Rejected',       count: rejectedCount, color: '#ef4444' },
   ] as const;
 
   const statusColor = (s: string) => {
@@ -330,51 +311,32 @@ const HostRegistry: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Email Invite Section ────────────────────────────────────────────── */}
-      <div style={{
-        background: '#ffffff', borderRadius: '16px', padding: '24px',
-        border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
-        marginBottom: '24px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-          <div style={{ background: '#ede9fe', padding: '10px', borderRadius: '12px', color: '#8b5cf6' }}>
-            <Mail size={20} />
-          </div>
-          <div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Dispatch Host Application Link</h3>
-            <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '4px 0 0 0' }}>
-              Send an official secure email directly to a potential broadcasting host.
-            </p>
-          </div>
-        </div>
-        <form onSubmit={handleSendInvite} style={{ display: 'flex', gap: '12px', maxWidth: '600px' }}>
-          <input
-            type="email"
-            required
-            placeholder="Enter host's email address..."
-            value={inviteEmail}
-            onChange={(e) => setInviteEmail(e.target.value)}
-            style={{
-              flex: 1, padding: '12px 16px', borderRadius: '10px', border: '1px solid #cbd5e1',
-              fontSize: '0.95rem', outline: 'none', transition: 'border-color 0.2s', background: '#f8fafc'
-            }}
-            onFocus={(e) => { e.currentTarget.style.borderColor = '#8b5cf6'; e.currentTarget.style.background = '#ffffff'; }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = '#cbd5e1'; e.currentTarget.style.background = '#f8fafc'; }}
-          />
+      {/* ── Filter Tabs ──────────────────────────────────────────────────────── */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
+        {tabs.map(tab => (
           <button
-            type="submit"
-            disabled={inviting || !inviteEmail.trim()}
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
             style={{
-              padding: '0 24px', background: '#8b5cf6', color: 'white', border: 'none', borderRadius: '10px',
-              fontWeight: 700, fontSize: '0.95rem', cursor: inviting || !inviteEmail.trim() ? 'not-allowed' : 'pointer',
-              display: 'flex', alignItems: 'center', gap: '8px', opacity: inviting || !inviteEmail.trim() ? 0.7 : 1,
-              transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(139, 92, 246, 0.2)'
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '10px 18px', borderRadius: '12px',
+              border: activeTab === tab.key ? `2px solid ${tab.color}` : '1px solid var(--glass-border)',
+              background: activeTab === tab.key ? `${tab.color}15` : 'var(--bg-surface)',
+              color: activeTab === tab.key ? tab.color : 'var(--text-secondary)',
+              fontWeight: 800, fontSize: '0.88rem', cursor: 'pointer',
+              transition: 'all 0.2s ease', boxShadow: activeTab === tab.key ? `0 4px 12px ${tab.color}25` : 'none'
             }}
           >
-            {inviting ? <RefreshCw size={18} className="spin" /> : <Send size={18} />}
-            {inviting ? 'Dispatching...' : 'Send Link'}
+            <span>{tab.label}</span>
+            <span style={{
+              background: activeTab === tab.key ? tab.color : 'rgba(148, 163, 184, 0.2)',
+              color: activeTab === tab.key ? '#ffffff' : 'var(--text-secondary)',
+              padding: '2px 8px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 900
+            }}>
+              {tab.count}
+            </span>
           </button>
-        </form>
+        ))}
       </div>
 
       {/* ── Toolbar ─────────────────────────────────────────────────────────── */}
@@ -382,7 +344,7 @@ const HostRegistry: React.FC = () => {
         <div className="hr-search">
           <Search size={15} style={{ color:'var(--text-secondary)', flexShrink:0 }}/>
           <input
-            placeholder="Search by name, phone, email, agency code..."
+            placeholder="Search by name, phone, agency code..."
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
@@ -398,18 +360,6 @@ const HostRegistry: React.FC = () => {
             <option key={sa.id} value={sa.email}>{sa.name || sa.email}</option>
           ))}
         </select>
-        <div className="hr-tabs">
-          {tabs.map(tab => (
-            <button
-              key={tab.key}
-              className={`hr-tab${activeTab === tab.key ? ' active-tab' : ''}`}
-              onClick={() => setActiveTab(tab.key)}
-            >
-              {tab.label}
-              <span className="hr-tab-count">{tab.count}</span>
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* ── Table ───────────────────────────────────────────────────────────── */}
@@ -608,10 +558,6 @@ const HostRegistry: React.FC = () => {
               <div className="detail-item">
                 <div className="detail-label">WhatsApp</div>
                 <div className="detail-value">{selectedApp.whatsapp || 'N/A'}</div>
-              </div>
-              <div className="detail-item">
-                <div className="detail-label">Email / Gmail</div>
-                <div className="detail-value">{selectedApp.gmail || 'N/A'}</div>
               </div>
               <div className="detail-item">
                 <div className="detail-label">National ID</div>

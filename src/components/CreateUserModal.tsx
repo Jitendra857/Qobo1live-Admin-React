@@ -14,7 +14,6 @@ interface CreateUserModalProps {
 const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
     phone: '',
     role: 'user',
     password: 'Password123!' // Default fallback
@@ -40,8 +39,8 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onSuccess })
       const data = new FormData();
       Object.keys(formData).forEach(key => {
         const value = (formData as any)[key];
-        if (value !== undefined && value !== null) {
-          data.append(key, String(value));
+        if (value !== undefined && value !== null && String(value).trim() !== '') {
+          data.append(key, String(value).trim());
         }
       });
       if (selectedFile) {
@@ -92,18 +91,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onSuccess })
               />
             </div>
 
-            <div className="form-group" style={{ marginBottom: '0px' }}>
-              <label>
-                <Mail size={16} color="var(--accent-blue)" /> Email Address
-              </label>
-              <input 
-                type="email" 
-                className="admin-input" 
-                placeholder="user@qobo1.com"
-                value={formData.email}
-                onChange={e => setFormData({...formData, email: e.target.value})}
-              />
-            </div>
+
 
             <div className="form-group" style={{ marginBottom: '0px' }}>
               <label>

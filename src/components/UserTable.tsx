@@ -10,9 +10,23 @@ interface UserTableProps {
   onViewHistory: (user: any) => void;
   onForceLogout: (user: any) => void;
   loading?: boolean;
+  selectedUserIds?: string[];
+  onToggleSelectUser?: (userId: string) => void;
+  onToggleSelectAll?: () => void;
 }
 
-const UserTable: React.FC<UserTableProps> = ({ users, onAddCoins, onEdit, onDelete, onViewHistory, onForceLogout, loading = false }) => {
+const UserTable: React.FC<UserTableProps> = ({ 
+  users, 
+  onAddCoins, 
+  onEdit, 
+  onDelete, 
+  onViewHistory, 
+  onForceLogout, 
+  loading = false,
+  selectedUserIds = [],
+  onToggleSelectUser,
+  onToggleSelectAll
+}) => {
   const statusClassName = (status?: string) => {
     const value = (status || 'active').toLowerCase();
     if (value === 'blocked' || value === 'inactive' || value === 'banned') return 'status-pill danger';
@@ -20,12 +34,23 @@ const UserTable: React.FC<UserTableProps> = ({ users, onAddCoins, onEdit, onDele
     return 'status-pill active';
   };
 
+  const isAllSelected = users.length > 0 && selectedUserIds.length === users.length;
+
   return (
     <div className="table-container-premium">
       <table className="modern-table">
         <thead>
           <tr>
-            <th style={{ width: '35%' }}>User</th>
+            <th style={{ width: '45px', textAlign: 'center' }}>
+              <input 
+                type="checkbox"
+                style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#ef4444' }}
+                checked={isAllSelected}
+                onChange={onToggleSelectAll}
+                title="Select All Users"
+              />
+            </th>
+            <th style={{ width: '32%' }}>User</th>
             <th style={{ width: '18%' }}>Connectivity</th>
             <th style={{ width: '14%' }}>Assets</th>
             <th style={{ width: '10%' }}>Level</th>
@@ -36,33 +61,46 @@ const UserTable: React.FC<UserTableProps> = ({ users, onAddCoins, onEdit, onDele
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan={6} className="table-empty">
+              <td colSpan={7} className="table-empty">
                 Loading users...
               </td>
             </tr>
           ) : users.length === 0 ? (
             <tr>
-              <td colSpan={6} className="table-empty">
+              <td colSpan={7} className="table-empty">
                 No users found.
               </td>
             </tr>
           ) : (
-            users.map((user) => (
-              <tr key={user.id} className="row-premium">
-                <td>
-                  <div className="identity-block">
-                    <MediaImage 
-                      src={user.displayPicture} 
-                      className="avatar-glass" 
-                      style={{ objectFit: 'cover' }}
-                      fallbackText={user.name?.[0] || 'U'}
+            users.map((user) => {
+              const isSelected = selectedUserIds.includes(user.id);
+              return (
+                <tr 
+                  key={user.id} 
+                  className={`row-premium ${isSelected ? 'row-selected' : ''}`}
+                  style={isSelected ? { background: 'rgba(239, 68, 68, 0.05)' } : undefined}
+                >
+                  <td style={{ textAlign: 'center' }}>
+                    <input 
+                      type="checkbox"
+                      style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#ef4444' }}
+                      checked={isSelected}
+                      onChange={() => onToggleSelectUser && onToggleSelectUser(user.id)}
                     />
-                    <div className="identity-text">
-                      <span className="name-bold">{user.name || 'Anonymous User'}</span>
-                      <span className="email-sub">{user.email || 'N/A'}</span>
+                  </td>
+                  <td>
+                    <div className="identity-block">
+                      <MediaImage 
+                        src={user.displayPicture} 
+                        className="avatar-glass" 
+                        style={{ objectFit: 'cover' }}
+                        fallbackText={user.name?.[0] || 'U'}
+                      />
+                      <div className="identity-text">
+                        <span className="name-bold">{user.name || 'Anonymous User'}</span>
+                      </div>
                     </div>
-                  </div>
-                </td>
+                  </td>
                 <td className="data-cell-dim">{user.phone || 'No Phone'}</td>
                 <td className="data-cell">
                   <div className="assets-cluster" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -114,7 +152,8 @@ const UserTable: React.FC<UserTableProps> = ({ users, onAddCoins, onEdit, onDele
                   </div>
                 </td>
               </tr>
-            ))
+              );
+            })
           )}
         </tbody>
       </table>

@@ -39,12 +39,12 @@ const LoginPage: React.FC = () => {
 
                 <form onSubmit={handleLogin} className="mt-30">
                     <div className="form-group mb-20">
-                        <label><Mail size={16} /> Business Email</label>
+                        <label><Mail size={16} /> Admin Account / Phone</label>
                         <input 
-                            type="email" 
+                            type="text" 
                             className="admin-input" 
                             required 
-                            placeholder="admin@qobo1.com"
+                            placeholder="Admin account / phone"
                             value={credentials.email}
                             onChange={e => setCredentials({...credentials, email: e.target.value})}
                         />

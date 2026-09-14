@@ -27,12 +27,12 @@ interface Application {
 }
 
 const CoinsSellerRequests: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('Active Sellers');
+  const [activeTab, setActiveTab] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   
   // Data State
   const [sellers, setSellers] = useState<any[]>([]);
-  const [applications, setApplications] = useState<Application[]>([]);
+  const [applications, setApplications] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   
   // Modals
@@ -61,19 +61,22 @@ const CoinsSellerRequests: React.FC = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      if (activeTab === 'Active Sellers') {
-        const res = await adminService.listSellers();
-        setSellers(res.data.data || []);
-      } else {
-        let statusStr = 'pending';
-        if (activeTab === 'Rejected Applications') statusStr = 'rejected';
-        if (activeTab === 'Approved Applications') statusStr = 'approved';
-        
-        const response = await api.get(`/admin/coins-seller-applications?status=${statusStr}`);
-        if (response.data.statusCode === 1) {
-          setApplications(response.data.data || []);
-        }
-      }
+      const [sellersRes, pendingRes, approvedRes, rejectedRes] = await Promise.all([
+        adminService.listSellers(),
+        api.get('/admin/coins-seller-applications?status=pending'),
+        api.get('/admin/coins-seller-applications?status=approved'),
+        api.get('/admin/coins-seller-applications?status=rejected')
+      ]);
+
+      const sellersList = sellersRes.data.data || [];
+      setSellers(sellersList);
+
+      const appsList = [
+        ...(pendingRes.data.data || []).map((a: any) => ({ ...a, appStatus: 'pending' })),
+        ...(approvedRes.data.data || []).map((a: any) => ({ ...a, appStatus: 'approved' })),
+        ...(rejectedRes.data.data || []).map((a: any) => ({ ...a, appStatus: 'rejected' }))
+      ];
+      setApplications(appsList);
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to fetch data');
     } finally {
@@ -83,7 +86,7 @@ const CoinsSellerRequests: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-  }, [activeTab]);
+  }, []);
 
   // --- APPLICATIONS LOGIC ---
   const handleApprove = async (id: string) => {
@@ -233,78 +236,141 @@ const CoinsSellerRequests: React.FC = () => {
     }
   };
 
+  const activeSellersCount = sellers.filter(s => s.status === 'active' || !s.status).length;
+  const pendingAppsCount = applications.filter(a => a.appStatus === 'pending').length;
+  const approvedAppsCount = applications.filter(a => a.appStatus === 'approved').length;
+  const rejectedAppsCount = applications.filter(a => a.appStatus === 'rejected').length;
+  const totalCoinsStock = sellers.reduce((sum, s) => sum + (s.coinsBalance || 0), 0);
+
+  const tabsList = [
+    { id: 'all', label: 'All', count: sellers.length + applications.length, color: '#3b82f6' },
+    { id: 'active', label: 'Active Sellers', count: sellers.length, color: '#10b981' },
+    { id: 'pending', label: 'Pending Requests', count: pendingAppsCount, color: '#f59e0b' },
+    { id: 'approved', label: 'Approved Requests', count: approvedAppsCount, color: '#06b6d4' },
+    { id: 'rejected', label: 'Rejected Requests', count: rejectedAppsCount, color: '#ef4444' }
+  ];
+
   const filteredSellers = sellers.filter(s => 
     s.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    s.email?.toLowerCase().includes(searchQuery.toLowerCase())
+    s.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    s.whatsapp?.includes(searchQuery)
+  );
+
+  const filteredApplications = applications.filter(a => 
+    (activeTab === 'all' || activeTab === a.appStatus) &&
+    (a.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+     a.user?.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+     a.user?.phone?.includes(searchQuery))
   );
 
   return (
     <div className="user-management fade-in">
-      <div className="header-actions" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
-          <div>
-            <h2 className="page-title" style={{ fontSize: '2rem', fontWeight: '900', color: '#0f172a', margin: '0 0 8px 0' }}>Coins Sellers Management</h2>
-            <p style={{ color: '#64748b', fontSize: '1rem', margin: 0 }}>Manage active merchants, allocate stock, and review mobile applications</p>
-          </div>
-          {activeTab === 'Active Sellers' && (
-            <button 
-              onClick={handleOpenCreate}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '8px',
-                padding: '12px 24px', background: '#2563eb', color: 'white',
-                borderRadius: '16px', fontWeight: 'bold', fontSize: '1rem',
-                border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)',
-                transition: 'transform 0.2s, box-shadow 0.2s'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-              onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-            >
-              <Plus size={20} /> Add New Seller
-            </button>
-          )}
+      {/* ── Page Header ─────────────────────────────────────────────────────── */}
+      <div className="header-actions" style={{ marginBottom: '24px' }}>
+        <div>
+          <h1 className="page-title">Coins Sellers Management</h1>
+          <p style={{ color: 'var(--text-secondary)', fontWeight: 600, marginTop: '4px' }}>
+            Manage active merchants, allocate stock, and review mobile merchant applications
+          </p>
         </div>
-        
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', background: '#f8fafc', padding: '8px', borderRadius: '20px', border: '1px solid #e2e8f0', flexWrap: 'wrap', gap: '16px' }}>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {['Active Sellers', 'Pending Applications', 'Approved Applications', 'Rejected Applications'].map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                style={{
-                  padding: '12px 24px',
-                  borderRadius: '14px',
-                  border: 'none',
-                  background: activeTab === tab ? '#2563eb' : 'transparent',
-                  color: activeTab === tab ? '#ffffff' : '#64748b',
-                  cursor: 'pointer',
-                  fontWeight: '700',
-                  fontSize: '0.95rem',
-                  transition: 'all 0.3s ease',
-                  boxShadow: activeTab === tab ? '0 4px 12px rgba(37, 99, 235, 0.25)' : 'none'
-                }}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
+        <button 
+          onClick={handleOpenCreate}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '8px',
+            padding: '12px 22px', background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+            color: 'white', borderRadius: '14px', fontWeight: '800', fontSize: '0.95rem',
+            border: 'none', cursor: 'pointer', boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          <Plus size={20} /> Onboard New Merchant
+        </button>
+      </div>
 
-          {activeTab === 'Active Sellers' && (
-            <div style={{ display: 'flex', alignItems: 'center', background: 'white', padding: '12px 20px', borderRadius: '14px', border: '1px solid #e2e8f0', minWidth: '320px', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
-              <Search size={18} style={{ color: '#94a3b8', marginRight: '12px' }} />
-              <input 
-                type="text" 
-                placeholder="Search merchants by name or email..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{ border: 'none', outline: 'none', background: 'transparent', width: '100%', fontSize: '0.95rem', color: '#1e293b', fontWeight: '500' }}
-              />
-            </div>
-          )}
+      {/* ── Stat Cards ──────────────────────────────────────────────────────── */}
+      <div className="agency-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '18px', marginBottom: '24px' }}>
+        <div className="agency-stat-card blue" style={{ background: 'var(--bg-surface)', padding: '20px', borderRadius: '20px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', gap: '16px', boxShadow: 'var(--card-shadow)' }}>
+          <div className="stat-icon-box blue" style={{ background: 'rgba(59,130,246,0.1)', color: '#3b82f6', width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <ShoppingCart size={22} />
+          </div>
+          <div>
+            <div className="stat-num" style={{ fontSize: '1.7rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1 }}>{sellers.length + applications.length}</div>
+            <div className="stat-lbl" style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '4px' }}>Total Records</div>
+          </div>
+        </div>
+        <div className="agency-stat-card green" style={{ background: 'var(--bg-surface)', padding: '20px', borderRadius: '20px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', gap: '16px', boxShadow: 'var(--card-shadow)' }}>
+          <div className="stat-icon-box green" style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981', width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <ShieldCheck size={22} />
+          </div>
+          <div>
+            <div className="stat-num" style={{ fontSize: '1.7rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1 }}>{activeSellersCount}</div>
+            <div className="stat-lbl" style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '4px' }}>Active Sellers</div>
+          </div>
+        </div>
+        <div className="agency-stat-card amber" style={{ background: 'var(--bg-surface)', padding: '20px', borderRadius: '20px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', gap: '16px', boxShadow: 'var(--card-shadow)' }}>
+          <div className="stat-icon-box amber" style={{ background: 'rgba(245,158,11,0.1)', color: '#f59e0b', width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Activity size={22} />
+          </div>
+          <div>
+            <div className="stat-num" style={{ fontSize: '1.7rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1 }}>{pendingAppsCount}</div>
+            <div className="stat-lbl" style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '4px' }}>Pending Review</div>
+          </div>
+        </div>
+        <div className="agency-stat-card purple" style={{ background: 'var(--bg-surface)', padding: '20px', borderRadius: '20px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', gap: '16px', boxShadow: 'var(--card-shadow)' }}>
+          <div className="stat-icon-box purple" style={{ background: 'rgba(139,92,246,0.1)', color: '#8b5cf6', width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Wallet size={22} />
+          </div>
+          <div>
+            <div className="stat-num" style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1 }}>{totalCoinsStock.toLocaleString()}</div>
+            <div className="stat-lbl" style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '4px' }}>Allocated Coin Stock</div>
+          </div>
         </div>
       </div>
 
+      {/* ── Filter Tabs ──────────────────────────────────────────────────────── */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
+        {tabsList.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '10px 18px', borderRadius: '12px',
+              border: activeTab === tab.id ? `2px solid ${tab.color}` : '1px solid var(--glass-border)',
+              background: activeTab === tab.id ? `${tab.color}15` : 'var(--bg-surface)',
+              color: activeTab === tab.id ? tab.color : 'var(--text-secondary)',
+              fontWeight: 800, fontSize: '0.88rem', cursor: 'pointer',
+              transition: 'all 0.2s ease', boxShadow: activeTab === tab.id ? `0 4px 12px ${tab.color}25` : 'none'
+            }}
+          >
+            <span>{tab.label}</span>
+            <span style={{
+              background: activeTab === tab.id ? tab.color : 'rgba(148, 163, 184, 0.2)',
+              color: activeTab === tab.id ? '#ffffff' : 'var(--text-secondary)',
+              padding: '2px 8px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 900
+            }}>
+              {tab.count}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* ── Search Bar ───────────────────────────────────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'center', background: 'var(--input-bg)', padding: '0 16px', borderRadius: '14px', border: '1px solid var(--glass-border)', height: '46px', marginBottom: '20px', maxWidth: '480px' }}>
+        <Search size={18} style={{ color: 'var(--text-secondary)', marginRight: '10px', flexShrink: 0 }} />
+        <input 
+          type="text" 
+          placeholder="Search merchants by name, email, phone..." 
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{ border: 'none', outline: 'none', background: 'transparent', width: '100%', fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: '600' }}
+        />
+      </div>
+
       <div className="table-container-premium mt-8">
-        {activeTab === 'Active Sellers' ? (
+        {(activeTab === 'all' || activeTab === 'active') ? (
           <table className="modern-table">
             <thead>
               <tr>
@@ -427,7 +493,7 @@ const CoinsSellerRequests: React.FC = () => {
                 <th>Application Details</th>
                 <th>Date Submitted</th>
                 <th>Status</th>
-                {activeTab === 'Pending Applications' && <th style={{ textAlign: 'right' }}>Actions</th>}
+                <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -478,7 +544,6 @@ const CoinsSellerRequests: React.FC = () => {
                         {app.status}
                       </span>
                     </td>
-                    {activeTab === 'Pending Applications' && (
                       <td style={{ textAlign: 'right' }}>
                         {app.status === 'pending' ? (
                           <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
@@ -502,7 +567,6 @@ const CoinsSellerRequests: React.FC = () => {
                           </span>
                         )}
                       </td>
-                    )}
                   </tr>
                 ))
               )}

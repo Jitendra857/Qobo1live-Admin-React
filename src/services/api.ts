@@ -205,8 +205,11 @@ export const adminService = {
   getStates: (countryId: string) => api.get(`/auth/states?countryId=${countryId}`),
   createCountry: (data: { name: string; code: string }) => api.post('/auth/countries', data),
   createState: (data: { name: string; countryId: string }) => api.post('/auth/states', data),
-  deleteCountry: (id: string) => api.delete(`/auth/countries/${id}`),
-  deleteState: (id: string) => api.delete(`/auth/states/${id}`),
+  // Room Backgrounds CRUD
+  getRoomBackgrounds: () => api.get('/admin/room-backgrounds'),
+  createRoomBackground: (data: FormData) => api.post('/admin/room-backgrounds', data),
+  updateRoomBackground: (id: string, data: FormData) => api.put(`/admin/room-backgrounds/${id}`, data),
+  deleteRoomBackground: (id: string) => api.delete(`/admin/room-backgrounds/${id}`),
 };
 
 export default api;
