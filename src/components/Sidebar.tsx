@@ -130,7 +130,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
   
   const visibleMenuItems: MenuItem[] = (() => {
-    if (currentUser?.email === 'admin@qobo1live.com' || currentUser?.role === 'admin' || currentUser?.role === 'super_admin') return menuItems;
+    const defaultAdminEmail = import.meta.env.VITE_DEFAULT_ADMIN_EMAIL || 'admin@qobo1live.com';
+    if (currentUser?.email === defaultAdminEmail || currentUser?.role === 'admin' || currentUser?.role === 'super_admin') return menuItems;
+
     if (currentUser?.role === 'agency') {
       return [
         {
