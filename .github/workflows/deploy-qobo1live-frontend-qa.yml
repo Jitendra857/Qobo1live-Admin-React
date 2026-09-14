@@ -1,0 +1,259 @@
+name: Deploy Qobo1live Frontend - QA
+
+on:
+  push:
+    branches:
+      - qa
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build and Deploy Frontend - QA
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # ----------------------------------------
+      # Checkout repository
+      # ----------------------------------------
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # ----------------------------------------
+      # Setup Node.js
+      # ----------------------------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # ----------------------------------------
+      # Install dependencies
+      # ----------------------------------------
+      - name: Install Dependencies
+        run: npm ci
+
+      # ----------------------------------------
+      # Build frontend
+      #
+      # QA API URL is explicitly injected here.
+      # This value is compiled into the Vite build.
+      # ----------------------------------------
+      - name: Build Application
+        env:
+          VITE_BACKEND_URL: https://qa-api.qobo1live.in
+        run: |
+          echo "Building QA frontend..."
+          echo "VITE_BACKEND_URL=${VITE_BACKEND_URL}"
+
+          npm run build
+
+      # ----------------------------------------
+      # Verify build
+      # ----------------------------------------
+      - name: Verify Build
+        run: |
+          echo "Checking QA frontend build..."
+
+          if [ ! -f "dist/index.html" ]; then
+            echo "ERROR: dist/index.html not found"
+            exit 1
+          fi
+
+          echo "QA frontend build successful."
+
+          echo "Build contents:"
+          ls -lah dist
+
+      # ----------------------------------------
+      # Verify QA API URL is included
+      # ----------------------------------------
+      - name: Verify QA API URL
+        run: |
+          echo "Checking generated frontend for QA API URL..."
+
+          if grep -R "https://qa-api.qobo1live.in" dist/ > /dev/null 2>&1; then
+            echo "QA API URL found in frontend build."
+          else
+            echo "ERROR: QA API URL was NOT found in frontend build."
+            echo "The frontend may still be using another API URL."
+            exit 1
+          fi
+
+      # ----------------------------------------
+      # Create deployment package
+      # ----------------------------------------
+      - name: Create Deployment Package
+        run: |
+          echo "Creating QA deployment package..."
+
+          tar -czf qobo1live-qa-frontend.tar.gz -C dist .
+
+          echo "Deployment package:"
+          ls -lh qobo1live-qa-frontend.tar.gz
+
+      # ----------------------------------------
+      # Test VPS connectivity
+      # ----------------------------------------
+      - name: Test VPS SSH Connectivity
+        run: |
+          echo "Testing connectivity to VPS..."
+
+          timeout 15 bash -c \
+            '</dev/tcp/${{ secrets.VPS_HOST }}/22' \
+            && echo "VPS port 22 is reachable from GitHub Runner" \
+            || (
+              echo "ERROR: VPS port 22 is NOT reachable from GitHub Runner"
+              exit 1
+            )
+
+      # ----------------------------------------
+      # Upload QA frontend package
+      # ----------------------------------------
+      - name: Upload QA Frontend
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+
+          source: "qobo1live-qa-frontend.tar.gz"
+          target: "/tmp"
+
+          timeout: 30s
+          command_timeout: 10m
+
+          overwrite: true
+          debug: true
+
+      # ----------------------------------------
+      # Deploy QA frontend on VPS
+      # ----------------------------------------
+      - name: Deploy QA Frontend on VPS
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+
+          timeout: 30s
+          command_timeout: 10m
+
+          script: |
+            set -e
+
+            echo "=========================================="
+            echo "Starting Qobo1live Frontend QA Deployment"
+            echo "=========================================="
+
+            # ----------------------------------------
+            # Create deployment directories
+            # ----------------------------------------
+            echo "Creating QA deployment directories..."
+
+            mkdir -p /var/www/qobo1live-qa/releases
+
+            # ----------------------------------------
+            # Generate release ID
+            # ----------------------------------------
+            RELEASE_ID=$(date +%Y%m%d%H%M%S)
+            RELEASE_DIR="/var/www/qobo1live-qa/releases/$RELEASE_ID"
+
+            echo "Release ID: $RELEASE_ID"
+            echo "Release directory: $RELEASE_DIR"
+
+            mkdir -p "$RELEASE_DIR"
+
+            # ----------------------------------------
+            # Verify uploaded package
+            # ----------------------------------------
+            echo "Checking uploaded package..."
+
+            if [ ! -f "/tmp/qobo1live-qa-frontend.tar.gz" ]; then
+              echo "ERROR: Deployment package not found!"
+              exit 1
+            fi
+
+            ls -lh /tmp/qobo1live-qa-frontend.tar.gz
+
+            # ----------------------------------------
+            # Extract frontend
+            # ----------------------------------------
+            echo "Extracting QA frontend..."
+
+            tar -xzf /tmp/qobo1live-qa-frontend.tar.gz \
+              -C "$RELEASE_DIR"
+
+            # ----------------------------------------
+            # Verify deployment
+            # ----------------------------------------
+            echo "Verifying deployed files..."
+
+            if [ ! -f "$RELEASE_DIR/index.html" ]; then
+              echo "ERROR: index.html not found after extraction!"
+              exit 1
+            fi
+
+            echo "QA frontend files:"
+            ls -lah "$RELEASE_DIR"
+
+            # ----------------------------------------
+            # Update current release symlink
+            # ----------------------------------------
+            echo "Updating QA current release..."
+
+            ln -sfn "$RELEASE_DIR" /var/www/qobo1live-qa/current
+
+            # ----------------------------------------
+            # Set ownership
+            # ----------------------------------------
+            echo "Setting permissions..."
+
+            chown -R www-data:www-data "$RELEASE_DIR"
+
+            # ----------------------------------------
+            # Remove uploaded package
+            # ----------------------------------------
+            rm -f /tmp/qobo1live-qa-frontend.tar.gz
+
+            # ----------------------------------------
+            # Keep latest 3 releases
+            # ----------------------------------------
+            echo "Cleaning old QA releases..."
+
+            cd /var/www/qobo1live-qa/releases
+
+            ls -1dt */ 2>/dev/null | tail -n +4 | xargs -r rm -rf
+
+            # ----------------------------------------
+            # Validate Nginx
+            # ----------------------------------------
+            echo "Testing Nginx configuration..."
+
+            nginx -t
+
+            # ----------------------------------------
+            # Reload Nginx
+            # ----------------------------------------
+            echo "Reloading Nginx..."
+
+            systemctl reload nginx
+
+            # ----------------------------------------
+            # Deployment information
+            # ----------------------------------------
+            echo "=========================================="
+            echo "QA frontend deployment completed"
+            echo "=========================================="
+
+            echo "Current QA frontend release:"
+            readlink -f /var/www/qobo1live-qa/current
+
+            echo "=========================================="
