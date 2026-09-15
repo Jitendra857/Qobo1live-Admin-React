@@ -4,10 +4,8 @@ import { ShieldCheck, LogIn, Lock, Mail } from 'lucide-react';
 import '../../styles/AuthPage.css';
 
 const LoginPage: React.FC = () => {
-    const [credentials, setCredentials] = useState({
-        email: import.meta.env.VITE_DEFAULT_ADMIN_EMAIL || 'admin@qobo1live.com',
-        password: import.meta.env.VITE_DEFAULT_ADMIN_PASSWORD || 'Admin@123'
-    });
+    const [credentials, setCredentials] = useState({ email: '', password: '' });
+
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
