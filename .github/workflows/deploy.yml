@@ -156,7 +156,7 @@ jobs:
 
             echo "Updating current release..."
 
-            ln -sfn "$RELEASE_DIR" /var/www/qobo1live/current
+            ln -sfn "$RELEASE_DIR" /var/www/qobo1live-admin/current
 
             echo "Setting permissions..."
 
@@ -168,7 +168,7 @@ jobs:
 
             echo "Cleaning old releases..."
 
-            cd /var/www/qobo1live/releases
+            cd /var/www/qobo1live-admin/releases
 
             ls -1dt */ 2>/dev/null | tail -n +4 | xargs -r rm -rf
 
@@ -185,6 +185,6 @@ jobs:
             echo "=========================================="
 
             echo "Current frontend release:"
-            readlink -f /var/www/qobo1live/current
+            readlink -f /var/www/qobo1live-admin/current
 
             echo "=========================================="
