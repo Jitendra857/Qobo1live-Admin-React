@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="800" height="400">
+  <defs>
+    <linearGradient id="bannerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="100%" stop-color="#4f1138" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="400" fill="url(#bannerGrad)" />
+  <circle cx="700" cy="100" r="150" fill="#f43f5e" opacity="0.1" />
+  <circle cx="100" cy="300" r="100" fill="#3b82f6" opacity="0.1" />
+  <text x="400" y="190" fill="#ffffff" font-family="system-ui, sans-serif" font-size="42" font-weight="800" text-anchor="middle" letter-spacing="2">QOBO ONE SUPER STAR</text>
+  <text x="400" y="245" fill="#f43f5e" font-family="system-ui, sans-serif" font-size="20" font-weight="600" text-anchor="middle" letter-spacing="1">WEEKLY PLATFORM CHAMPIONSHIP</text>
+  <rect x="300" y="280" width="200" height="45" rx="8" fill="#6366f1" />
+  <text x="400" y="308" fill="#ffffff" font-family="system-ui, sans-serif" font-size="16" font-weight="bold" text-anchor="middle">Join Event Room</text>
+</svg>

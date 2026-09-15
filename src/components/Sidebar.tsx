@@ -60,7 +60,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
         { title: 'User List', path: '/users' },
         { title: 'Coins Sellers', path: '/coins-seller-requests' },
         { title: 'Banned & Reports', path: '/moderation' },
-        { title: 'Help Tickets', path: '/support' },
       ],
     },
 
