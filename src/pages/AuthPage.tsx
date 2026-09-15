@@ -11,8 +11,9 @@ interface AuthPageProps {
 
 const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState(import.meta.env.VITE_DEFAULT_ADMIN_EMAIL || 'admin@qobo1live.com');
-  const [password, setPassword] = useState(import.meta.env.VITE_DEFAULT_ADMIN_PASSWORD || 'Admin@123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
 
 
   const [loading, setLoading] = useState(false);
