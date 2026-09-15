@@ -141,7 +141,18 @@ const VipStore: React.FC = () => {
   };
 
   // Dynamic luxury styling theme selector for VIP Tiers
-  const getTierTheme = (name: string) => {
+  interface TierTheme {
+    type: string;
+    badgeBg: string;
+    glow: string;
+    borderColor: string;
+    accentColor: string;
+    badgeLabel: string;
+    iconColor: string;
+    Icon: any;
+  }
+
+  const getTierTheme = (name: string): TierTheme => {
     const n = (name || '').toLowerCase();
     if (n.includes('bronze')) {
       return {
@@ -151,6 +162,7 @@ const VipStore: React.FC = () => {
         borderColor: 'rgba(245, 158, 11, 0.4)',
         accentColor: '#f59e0b',
         badgeLabel: 'BRONZE TIER',
+        iconColor: '#fef3c7',
         Icon: Shield
       };
     }
@@ -162,6 +174,7 @@ const VipStore: React.FC = () => {
         borderColor: 'rgba(203, 213, 225, 0.4)',
         accentColor: '#cbd5e1',
         badgeLabel: 'SILVER TIER',
+        iconColor: '#f8fafc',
         Icon: Award
       };
     }
@@ -173,6 +186,7 @@ const VipStore: React.FC = () => {
         borderColor: 'rgba(250, 204, 21, 0.5)',
         accentColor: '#facc15',
         badgeLabel: 'GOLDEN TIER',
+        iconColor: '#fef9c3',
         Icon: Crown
       };
     }
@@ -184,6 +198,7 @@ const VipStore: React.FC = () => {
         borderColor: 'rgba(168, 85, 247, 0.5)',
         accentColor: '#c084fc',
         badgeLabel: 'DIAMOND ELITE',
+        iconColor: '#f0f9ff',
         Icon: Gem
       };
     }
@@ -194,6 +209,7 @@ const VipStore: React.FC = () => {
       borderColor: 'rgba(129, 140, 248, 0.4)',
       accentColor: '#818cf8',
       badgeLabel: 'PREMIUM TIER',
+      iconColor: '#e0e7ff',
       Icon: Star
     };
   };
