@@ -102,6 +102,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     {
       title: 'Live Features', icon: <Tv size={17} />, iconClass: 'icon-orange',
       subItems: [
+        { title: 'Live Streams', path: '/live-streams' },
         { title: 'Active Rooms', path: '/audio-rooms' },
         { title: 'PK Battles', path: '/pk-battles' },
         { title: 'Room Backgrounds', path: '/room-backgrounds' },

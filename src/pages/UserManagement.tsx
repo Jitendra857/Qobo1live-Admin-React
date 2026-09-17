@@ -79,13 +79,39 @@ const UserManagement: React.FC = () => {
   };
 
   const handleForceLogout = async (user: any) => {
-    if (!window.confirm(`Are you sure you want to forcibly log out ${user.name || 'this user'} from the mobile app?`)) return;
+    if (!window.confirm(`Are you sure you want to forcibly log out ${user.name || 'this user'} from the mobile app? Any active live stream or room will also be shut down.`)) return;
     try {
       await adminService.forceLogoutUser(user.id);
       toast.success(`User ${user.name || ''} forcibly logged out from mobile session`);
       fetchUsers();
     } catch (err: any) {
       toast.error('Failed to log out user: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleShutdownStream = async (user: any) => {
+    const streamId = user.activeLiveStream?.id || user.activeLiveStream?.liveStreamingId;
+    if (!streamId) return;
+    if (!window.confirm(`Are you sure you want to forcibly shut down ${user.name || 'this user'}'s active live stream? All viewers will be disconnected immediately.`)) return;
+    try {
+      await adminService.shutdownLiveStream(streamId);
+      toast.success(`Live stream of ${user.name || 'user'} shut down successfully`);
+      fetchUsers();
+    } catch (err: any) {
+      toast.error('Failed to shut down live stream: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleShutdownRoom = async (user: any) => {
+    const roomId = user.activeRoom?.id;
+    if (!roomId) return;
+    if (!window.confirm(`Are you sure you want to forcibly shut down ${user.name || 'this user'}'s active audio room? All participants will be disconnected immediately.`)) return;
+    try {
+      await adminService.shutdownRoom(roomId);
+      toast.success(`Audio room of ${user.name || 'user'} shut down successfully`);
+      fetchUsers();
+    } catch (err: any) {
+      toast.error('Failed to shut down room: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -198,6 +224,8 @@ const UserManagement: React.FC = () => {
             onDelete={handleDeleteClick}
             onViewHistory={handleViewHistory}
             onForceLogout={handleForceLogout}
+            onShutdownStream={handleShutdownStream}
+            onShutdownRoom={handleShutdownRoom}
             loading={loading}
             selectedUserIds={selectedUserIds}
             onToggleSelectUser={handleToggleSelectUser}

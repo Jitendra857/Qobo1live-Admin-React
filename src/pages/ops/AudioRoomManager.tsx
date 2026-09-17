@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { adminService } from '../../services/api';
 import { 
   Mic, MicOff, Users, Settings, Activity, Lock, Unlock, 
   Hand, AlertTriangle, Crown, Shield, Plus, X, Gift,
   Clock, Flame, Award, ArrowLeft, Play, Sparkles, Video,
-  Trash2, LogOut, Radio
+  Trash2, LogOut, Radio, Power
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import '../../styles/AudioRoomMatrix.css';
@@ -21,12 +22,19 @@ interface RoomSeat {
   coinsEarned?: number;
 }
 
-const AudioRoomManager: React.FC = () => {
+interface AudioRoomManagerProps {
+  initialTab?: 'rooms' | 'streams' | 'create';
+}
+
+const AudioRoomManager: React.FC<AudioRoomManagerProps> = ({ initialTab }) => {
+  const location = useLocation();
   const [rooms, setRooms] = useState<any[]>([]);
   const [liveStreams, setLiveStreams] = useState<any[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'rooms' | 'streams' | 'create'>('rooms');
+  const [activeTab, setActiveTab] = useState<'rooms' | 'streams' | 'create'>(
+    initialTab || (location.pathname.includes('live-stream') ? 'streams' : 'rooms')
+  );
 
   useEffect(() => {
     fetchRooms();
@@ -80,26 +88,51 @@ const AudioRoomManager: React.FC = () => {
     setActiveTab('rooms');
   };
 
-  const handleEndRoom = async (roomId: string) => {
-    if (!window.confirm('Are you sure you want to forcibly end/remove this audio room? Participants will be disconnected.')) return;
+  const handleShutdownRoom = async (roomId: string) => {
+    if (!window.confirm('Are you sure you want to forcibly shut down this audio room? Participants will be disconnected immediately.')) return;
     try {
-      await adminService.deleteRoom(roomId);
-      toast.success('Audio room terminated and removed');
+      await adminService.shutdownRoom(roomId);
+      toast.success('Audio room shut down and removed');
       setSelectedRoom(null);
       fetchRooms();
     } catch (err: any) {
-      toast.error('Failed to end room: ' + (err.response?.data?.message || err.message));
+      toast.error('Failed to shut down room: ' + (err.response?.data?.message || err.message));
     }
   };
 
-  const handleEndLiveStream = async (streamId: string) => {
-    if (!window.confirm('Are you sure you want to forcibly end/remove this live stream? Host and viewers will be disconnected.')) return;
+  const handleLogoutRoomHost = async (room: any) => {
+    const hostName = room.creator?.name || room.host?.name || 'this host';
+    if (!window.confirm(`Are you sure you want to forcibly log out host "${hostName}"? Their audio room will be shut down and their mobile session terminated immediately.`)) return;
     try {
-      await adminService.endLiveStream(streamId);
-      toast.success('Live stream terminated successfully');
+      await adminService.logoutRoomHost(room.id);
+      toast.success(`Host "${hostName}" logged out and audio room shut down`);
+      setSelectedRoom(null);
+      fetchRooms();
+    } catch (err: any) {
+      toast.error('Failed to log out room host: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleShutdownLiveStream = async (streamId: string) => {
+    if (!window.confirm('Are you sure you want to forcibly shut down this live stream? Host and viewers will be disconnected immediately.')) return;
+    try {
+      await adminService.shutdownLiveStream(streamId);
+      toast.success('Live stream shut down successfully');
       fetchLiveStreams();
     } catch (err: any) {
-      toast.error('Failed to end stream: ' + (err.response?.data?.message || err.message));
+      toast.error('Failed to shut down stream: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleLogoutLiveStreamHost = async (stream: any) => {
+    const hostName = stream.host?.name || 'this host';
+    if (!window.confirm(`Are you sure you want to forcibly log out host "${hostName}"? Their live stream will be shut down and their mobile session terminated immediately.`)) return;
+    try {
+      await adminService.logoutLiveStreamHost(stream.id);
+      toast.success(`Host "${hostName}" logged out and live stream shut down`);
+      fetchLiveStreams();
+    } catch (err: any) {
+      toast.error('Failed to log out stream host: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -388,12 +421,20 @@ const AudioRoomManager: React.FC = () => {
                       <Settings size={16} /> Moderate
                     </button>
                     <button 
-                      className="btn-matrix-action"
-                      style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid rgba(239, 68, 68, 0.4)', color: '#f87171' }}
-                      onClick={() => handleEndRoom(room.id)}
-                      title="Force End/Remove Room"
+                      className="btn-matrix-action flex-center justify-center gap-1"
+                      style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid rgba(239, 68, 68, 0.4)', color: '#f87171', padding: '8px 12px' }}
+                      onClick={() => handleShutdownRoom(room.id)}
+                      title="Shut Down Audio Room (Disconnect participants)"
                     >
-                      <Trash2 size={16} /> End
+                      <Power size={15} /> Shut Down
+                    </button>
+                    <button 
+                      className="btn-matrix-action flex-center justify-center gap-1"
+                      style={{ background: 'rgba(245, 158, 11, 0.18)', border: '1px solid rgba(245, 158, 11, 0.4)', color: '#fbbf24', padding: '8px 12px' }}
+                      onClick={() => handleLogoutRoomHost(room)}
+                      title="Force Logout Room Host & Shut Down"
+                    >
+                      <LogOut size={15} /> Logout Host
                     </button>
                   </div>
                 </div>
@@ -420,7 +461,7 @@ const AudioRoomManager: React.FC = () => {
                   <div>
                     <h2 style={{ fontSize: '1.4rem', fontWeight: 800 }}>{selectedRoom.title}</h2>
                     <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
-                      ID: {selectedRoom.id} • Host: <strong>{selectedRoom.creator?.name}</strong> • Uptime: {formatUptime(selectedRoom.sessionDurationSeconds)}
+                      ID: {selectedRoom.id} • Host: <strong>{selectedRoom.creator?.name || selectedRoom.host?.name}</strong> • Uptime: {formatUptime(selectedRoom.sessionDurationSeconds)}
                     </p>
                   </div>
                 </div>
@@ -439,10 +480,19 @@ const AudioRoomManager: React.FC = () => {
                 </button>
                 <button 
                   className="btn-matrix-action" 
-                  style={{ background: '#ef4444', color: '#fff', marginLeft: 'auto' }}
-                  onClick={() => handleEndRoom(selectedRoom.id)}
+                  style={{ background: 'rgba(245, 158, 11, 0.2)', border: '1px solid rgba(245, 158, 11, 0.4)', color: '#fbbf24', marginLeft: 'auto' }}
+                  onClick={() => handleLogoutRoomHost(selectedRoom)}
+                  title="Logout Host & Shut Down"
                 >
-                  <Trash2 size={16} /> Terminate & Delete Room
+                  <LogOut size={16} /> Logout Host
+                </button>
+                <button 
+                  className="btn-matrix-action" 
+                  style={{ background: '#ef4444', color: '#fff' }}
+                  onClick={() => handleShutdownRoom(selectedRoom.id)}
+                  title="Shut Down Room"
+                >
+                  <Power size={16} /> Shut Down Room
                 </button>
               </div>
 
@@ -582,13 +632,24 @@ const AudioRoomManager: React.FC = () => {
                   </div>
                 </div>
 
-                <button 
-                  className="btn-matrix-action w-full flex-center justify-center gap-2 mt-4"
-                  style={{ background: 'linear-gradient(135deg, #ef4444, #dc2626)', boxShadow: '0 4px 15px rgba(239,68,68,0.4)' }}
-                  onClick={() => handleEndLiveStream(stream.id)}
-                >
-                  <Trash2 size={16} /> Force End Live Stream
-                </button>
+                <div className="flex gap-2 mt-4">
+                  <button 
+                    className="btn-matrix-action flex-1 flex-center justify-center gap-2"
+                    style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid rgba(239, 68, 68, 0.4)', color: '#f87171' }}
+                    onClick={() => handleShutdownLiveStream(stream.id)}
+                    title="Shut Down Live Stream (Disconnect viewers & host)"
+                  >
+                    <Power size={16} /> Shut Down
+                  </button>
+                  <button 
+                    className="btn-matrix-action flex-1 flex-center justify-center gap-2"
+                    style={{ background: 'rgba(245, 158, 11, 0.18)', border: '1px solid rgba(245, 158, 11, 0.4)', color: '#fbbf24' }}
+                    onClick={() => handleLogoutLiveStreamHost(stream)}
+                    title="Force Logout Host & Shut Down Stream"
+                  >
+                    <LogOut size={16} /> Logout Host
+                  </button>
+                </div>
               </div>
             ))}
 
