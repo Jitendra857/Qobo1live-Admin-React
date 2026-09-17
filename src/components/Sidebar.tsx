@@ -60,7 +60,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
         { title: 'User List', path: '/users' },
         { title: 'Coins Sellers', path: '/coins-seller-requests' },
         { title: 'Banned & Reports', path: '/moderation' },
-        { title: 'Help Tickets', path: '/support' },
       ],
     },
 
@@ -103,6 +102,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     {
       title: 'Live Features', icon: <Tv size={17} />, iconClass: 'icon-orange',
       subItems: [
+        { title: 'Live Streams', path: '/live-streams' },
         { title: 'Active Rooms', path: '/audio-rooms' },
         { title: 'PK Battles', path: '/pk-battles' },
         { title: 'Room Backgrounds', path: '/room-backgrounds' },
@@ -130,8 +130,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
   
   const visibleMenuItems: MenuItem[] = (() => {
-    const defaultAdminEmail = import.meta.env.VITE_DEFAULT_ADMIN_EMAIL || 'admin@qobo1live.com';
-    if (currentUser?.email === defaultAdminEmail || currentUser?.role === 'admin' || currentUser?.role === 'super_admin') return menuItems;
+    if (currentUser?.role === 'admin' || currentUser?.role === 'super_admin') return menuItems;
+
 
     if (currentUser?.role === 'agency') {
       return [

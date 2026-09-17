@@ -17,10 +17,10 @@ const MediaImage: React.FC<MediaImageProps> = ({
   const getFullUrl = (url?: string) => {
     if (!url) return null;
     
-    // If it's the default profile pic string, return null to show fallback
-    if (url === 'default_dp.png' || url === 'default.png') return null;
-
     let targetUrl = url;
+    if (targetUrl === 'default_dp.png' || targetUrl === 'default.png' || targetUrl.includes('photo-1535713875002')) {
+      targetUrl = '/uploads/avatars/default_avatar.jpg';
+    }
     const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
 
     // Upgrade http:// to https:// if window is running on https protocol

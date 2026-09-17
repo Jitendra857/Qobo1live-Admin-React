@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit2, Trash2, Coins, History, LogOut } from 'lucide-react';
+import { Edit2, Trash2, Coins, History, LogOut, VideoOff, MicOff } from 'lucide-react';
 import MediaImage from './MediaImage';
 
 interface UserTableProps {
@@ -9,6 +9,8 @@ interface UserTableProps {
   onDelete: (id: string) => void;
   onViewHistory: (user: any) => void;
   onForceLogout: (user: any) => void;
+  onShutdownStream?: (user: any) => void;
+  onShutdownRoom?: (user: any) => void;
   loading?: boolean;
   selectedUserIds?: string[];
   onToggleSelectUser?: (userId: string) => void;
@@ -22,6 +24,8 @@ const UserTable: React.FC<UserTableProps> = ({
   onDelete, 
   onViewHistory, 
   onForceLogout, 
+  onShutdownStream,
+  onShutdownRoom,
   loading = false,
   selectedUserIds = [],
   onToggleSelectUser,
@@ -118,9 +122,49 @@ const UserTable: React.FC<UserTableProps> = ({
                   <span className="rank-badge">Lvl {user.level || 1}</span>
                 </td>
                 <td className="data-cell cell-center">
-                  <span className={statusClassName(user.status)}>
-                    {user.status || 'active'}
-                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                    <span className={statusClassName(user.status)}>
+                      {user.status || 'active'}
+                    </span>
+                    {(user.isLiveStreaming || user.activeLiveStream) && (
+                      <span 
+                        className="status-pill danger" 
+                        style={{ 
+                          background: 'rgba(239, 68, 68, 0.2)', 
+                          border: '1px solid rgba(239, 68, 68, 0.5)', 
+                          color: '#f87171', 
+                          fontWeight: 800, 
+                          fontSize: '0.68rem', 
+                          display: 'inline-flex', 
+                          alignItems: 'center', 
+                          gap: '4px',
+                          padding: '2px 6px'
+                        }}
+                        title={`Live Streaming: ${user.activeLiveStream?.name || 'Active'}`}
+                      >
+                        🔴 LIVE
+                      </span>
+                    )}
+                    {(user.isRoomActive || user.activeRoom) && (
+                      <span 
+                        className="status-pill warning" 
+                        style={{ 
+                          background: 'rgba(168, 85, 247, 0.2)', 
+                          border: '1px solid rgba(168, 85, 247, 0.5)', 
+                          color: '#c084fc', 
+                          fontWeight: 800, 
+                          fontSize: '0.68rem', 
+                          display: 'inline-flex', 
+                          alignItems: 'center', 
+                          gap: '4px',
+                          padding: '2px 6px'
+                        }}
+                        title={`Audio Room: ${user.activeRoom?.title || 'Active'}`}
+                      >
+                        📻 ROOM
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td>
                   <div className="ops-cluster">
@@ -135,11 +179,34 @@ const UserTable: React.FC<UserTableProps> = ({
                     >
                       <History size={18} />
                     </button>
+
+                    {(user.isLiveStreaming || user.activeLiveStream) && onShutdownStream && (
+                      <button 
+                        className="op-btn delete" 
+                        title="Shut Down Active Live Stream" 
+                        onClick={() => onShutdownStream(user)}
+                        style={{ background: 'rgba(239, 68, 68, 0.25)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.5)' }}
+                      >
+                        <VideoOff size={18} />
+                      </button>
+                    )}
+
+                    {(user.isRoomActive || user.activeRoom) && onShutdownRoom && (
+                      <button 
+                        className="op-btn delete" 
+                        title="Shut Down Active Audio Room" 
+                        onClick={() => onShutdownRoom(user)}
+                        style={{ background: 'rgba(168, 85, 247, 0.25)', color: '#c084fc', border: '1px solid rgba(168, 85, 247, 0.5)' }}
+                      >
+                        <MicOff size={18} />
+                      </button>
+                    )}
+
                     <button 
                       className="op-btn edit" 
-                      title="Force Logout User Mobile Session" 
+                      title="Force Logout User Mobile Session & Terminate Active Broadcasts" 
                       onClick={() => onForceLogout(user)} 
-                      style={{ background: 'rgba(239, 68, 68, 0.18)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.35)' }}
+                      style={{ background: 'rgba(245, 158, 11, 0.18)', color: '#fbbf24', border: '1px solid rgba(245, 158, 11, 0.4)' }}
                     >
                       <LogOut size={18} />
                     </button>

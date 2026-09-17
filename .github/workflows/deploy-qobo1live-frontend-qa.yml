@@ -39,17 +39,24 @@ jobs:
         run: npm ci
 
       # ----------------------------------------
-      # Build frontend
-      #
-      # QA API URL is explicitly injected here.
-      # This value is compiled into the Vite build.
+      # Build QA frontend
       # ----------------------------------------
       - name: Build Application
         env:
-          VITE_BACKEND_URL: https://qa-api.qobo1live.in
+          VITE_BACKEND_URL: ${{ secrets.VITE_QA_API }}
         run: |
-          echo "Building QA frontend..."
-          echo "VITE_BACKEND_URL=${VITE_BACKEND_URL}"
+          set -e
+
+          echo "=========================================="
+          echo "Building Qobo1live Frontend - QA"
+          echo "=========================================="
+
+          if [ -z "${VITE_BACKEND_URL}" ]; then
+            echo "ERROR: VITE_QA_API secret is empty."
+            exit 1
+          fi
+
+          echo "QA Backend API is configured."
 
           npm run build
 
@@ -58,10 +65,14 @@ jobs:
       # ----------------------------------------
       - name: Verify Build
         run: |
-          echo "Checking QA frontend build..."
+          set -e
+
+          echo "=========================================="
+          echo "Verifying QA frontend build"
+          echo "=========================================="
 
           if [ ! -f "dist/index.html" ]; then
-            echo "ERROR: dist/index.html not found"
+            echo "ERROR: dist/index.html not found."
             exit 1
           fi
 
@@ -71,13 +82,24 @@ jobs:
           ls -lah dist
 
       # ----------------------------------------
-      # Verify QA API URL is included
+      # Verify QA API URL
       # ----------------------------------------
       - name: Verify QA API URL
+        env:
+          VITE_BACKEND_URL: ${{ secrets.VITE_QA_API }}
         run: |
-          echo "Checking generated frontend for QA API URL..."
+          set -e
 
-          if grep -R "https://qa-api.qobo1live.in" dist/ > /dev/null 2>&1; then
+          echo "=========================================="
+          echo "Checking QA API URL"
+          echo "=========================================="
+
+          if [ -z "${VITE_BACKEND_URL}" ]; then
+            echo "ERROR: VITE_QA_API secret is empty."
+            exit 1
+          fi
+
+          if grep -R "${VITE_BACKEND_URL}" dist/ > /dev/null 2>&1; then
             echo "QA API URL found in frontend build."
           else
             echo "ERROR: QA API URL was NOT found in frontend build."
@@ -90,7 +112,11 @@ jobs:
       # ----------------------------------------
       - name: Create Deployment Package
         run: |
-          echo "Creating QA deployment package..."
+          set -e
+
+          echo "=========================================="
+          echo "Creating QA deployment package"
+          echo "=========================================="
 
           tar -czf qobo1live-qa-frontend.tar.gz -C dist .
 
@@ -98,11 +124,32 @@ jobs:
           ls -lh qobo1live-qa-frontend.tar.gz
 
       # ----------------------------------------
-      # Test VPS connectivity
+      # Test VPS configuration
       # ----------------------------------------
       - name: Test VPS SSH Connectivity
         run: |
-          echo "Testing connectivity to VPS..."
+          set -e
+
+          echo "=========================================="
+          echo "Testing VPS SSH Connectivity"
+          echo "=========================================="
+
+          if [ -z "${{ secrets.VPS_HOST }}" ]; then
+            echo "ERROR: VPS_HOST secret is empty."
+            exit 1
+          fi
+
+          if [ -z "${{ secrets.VPS_USERNAME }}" ]; then
+            echo "ERROR: VPS_USERNAME secret is empty."
+            exit 1
+          fi
+
+          if [ -z "${{ secrets.VPS_SSH_KEY }}" ]; then
+            echo "ERROR: VPS_SSH_KEY secret is empty."
+            exit 1
+          fi
+
+          echo "VPS secrets are configured."
 
           timeout 15 bash -c \
             '</dev/tcp/${{ secrets.VPS_HOST }}/22' \
@@ -192,7 +239,7 @@ jobs:
               -C "$RELEASE_DIR"
 
             # ----------------------------------------
-            # Verify deployment
+            # Verify deployed files
             # ----------------------------------------
             echo "Verifying deployed files..."
 
@@ -256,4 +303,11 @@ jobs:
             echo "Current QA frontend release:"
             readlink -f /var/www/qobo1live-qa/current
 
+            echo "=========================================="
+
+            echo "QA frontend directory:"
+            ls -lah /var/www/qobo1live-qa/current
+
+            echo "=========================================="
+            echo "Qobo1live Frontend QA Deployment Complete"
             echo "=========================================="

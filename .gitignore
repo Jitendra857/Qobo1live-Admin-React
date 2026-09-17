@@ -8,9 +8,12 @@
 *.suo
 *.user
 *.userosscache
-*.sln.docstates
+# Environment variables and secrets
+.env
+.env.*
 *.env
-
+*.env.*
+!.env.example
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
@@ -428,7 +431,14 @@ FodyWeavers.xsd
 *.msm
 *.msp
 *.yml
-*.yaml
+# Environment variables and secrets
+.env
+.env.*
+.env.local
+.env.development
+.env.test
+.env.production
+.env.staging
 *.env
-*.env.production
-*.env.development
+*.env.*
+!.env.example

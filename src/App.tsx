@@ -165,7 +165,8 @@ function AppContent() {
                   <Route path="/banners" element={<Banners />} />
                   <Route path="/backgrounds" element={<AmbienceManager />} />
 
-                  <Route path="/audio-rooms" element={<AudioRoomManager />} />
+                  <Route path="/audio-rooms" element={<AudioRoomManager initialTab="rooms" />} />
+                  <Route path="/live-streams" element={<AudioRoomManager initialTab="streams" />} />
                   <Route path="/notifications" element={<NotificationCenter />} />
                   <Route path="/moderation" element={<Moderation />} />
                   <Route path="/localization" element={<Localization />} />
