@@ -38,6 +38,72 @@ const UserTable: React.FC<UserTableProps> = ({
     return 'status-pill active';
   };
 
+  const getRoleBadge = (role?: string, isCoinsSeller?: boolean) => {
+    const normalizedRole = (role === 'seller_admin' || isCoinsSeller) ? 'coins_seller' : (role || 'user');
+    switch (normalizedRole) {
+      case 'super_admin':
+        return (
+          <span style={{ 
+            fontSize: '0.68rem', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', 
+            background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.3)',
+            display: 'inline-flex', alignItems: 'center', gap: '3px'
+          }}>
+            🛡️ Super Admin
+          </span>
+        );
+      case 'agency':
+        return (
+          <span style={{ 
+            fontSize: '0.68rem', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', 
+            background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)',
+            display: 'inline-flex', alignItems: 'center', gap: '3px'
+          }}>
+            🏢 Agency
+          </span>
+        );
+      case 'host':
+        return (
+          <span style={{ 
+            fontSize: '0.68rem', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', 
+            background: 'rgba(236, 72, 153, 0.15)', color: '#ec4899', border: '1px solid rgba(236, 72, 153, 0.3)',
+            display: 'inline-flex', alignItems: 'center', gap: '3px'
+          }}>
+            🎙️ Host
+          </span>
+        );
+      case 'coins_seller':
+        return (
+          <span style={{ 
+            fontSize: '0.68rem', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', 
+            background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)',
+            display: 'inline-flex', alignItems: 'center', gap: '3px'
+          }}>
+            🪙 Coin Seller
+          </span>
+        );
+      case 'admin':
+        return (
+          <span style={{ 
+            fontSize: '0.68rem', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', 
+            background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)',
+            display: 'inline-flex', alignItems: 'center', gap: '3px'
+          }}>
+            ⚡ Admin
+          </span>
+        );
+      default:
+        return (
+          <span style={{ 
+            fontSize: '0.68rem', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', 
+            background: 'rgba(148, 163, 184, 0.15)', color: '#94a3b8', border: '1px solid rgba(148, 163, 184, 0.25)',
+            display: 'inline-flex', alignItems: 'center', gap: '3px'
+          }}>
+            👤 User
+          </span>
+        );
+    }
+  };
+
   const isAllSelected = users.length > 0 && selectedUserIds.length === users.length;
 
   return (
@@ -100,8 +166,11 @@ const UserTable: React.FC<UserTableProps> = ({
                         style={{ objectFit: 'cover' }}
                         fallbackText={user.name?.[0] || 'U'}
                       />
-                      <div className="identity-text">
+                      <div className="identity-text" style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                         <span className="name-bold">{user.name || 'Anonymous User'}</span>
+                        <div>
+                          {getRoleBadge(user.role, user.isCoinsSeller)}
+                        </div>
                       </div>
                     </div>
                   </td>

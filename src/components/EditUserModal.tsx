@@ -17,7 +17,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
     name: user.name || '',
     email: user.email || '',
     phone: user.phone || '',
-    role: user.role || 'user',
+    role: (user.role === 'seller_admin' ? 'coins_seller' : user.role) || (user.isCoinsSeller ? 'coins_seller' : 'user'),
     status: user.status || 'active',
     level: user.level || 1,
     xp: user.xp || 0,
@@ -175,8 +175,10 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
               >
                 <option value="user">User</option>
                 <option value="host">Host</option>
-                <option value="admin">Admin</option>
                 <option value="super_admin">Super Admin</option>
+                <option value="agency">Agency</option>
+                <option value="coins_seller">Coin Seller</option>
+                <option value="admin">Admin</option>
               </select>
             </div>
 

@@ -117,7 +117,10 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onSuccess })
                 onChange={e => setFormData({...formData, role: e.target.value})}
               >
                 <option value="user">Standard User</option>
-                <option value="host">Live Host</option>
+                <option value="host">Host</option>
+                <option value="super_admin">Super Admin</option>
+                <option value="agency">Agency</option>
+                <option value="coins_seller">Coin Seller</option>
                 <option value="admin">System Admin</option>
               </select>
             </div>
