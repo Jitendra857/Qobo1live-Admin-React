@@ -5,7 +5,7 @@ import {
   Mic, MicOff, Users, Settings, Activity, Lock, Unlock, 
   Hand, AlertTriangle, Crown, Shield, Plus, X, Gift,
   Clock, Flame, Award, ArrowLeft, Play, Sparkles, Video,
-  Trash2, LogOut, Radio, Power
+  Trash2, LogOut, Radio, Power, RefreshCw
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import '../../styles/AudioRoomMatrix.css';
@@ -35,21 +35,42 @@ const AudioRoomManager: React.FC<AudioRoomManagerProps> = ({ initialTab }) => {
   const [activeTab, setActiveTab] = useState<'rooms' | 'streams' | 'create'>(
     initialTab || (location.pathname.includes('live-stream') ? 'streams' : 'rooms')
   );
+  const [refreshing, setRefreshing] = useState(false);
 
+  // Synchronize activeTab whenever initialTab or route pathname changes
   useEffect(() => {
-    fetchRooms();
-    fetchLiveStreams();
+    if (initialTab) {
+      setActiveTab(initialTab);
+    } else if (location.pathname.includes('live-stream')) {
+      setActiveTab('streams');
+    } else if (location.pathname.includes('audio-room')) {
+      setActiveTab('rooms');
+    }
+  }, [initialTab, location.pathname]);
+
+  // Initial load and periodic auto-refresh every 10 seconds
+  useEffect(() => {
+    refreshAll(true);
+    const timer = setInterval(() => {
+      refreshAll(false);
+    }, 10000);
+    return () => clearInterval(timer);
   }, []);
+
+  const refreshAll = async (showLoadingState = false) => {
+    if (showLoadingState) setLoading(true);
+    setRefreshing(true);
+    await Promise.all([fetchRooms(), fetchLiveStreams()]);
+    if (showLoadingState) setLoading(false);
+    setRefreshing(false);
+  };
 
   const fetchRooms = async () => {
     try {
-      setLoading(true);
       const res = await adminService.getRooms();
       setRooms(res.data.data || []);
     } catch (err) {
       console.error('Failed to fetch rooms', err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -208,8 +229,17 @@ const AudioRoomManager: React.FC<AudioRoomManagerProps> = ({ initialTab }) => {
           <p>Remove Forgot/Abandoned Audio Rooms & Live Streams • Joined Users • Live Economy</p>
         </div>
 
-        {/* Tab Selection */}
+        {/* Tab Selection & Refresh */}
         <div className="flex gap-2 items-center">
+          <button 
+            className="btn-matrix-action"
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', color: '#94a3b8' }}
+            onClick={() => refreshAll(false)}
+            title="Refresh active rooms and live streams"
+            disabled={refreshing}
+          >
+            <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} /> {refreshing ? 'Updating...' : 'Refresh'}
+          </button>
           <button 
             className={`btn-matrix-action ${activeTab === 'rooms' ? 'active' : ''}`}
             style={{ background: activeTab === 'rooms' ? 'linear-gradient(135deg, #6366f1, #a855f7)' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
