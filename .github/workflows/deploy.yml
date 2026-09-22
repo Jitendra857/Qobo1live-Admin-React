@@ -38,39 +38,88 @@ jobs:
         run: npm ci
 
       # ------------------------------------------
-      # Create production environment
-      # ------------------------------------------
-      - name: Create Production Environment
-        run: |
-         VITE_BACKEND_URL: ${{ secrets.VITE_PROD_API }}
-         
-      # ------------------------------------------
-      # Build
+      # Build production frontend
       # ------------------------------------------
       - name: Build Application
-        run: npm run build
+        env:
+          VITE_BACKEND_URL: ${{ secrets.VITE_PROD_API }}
+        run: |
+          set -e
+
+          echo "=========================================="
+          echo "Building Qobo1live Frontend - Production"
+          echo "=========================================="
+
+          if [ -z "${VITE_BACKEND_URL}" ]; then
+            echo "ERROR: VITE_PROD_API secret is empty."
+            exit 1
+          fi
+
+          echo "Production Backend API is configured."
+
+          npm run build
 
       # ------------------------------------------
       # Verify build
       # ------------------------------------------
       - name: Verify Build
         run: |
-          echo "Checking frontend build..."
+          set -e
+
+          echo "=========================================="
+          echo "Verifying Production frontend build"
+          echo "=========================================="
 
           if [ ! -f "dist/index.html" ]; then
-            echo "ERROR: dist/index.html not found"
+            echo "ERROR: dist/index.html not found."
             exit 1
           fi
 
-          echo "Frontend build successful."
+          echo "Production frontend build successful."
+
           echo "Build contents:"
           ls -lah dist
+
+      # ------------------------------------------
+      # Verify Production API URL
+      # ------------------------------------------
+      - name: Verify Production API URL
+        env:
+          VITE_BACKEND_URL: ${{ secrets.VITE_PROD_API }}
+        run: |
+          set -e
+
+          echo "=========================================="
+          echo "Checking Production API URL"
+          echo "=========================================="
+
+          if [ -z "${VITE_BACKEND_URL}" ]; then
+            echo "ERROR: VITE_PROD_API secret is empty."
+            exit 1
+          fi
+
+          if grep -R "${VITE_BACKEND_URL}" dist/ > /dev/null 2>&1; then
+            echo "Production API URL found in frontend build."
+          else
+            echo "ERROR: Production API URL was NOT found in frontend build."
+            echo "The frontend may still be using another API URL."
+            exit 1
+          fi
+
+          if grep -R "dev-api.qobo1live.in" dist/ > /dev/null 2>&1; then
+            echo "ERROR: dev-api.qobo1live.in found in production build!"
+            exit 1
+          fi
+
+          echo "Production API verification successful."
 
       # ------------------------------------------
       # Create deployment package
       # ------------------------------------------
       - name: Create Deployment Package
         run: |
+          set -e
+
           echo "Creating deployment package..."
 
           tar -czf qobo1live-frontend.tar.gz -C dist .
