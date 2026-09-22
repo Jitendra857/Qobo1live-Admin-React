@@ -42,8 +42,7 @@ jobs:
       # ------------------------------------------
       - name: Create Production Environment
         run: |
-         echo "VITE_PROD_API=https://api.qobo1live.in" > .env.production
-         echo "Production API configured: https://api.qobo1live.in"
+         VITE_BACKEND_URL: ${{ secrets.VITE_PROD_API }}
          
       # ------------------------------------------
       # Build
