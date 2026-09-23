@@ -272,4 +272,68 @@
   line-height: 1.4;
 }
 
+/* Segmented 4-Digit OTP Boxes */
+.otp-container-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.otp-digit-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  width: 100%;
+}
+
+.otp-digit-box {
+  width: 64px;
+  height: 68px;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  background: #f8fafc;
+  text-align: center;
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #1e1b4b;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.otp-digit-box:focus {
+  border-color: #7c3aed;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15);
+  transform: translateY(-2px);
+}
+
+.otp-digit-box.filled {
+  border-color: #a78bfa;
+  background: #ffffff;
+}
+
+.phone-highlight {
+  color: #7c3aed;
+  font-weight: 700;
+  background: rgba(124, 58, 237, 0.08);
+  padding: 2px 8px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.security-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-top: 24px;
+  letter-spacing: 0.02em;
+}
+
+
 

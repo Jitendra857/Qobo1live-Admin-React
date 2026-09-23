@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Smartphone, ShieldCheck, ArrowRight, ArrowLeft, CheckCircle, AlertCircle, X, Lock } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Smartphone, ShieldCheck, ArrowRight, ArrowLeft, CheckCircle, AlertCircle, X, Lock, KeyRound } from 'lucide-react';
 import { adminService } from '../services/api';
 import '../styles/Auth.css';
 import '../styles/Toast.css';
@@ -11,12 +11,19 @@ interface AuthPageProps {
 const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
+  const [otpDigits, setOtpDigits] = useState(['', '', '', '']);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [countdown, setCountdown] = useState(0);
   const [authToast, setAuthToast] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+
+  const otpInputsRef = [
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null)
+  ];
 
   useEffect(() => {
     let timer: any;
@@ -33,9 +40,9 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
 
   const handleSendOtp = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const cleanPhone = phone.trim();
-    if (!cleanPhone) {
-      setError('Please enter your registered mobile number');
+    const cleanPhone = phone.replace(/\D/g, '');
+    if (!cleanPhone || cleanPhone.length < 10) {
+      setError('Please enter a valid 10-digit mobile number');
       return;
     }
 
@@ -47,7 +54,9 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
       if (res.data.statusCode === 1 || res.data.success) {
         showToast('success', res.data.message || 'OTP sent successfully to your mobile number!');
         setStep('otp');
+        setOtpDigits(['', '', '', '']);
         setCountdown(30);
+        setTimeout(() => otpInputsRef[0].current?.focus(), 150);
       } else {
         const msg = res.data.message || 'Failed to send OTP';
         setError(msg);
@@ -62,11 +71,54 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
     }
   };
 
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanOtp = otp.trim();
-    if (!cleanOtp) {
-      setError('Please enter the verification OTP code');
+  const handleOtpDigitChange = (index: number, value: string) => {
+    // Handle paste of complete 4-digit code
+    if (value.length > 1) {
+      const pasted = value.replace(/\D/g, '').slice(0, 4);
+      if (pasted) {
+        const newDigits = ['', '', '', ''];
+        for (let i = 0; i < 4; i++) {
+          newDigits[i] = pasted[i] || '';
+        }
+        setOtpDigits(newDigits);
+        const nextFocus = Math.min(pasted.length, 3);
+        otpInputsRef[nextFocus].current?.focus();
+        if (pasted.length === 4) {
+          triggerVerification(pasted);
+        }
+      }
+      return;
+    }
+
+    const cleanChar = value.replace(/\D/g, '');
+    const newDigits = [...otpDigits];
+    newDigits[index] = cleanChar;
+    setOtpDigits(newDigits);
+
+    // Auto advance to next box
+    if (cleanChar && index < 3) {
+      otpInputsRef[index + 1].current?.focus();
+    }
+
+    // Auto-trigger when 4th digit is entered
+    if (cleanChar && index === 3) {
+      const fullOtp = newDigits.join('');
+      if (fullOtp.length === 4) {
+        triggerVerification(fullOtp);
+      }
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+      otpInputsRef[index - 1].current?.focus();
+    }
+  };
+
+  const triggerVerification = async (codeToVerify?: string) => {
+    const fullOtp = codeToVerify || otpDigits.join('');
+    if (fullOtp.length < 4) {
+      setError('Please enter the complete 4-digit verification code');
       return;
     }
 
@@ -74,7 +126,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
     setError('');
 
     try {
-      const res = await adminService.verifyOtp({ phone: phone.trim(), otp: cleanOtp });
+      const res = await adminService.verifyOtp({ phone: phone.trim(), otp: fullOtp });
       if (res.data.statusCode === 1 || res.data.data?.token) {
         showToast('success', 'Access Granted! Welcome to Qobo1 Dashboard.');
         localStorage.setItem('admin_token', res.data.data.token);
@@ -92,6 +144,11 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleVerifyOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    triggerVerification();
   };
 
   return (
@@ -126,7 +183,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
               </div>
               <h1 className="auth-title">Admin Sign In</h1>
               <p className="auth-subtitle">
-                Enter your registered mobile number to receive verification code
+                Enter your authorized mobile number to receive OTP
               </p>
             </>
           ) : (
@@ -134,9 +191,9 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
               <div className="auth-step-badge">
                 <ShieldCheck size={13} /> Step 2: OTP Verification
               </div>
-              <h1 className="auth-title">Enter Verification Code</h1>
+              <h1 className="auth-title">Verify OTP Code</h1>
               <p className="auth-subtitle">
-                Code sent to <strong style={{ color: '#7c3aed' }}>{phone}</strong>
+                Enter 4-digit code sent to <span className="phone-highlight">+91 {phone}</span>
               </p>
             </>
           )}
@@ -152,7 +209,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
           /* Screen 1: Mobile Number Input */
           <form className="auth-form" onSubmit={handleSendOtp}>
             <div className="phone-field-group">
-              <label className="phone-field-label">Registered Mobile Number</label>
+              <label className="phone-field-label">Mobile Number</label>
               <div className="phone-field-wrapper">
                 <div className="country-code-badge">
                   <span>🇮🇳</span>
@@ -161,16 +218,17 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
                 <input 
                   type="tel" 
                   className="phone-input-box" 
-                  placeholder="Enter 10-digit number" 
+                  placeholder="e.g. 9876543210" 
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value.replace(/[^\d+ ]/g, ''))}
+                  onChange={(e) => setPhone(e.target.value.replace(/[^\d+ ]/g, '').slice(0, 15))}
+                  maxLength={15}
                   autoFocus
                   required 
                 />
               </div>
             </div>
 
-            <button type="submit" className="auth-btn" disabled={loading || !phone.trim()}>
+            <button type="submit" className="auth-btn" disabled={loading || phone.trim().length < 10}>
               {loading ? (
                 <span>Sending OTP...</span>
               ) : (
@@ -181,25 +239,36 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
             </button>
           </form>
         ) : (
-          /* Screen 2: OTP Verification */
+          /* Screen 2: Premium 4-Box OTP Verification */
           <form className="auth-form" onSubmit={handleVerifyOtp}>
-            <div className="otp-field-group">
-              <label className="phone-field-label" style={{ textAlign: 'center' }}>
-                4-Digit Verification OTP
+            <div className="otp-container-section">
+              <label className="phone-field-label" style={{ textAlign: 'center', display: 'block', marginBottom: '14px' }}>
+                Enter 4-Digit Security Code
               </label>
-              <input 
-                type="text" 
-                className="otp-input-box" 
-                placeholder="• • • •" 
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                maxLength={6}
-                autoFocus
-                required 
-              />
+
+              <div className="otp-digit-row">
+                {otpDigits.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={otpInputsRef[index]}
+                    type="text"
+                    inputMode="numeric"
+                    className={`otp-digit-box ${digit ? 'filled' : ''}`}
+                    value={digit}
+                    onChange={(e) => handleOtpDigitChange(index, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(index, e)}
+                    maxLength={index === 0 ? 4 : 1}
+                    autoComplete="one-time-code"
+                  />
+                ))}
+              </div>
             </div>
 
-            <button type="submit" className="auth-btn" disabled={loading || !otp.trim()}>
+            <button 
+              type="submit" 
+              className="auth-btn" 
+              disabled={loading || otpDigits.join('').length < 4}
+            >
               {loading ? (
                 <span>Verifying Code...</span>
               ) : (
@@ -213,7 +282,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
               <button 
                 type="button" 
                 className="auth-back-btn" 
-                onClick={() => { setStep('phone'); setOtp(''); setError(''); }}
+                onClick={() => { setStep('phone'); setOtpDigits(['', '', '', '']); setError(''); }}
               >
                 <ArrowLeft size={15} /> Change Mobile Number
               </button>
@@ -229,6 +298,11 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
             </div>
           </form>
         )}
+
+        <div className="security-footer">
+          <Lock size={12} />
+          <span>Secured Administrative Verification</span>
+        </div>
       </div>
     </div>
   );
