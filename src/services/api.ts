@@ -49,6 +49,9 @@ export const adminService = {
   getLeaderboard: (type: 'GIFTER' | 'RECEIVER', period: 'DAILY' | 'WEEKLY' | 'ALL_TIME') => 
     api.get(`/admin/leaderboard?type=${type}&period=${period}`),
   login: (data: any) => api.post('/admin/login', data),
+  sendOtp: (data: { phone: string }) => api.post('/admin/send-otp', data),
+  verifyOtp: (data: { phone: string; otp: string }) => api.post('/admin/verify-otp', data),
+  logout: () => api.post('/admin/logout'),
   getUsers: (search?: string) => api.get(`/admin/user-list${search ? `?search=${search}` : ''}`),
   getUserActivityHistory: (id: string) => api.get(`/admin/user/${id}/activity-history`),
   createUser: (data: any) => api.post('/admin/user-create', data),

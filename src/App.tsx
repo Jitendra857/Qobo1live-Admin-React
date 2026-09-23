@@ -52,6 +52,8 @@ import Emojis from './pages/Emojis';
 import { Menu as MenuIcon } from 'lucide-react';
 import { useSocket } from './hooks/useSocket';
 
+import { adminService } from './services/api';
+
 function AppContent() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('admin_token'));
   const { menuPosition, isSidebarCollapsed, setIsMobileMenuOpen } = useLayout();
@@ -59,10 +61,16 @@ function AppContent() {
   // Initialize Real-time Operational Hub
   useSocket();
 
-  const handleLogout = () => {
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_user');
-    setIsAuthenticated(false);
+  const handleLogout = async () => {
+    try {
+      await adminService.logout();
+    } catch (err) {
+      console.warn('Logout notification error:', err);
+    } finally {
+      localStorage.removeItem('admin_token');
+      localStorage.removeItem('admin_user');
+      setIsAuthenticated(false);
+    }
   };
 
   const adminUserStr = localStorage.getItem('admin_user');
