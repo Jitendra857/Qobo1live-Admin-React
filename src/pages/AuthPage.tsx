@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Smartphone, ShieldCheck, ArrowRight, ArrowLeft, CheckCircle, AlertCircle, X, RotateCw, Lock } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { adminService, BACKEND_URL } from '../services/api';
+import { Smartphone, ShieldCheck, ArrowRight, ArrowLeft, CheckCircle, AlertCircle, X, Lock } from 'lucide-react';
+import { adminService } from '../services/api';
 import '../styles/Auth.css';
 import '../styles/Toast.css';
 
@@ -10,12 +9,9 @@ interface AuthPageProps {
 }
 
 const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
-  const [loginMode, setLoginMode] = useState<'phone' | 'password'>('phone');
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -83,7 +79,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
         showToast('success', 'Access Granted! Welcome to Qobo1 Dashboard.');
         localStorage.setItem('admin_token', res.data.data.token);
         localStorage.setItem('admin_user', JSON.stringify(res.data.data.admin));
-        setTimeout(onLogin, 800);
+        setTimeout(onLogin, 600);
       } else {
         const msg = res.data.message || 'Invalid or expired OTP';
         setError(msg);
@@ -93,32 +89,6 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
       const msg = err.response?.data?.message || err.message || 'Verification Failed';
       setError(msg);
       showToast('error', msg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      const res = await adminService.login({ email, password });
-      if (res.data.statusCode === 1 || res.data.data?.token) {
-        showToast('success', 'Access Granted! Welcome to Qobo1 Dashboard.');
-        localStorage.setItem('admin_token', res.data.data.token);
-        localStorage.setItem('admin_user', JSON.stringify(res.data.data.admin));
-        setTimeout(onLogin, 800);
-      } else {
-        const msg = res.data.message || 'Invalid email or password';
-        showToast('error', msg);
-        setError(msg);
-      }
-    } catch (err: any) {
-      const msg = err.response?.data?.message || err.message || 'Login Failed';
-      showToast('error', msg);
-      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -149,175 +119,116 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
             <img src="/logo.svg" alt="Qobo1live" />
           </div>
 
-          {loginMode === 'phone' ? (
-            step === 'phone' ? (
-              <>
-                <div className="auth-step-badge">
-                  <Smartphone size={14} /> Step 1: Mobile Verification
-                </div>
-                <h1 className="auth-title">Admin Sign In</h1>
-                <p style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: 600, fontSize: '0.95rem' }}>
-                  Enter your registered mobile number to receive OTP
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="auth-step-badge">
-                  <ShieldCheck size={14} /> Step 2: OTP Verification
-                </div>
-                <h1 className="auth-title">Enter Verification Code</h1>
-                <p style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: 600, fontSize: '0.95rem' }}>
-                  Code sent to <span style={{ color: 'var(--accent-purple)', fontWeight: 700 }}>{phone}</span>
-                </p>
-              </>
-            )
+          {step === 'phone' ? (
+            <>
+              <div className="auth-step-badge">
+                <Smartphone size={13} /> Step 1: Mobile Verification
+              </div>
+              <h1 className="auth-title">Admin Sign In</h1>
+              <p className="auth-subtitle">
+                Enter your registered mobile number to receive verification code
+              </p>
+            </>
           ) : (
             <>
               <div className="auth-step-badge">
-                <Lock size={14} /> Password Authentication
+                <ShieldCheck size={13} /> Step 2: OTP Verification
               </div>
-              <h1 className="auth-title">Admin Login</h1>
-              <p style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: 600, fontSize: '0.95rem' }}>
-                Enter your administrative credentials
+              <h1 className="auth-title">Enter Verification Code</h1>
+              <p className="auth-subtitle">
+                Code sent to <strong style={{ color: '#7c3aed' }}>{phone}</strong>
               </p>
             </>
           )}
         </div>
 
         {error && (
-          <div style={{ color: '#ef4444', background: 'rgba(239, 68, 68, 0.1)', padding: '12px', borderRadius: '12px', marginBottom: '20px', fontSize: '0.9rem', textAlign: 'center', fontWeight: 'bold' }}>
+          <div className="error-banner">
             {error}
           </div>
         )}
 
-        {loginMode === 'phone' ? (
-          step === 'phone' ? (
-            /* Screen 1: Mobile Number Input */
-            <form className="auth-form" onSubmit={handleSendOtp}>
-              <div className="input-container">
+        {step === 'phone' ? (
+          /* Screen 1: Mobile Number Input */
+          <form className="auth-form" onSubmit={handleSendOtp}>
+            <div className="phone-field-group">
+              <label className="phone-field-label">Registered Mobile Number</label>
+              <div className="phone-field-wrapper">
+                <div className="country-code-badge">
+                  <span>🇮🇳</span>
+                  <span>+91</span>
+                </div>
                 <input 
                   type="tel" 
-                  className="auth-input" 
-                  placeholder=" " 
+                  className="phone-input-box" 
+                  placeholder="Enter 10-digit number" 
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => setPhone(e.target.value.replace(/[^\d+ ]/g, ''))}
                   autoFocus
                   required 
                 />
-                <label className="input-label">Mobile Number (e.g. +91 8200379256)</label>
               </div>
-
-              <button type="submit" className="auth-btn" disabled={loading || !phone.trim()}>
-                {loading ? (
-                  <span>Sending OTP...</span>
-                ) : (
-                  <>
-                    <Smartphone size={20} /> <span>Send OTP Code</span> <ArrowRight size={18} />
-                  </>
-                )}
-              </button>
-            </form>
-          ) : (
-            /* Screen 2: OTP Verification */
-            <form className="auth-form" onSubmit={handleVerifyOtp}>
-              <div className="input-container">
-                <input 
-                  type="text" 
-                  className="auth-input otp-field" 
-                  placeholder="• • • •" 
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  maxLength={6}
-                  autoFocus
-                  required 
-                />
-                <label className="input-label" style={{ left: '50%', transform: 'translateX(-50%)' }}>
-                  Verification Code (OTP)
-                </label>
-              </div>
-
-              <button type="submit" className="auth-btn" disabled={loading || !otp.trim()}>
-                {loading ? (
-                  <span>Verifying Code...</span>
-                ) : (
-                  <>
-                    <ShieldCheck size={20} /> <span>Verify & Access Dashboard</span>
-                  </>
-                )}
-              </button>
-
-              <div className="auth-sub-actions">
-                <button 
-                  type="button" 
-                  className="auth-back-btn" 
-                  onClick={() => { setStep('phone'); setOtp(''); setError(''); }}
-                >
-                  <ArrowLeft size={16} /> Change Mobile Number
-                </button>
-
-                <button 
-                  type="button" 
-                  className="resend-btn" 
-                  disabled={countdown > 0 || loading}
-                  onClick={() => handleSendOtp()}
-                >
-                  {countdown > 0 ? `Resend code in ${countdown}s` : 'Resend OTP'}
-                </button>
-              </div>
-            </form>
-          )
-        ) : (
-          /* Password Fallback Form */
-          <form className="auth-form" onSubmit={handlePasswordSubmit}>
-            <div className="input-container">
-              <input 
-                type="text" 
-                className="auth-input" 
-                placeholder=" " 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required 
-              />
-              <label className="input-label">Email or Mobile Number</label>
             </div>
 
-            <div className="input-container">
-              <input 
-                type="password" 
-                className="auth-input" 
-                placeholder=" " 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required 
-              />
-              <label className="input-label">Password</label>
-            </div>
-
-            <button type="submit" className="auth-btn" disabled={loading}>
-              {loading ? <span>Authenticating...</span> : <span>Sign In With Password</span>}
+            <button type="submit" className="auth-btn" disabled={loading || !phone.trim()}>
+              {loading ? (
+                <span>Sending OTP...</span>
+              ) : (
+                <>
+                  <Smartphone size={18} /> <span>Send OTP Code</span> <ArrowRight size={18} />
+                </>
+              )}
             </button>
           </form>
-        )}
+        ) : (
+          /* Screen 2: OTP Verification */
+          <form className="auth-form" onSubmit={handleVerifyOtp}>
+            <div className="otp-field-group">
+              <label className="phone-field-label" style={{ textAlign: 'center' }}>
+                4-Digit Verification OTP
+              </label>
+              <input 
+                type="text" 
+                className="otp-input-box" 
+                placeholder="• • • •" 
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                maxLength={6}
+                autoFocus
+                required 
+              />
+            </div>
 
-        <div className="auth-footer" style={{ marginTop: '25px' }}>
-          {loginMode === 'phone' ? (
-            <span 
-              className="auth-link" 
-              style={{ fontSize: '0.8rem', opacity: 0.7 }}
-              onClick={() => { setLoginMode('password'); setError(''); }}
-            >
-              Alternative: Sign in with Password
-            </span>
-          ) : (
-            <span 
-              className="auth-link" 
-              style={{ fontSize: '0.8rem', opacity: 0.7 }}
-              onClick={() => { setLoginMode('phone'); setError(''); }}
-            >
-              Switch to Mobile Number + OTP Login
-            </span>
-          )}
-        </div>
+            <button type="submit" className="auth-btn" disabled={loading || !otp.trim()}>
+              {loading ? (
+                <span>Verifying Code...</span>
+              ) : (
+                <>
+                  <ShieldCheck size={18} /> <span>Verify & Access Dashboard</span>
+                </>
+              )}
+            </button>
+
+            <div className="auth-sub-actions">
+              <button 
+                type="button" 
+                className="auth-back-btn" 
+                onClick={() => { setStep('phone'); setOtp(''); setError(''); }}
+              >
+                <ArrowLeft size={15} /> Change Mobile Number
+              </button>
+
+              <button 
+                type="button" 
+                className="resend-btn" 
+                disabled={countdown > 0 || loading}
+                onClick={() => handleSendOtp()}
+              >
+                {countdown > 0 ? `Resend in ${countdown}s` : 'Resend OTP'}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );
