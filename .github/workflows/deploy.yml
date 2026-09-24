@@ -15,56 +15,218 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      # ------------------------------------------
+      # Checkout
+      # ------------------------------------------
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # ------------------------------------------
+      # Node.js
+      # ------------------------------------------
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
 
+      # ------------------------------------------
+      # Install dependencies
+      # ------------------------------------------
       - name: Install Dependencies
         run: npm ci
 
+      # ------------------------------------------
+      # Build Production Frontend
+      # ------------------------------------------
       - name: Build Application
-        run: npm run build
-
-      - name: Verify Build
+        env:
+          VITE_BACKEND_URL: ${{ secrets.VITE_PROD_API }}
         run: |
-          echo "Checking frontend build..."
+          set -e
 
-          if [ ! -f "dist/index.html" ]; then
-            echo "ERROR: dist/index.html not found"
+          echo "=========================================="
+          echo "Building Qobo1live Frontend - Production"
+          echo "=========================================="
+
+          if [ -z "${VITE_BACKEND_URL}" ]; then
+            echo "ERROR: VITE_PROD_API secret is empty."
             exit 1
           fi
 
-          echo "Frontend build successful."
+          echo "Production Backend API is configured."
+          echo "Building frontend..."
+
+          npm run build
+
+          echo "Production frontend build completed."
+
+      # ------------------------------------------
+      # Replace Dev API URL in Production Build
+      # ------------------------------------------
+      - name: Replace Dev API URL
+        env:
+          VITE_BACKEND_URL: ${{ secrets.VITE_PROD_API }}
+        run: |
+          set -e
+
+          echo "=========================================="
+          echo "Replacing Dev API URL"
+          echo "=========================================="
+
+          if [ -z "${VITE_BACKEND_URL}" ]; then
+            echo "ERROR: VITE_PROD_API secret is empty."
+            exit 1
+          fi
+
+          echo "Production API:"
+          echo "${VITE_BACKEND_URL}"
+
+          echo "Searching for dev-api.qobo1live.in in dist..."
+
+          FOUND_FILES=0
+
+          while IFS= read -r -d '' file; do
+            echo "Replacing in: $file"
+
+            python3 - "$file" "${VITE_BACKEND_URL}" <<'PY'
+          import sys
+
+          file_path = sys.argv[1]
+          production_url = sys.argv[2]
+
+          old_url = "https://dev-api.qobo1live.in"
+
+          with open(file_path, "r", encoding="utf-8") as f:
+              content = f.read()
+
+          updated = content.replace(old_url, production_url)
+
+          if updated != content:
+              with open(file_path, "w", encoding="utf-8") as f:
+                  f.write(updated)
+          PY
+
+            FOUND_FILES=1
+
+          done < <(
+            grep -RIlZ \
+              --exclude='*.map' \
+              "https://dev-api.qobo1live.in" \
+              dist/ || true
+          )
+
+          if [ "${FOUND_FILES}" -eq 1 ]; then
+            echo "Dev API URL replacement completed."
+          else
+            echo "No dev API URL found in build."
+            echo "This is okay if the production API is already being used."
+          fi
+
+      # ------------------------------------------
+      # Verify Build
+      # ------------------------------------------
+      - name: Verify Build
+        run: |
+          set -e
+
+          echo "=========================================="
+          echo "Verifying Production Frontend Build"
+          echo "=========================================="
+
+          if [ ! -f "dist/index.html" ]; then
+            echo "ERROR: dist/index.html not found."
+            exit 1
+          fi
+
+          echo "Production frontend build successful."
+
           echo "Build contents:"
           ls -lah dist
 
+      # ------------------------------------------
+      # Verify Production API URL
+      # ------------------------------------------
+      - name: Verify Production API URL
+        env:
+          VITE_BACKEND_URL: ${{ secrets.VITE_PROD_API }}
+        run: |
+          set -e
+
+          echo "=========================================="
+          echo "Checking Production API URL"
+          echo "=========================================="
+
+          if [ -z "${VITE_BACKEND_URL}" ]; then
+            echo "ERROR: VITE_PROD_API secret is empty."
+            exit 1
+          fi
+
+          echo "Checking for Production API URL..."
+
+          if grep -R "${VITE_BACKEND_URL}" dist/ > /dev/null 2>&1; then
+            echo "Production API URL found in frontend build."
+          else
+            echo "ERROR: Production API URL was NOT found in frontend build."
+            echo "The frontend may still be using another API URL."
+            exit 1
+          fi
+
+          echo "Checking for Dev API URL..."
+
+          if grep -R "dev-api.qobo1live.in" dist/ > /dev/null 2>&1; then
+            echo "ERROR: dev-api.qobo1live.in still exists in production build!"
+            echo "Deployment stopped for safety."
+            exit 1
+          fi
+
+          echo "No dev-api.qobo1live.in found."
+
+          echo "=========================================="
+          echo "Production API verification successful."
+          echo "=========================================="
+
+      # ------------------------------------------
+      # Create Deployment Package
+      # ------------------------------------------
       - name: Create Deployment Package
         run: |
-          echo "Creating deployment package..."
+          set -e
+
+          echo "=========================================="
+          echo "Creating deployment package"
+          echo "=========================================="
 
           tar -czf qobo1live-frontend.tar.gz -C dist .
 
           echo "Deployment package:"
           ls -lh qobo1live-frontend.tar.gz
 
+      # ------------------------------------------
+      # Test VPS SSH Connectivity
+      # ------------------------------------------
       - name: Test VPS SSH Connectivity
         run: |
-          echo "Testing connectivity to VPS..."
-          echo "Host: ${{ secrets.VPS_HOST }}"
+          set -e
+
+          echo "=========================================="
+          echo "Testing VPS SSH Connectivity"
+          echo "=========================================="
+
           echo "Port: 22"
 
-          timeout 15 bash -c '</dev/tcp/${{ secrets.VPS_HOST }}/22' \
+          timeout 15 bash -c \
+            '</dev/tcp/${{ secrets.VPS_HOST }}/22' \
             && echo "VPS port 22 is reachable from GitHub Runner" \
             || (
               echo "ERROR: VPS port 22 is NOT reachable from GitHub Runner"
               exit 1
             )
 
+      # ------------------------------------------
+      # Prepare Deployment Directory
+      # ------------------------------------------
       - name: Prepare VPS Deployment Directory
         uses: appleboy/ssh-action@v1.2.2
         with:
@@ -74,8 +236,13 @@ jobs:
           port: 22
           timeout: 30s
           command_timeout: 2m
+
           script: |
             set -e
+
+            echo "=========================================="
+            echo "Preparing VPS deployment directory"
+            echo "=========================================="
 
             mkdir -p /home/ubuntu/deploy-temp
             chmod 755 /home/ubuntu/deploy-temp
@@ -83,6 +250,9 @@ jobs:
             echo "Deployment directory ready:"
             ls -ld /home/ubuntu/deploy-temp
 
+      # ------------------------------------------
+      # Upload Frontend Package
+      # ------------------------------------------
       - name: Upload Frontend
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -95,8 +265,10 @@ jobs:
           timeout: 30s
           command_timeout: 10m
           overwrite: true
-          debug: true
 
+      # ------------------------------------------
+      # Deploy Frontend on VPS
+      # ------------------------------------------
       - name: Deploy Frontend on VPS
         uses: appleboy/ssh-action@v1.2.2
         with:
@@ -106,11 +278,12 @@ jobs:
           port: 22
           timeout: 30s
           command_timeout: 10m
+
           script: |
             set -e
 
             echo "=========================================="
-            echo "Starting Qobo1live Frontend Deployment"
+            echo "Starting Qobo1live Production Frontend Deployment"
             echo "=========================================="
 
             DEPLOY_PACKAGE="/home/ubuntu/deploy-temp/qobo1live-frontend.tar.gz"
@@ -127,6 +300,9 @@ jobs:
 
             mkdir -p "$RELEASE_DIR"
 
+            # ------------------------------------------
+            # Verify Package
+            # ------------------------------------------
             echo "Checking uploaded package..."
 
             if [ ! -f "$DEPLOY_PACKAGE" ]; then
@@ -140,10 +316,16 @@ jobs:
             echo "Deployment package found:"
             ls -lh "$DEPLOY_PACKAGE"
 
+            # ------------------------------------------
+            # Extract Frontend
+            # ------------------------------------------
             echo "Extracting frontend..."
 
             tar -xzf "$DEPLOY_PACKAGE" -C "$RELEASE_DIR"
 
+            # ------------------------------------------
+            # Verify Deployment
+            # ------------------------------------------
             echo "Verifying deployed files..."
 
             if [ ! -f "$RELEASE_DIR/index.html" ]; then
@@ -154,34 +336,54 @@ jobs:
             echo "Frontend files:"
             ls -lah "$RELEASE_DIR"
 
+            # ------------------------------------------
+            # Update Current Release
+            # ------------------------------------------
             echo "Updating current release..."
 
-            ln -sfn "$RELEASE_DIR" /var/www/qobo1live/current
+            rm -rf /var/www/qobo1live/current
 
+            ln -s "$RELEASE_DIR" /var/www/qobo1live/current
+
+            # ------------------------------------------
+            # Permissions
+            # ------------------------------------------
             echo "Setting permissions..."
 
             chown -R www-data:www-data "$RELEASE_DIR"
 
+            # ------------------------------------------
+            # Remove Uploaded Package
+            # ------------------------------------------
             echo "Removing deployment package..."
 
             rm -f "$DEPLOY_PACKAGE"
 
+            # ------------------------------------------
+            # Clean Old Releases
+            # ------------------------------------------
             echo "Cleaning old releases..."
 
             cd /var/www/qobo1live/releases
 
             ls -1dt */ 2>/dev/null | tail -n +4 | xargs -r rm -rf
 
+            # ------------------------------------------
+            # Nginx Validation
+            # ------------------------------------------
             echo "Testing Nginx configuration..."
 
             sudo nginx -t
 
+            # ------------------------------------------
+            # Reload Nginx
+            # ------------------------------------------
             echo "Reloading Nginx..."
 
             sudo systemctl reload nginx
 
             echo "=========================================="
-            echo "Deployment completed successfully"
+            echo "Production frontend deployment completed"
             echo "=========================================="
 
             echo "Current frontend release:"
