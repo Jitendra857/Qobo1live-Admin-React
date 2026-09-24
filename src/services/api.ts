@@ -7,7 +7,9 @@ const isLocalhost = typeof window !== 'undefined' &&
    window.location.hostname.startsWith('192.168.'));
 
 let envUrl = String(import.meta.env.VITE_BACKEND_URL || '').trim();
-if (!envUrl || envUrl.includes('staging-api') || envUrl.includes('https:https:')) {
+if (typeof window !== 'undefined' && window.location.hostname === 'admin.qobo1live.in') {
+  envUrl = 'https://api.qobo1live.in';
+} else if (!envUrl || envUrl.includes('staging-api') || envUrl.includes('https:https:')) {
   envUrl = 'https://dev-api.qobo1live.in';
 }
 if (typeof window !== 'undefined' && window.location.protocol === 'https:' && envUrl.startsWith('http://')) {
