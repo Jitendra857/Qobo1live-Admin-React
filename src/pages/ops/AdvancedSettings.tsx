@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminService } from '../../services/api';
 import toast from 'react-hot-toast';
-import { Settings, Shield, Globe, Database, Save, CreditCard, Share2 } from 'lucide-react';
+import { Settings, Shield, Globe, Database, Save, CreditCard, Share2, Gift } from 'lucide-react';
 import '../../styles/UserManagement.css';
 
 const AdvancedSettings: React.FC = () => {
@@ -112,6 +112,68 @@ const AdvancedSettings: React.FC = () => {
             <div className="form-group">
               <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>CALL COMMISSION RATE (%)</label>
               <input type="number" value={settings.call_commission_rate || ''} onChange={(e) => setSettings({...settings, call_commission_rate: e.target.value})} onBlur={() => handleUpdate('call_commission_rate', settings.call_commission_rate)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '12px', borderRadius: '12px', color: 'var(--text-primary)' }} placeholder="e.g. 50" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bento-card wide">
+          <div className="card-top">
+            <div className="card-label">NEW SIGNUP & DAILY LOGIN REWARDS SETUP</div>
+            <div className="card-icon-wrap" style={{ color: '#f59e0b' }}>
+              <Gift size={24} />
+            </div>
+          </div>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '4px' }}>
+            Configure automatic coin rewards granted to users upon new account signup and on their first login of the day (once per day).
+          </p>
+          <div className="card-bottom" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginTop: '14px' }}>
+            <div className="form-group">
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>NEW USER SIGNUP REWARD (COINS)</label>
+              <input 
+                type="number" 
+                value={settings.signup_reward_coins ?? 10} 
+                onChange={(e) => setSettings({...settings, signup_reward_coins: e.target.value})} 
+                onBlur={() => handleUpdate('signup_reward_coins', Number(settings.signup_reward_coins))} 
+                style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '12px', borderRadius: '12px', color: 'var(--text-primary)' }} 
+                placeholder="e.g. 10" 
+              />
+            </div>
+            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>SIGNUP REWARD STATUS</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{(settings.signup_reward_enabled ?? true) ? 'ENABLED' : 'DISABLED'}</span>
+                <button 
+                  className="primary" 
+                  style={{ padding: '8px 16px', background: (settings.signup_reward_enabled ?? true) ? '#10b981' : '#ef4444' }}
+                  onClick={() => handleUpdate('signup_reward_enabled', !(settings.signup_reward_enabled ?? true))}
+                >
+                  {(settings.signup_reward_enabled ?? true) ? 'DISABLE REWARD' : 'ENABLE REWARD'}
+                </button>
+              </div>
+            </div>
+            <div className="form-group">
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>DAILY FIRST LOGIN REWARD (COINS)</label>
+              <input 
+                type="number" 
+                value={settings.daily_login_reward_coins ?? 5} 
+                onChange={(e) => setSettings({...settings, daily_login_reward_coins: e.target.value})} 
+                onBlur={() => handleUpdate('daily_login_reward_coins', Number(settings.daily_login_reward_coins))} 
+                style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '12px', borderRadius: '12px', color: 'var(--text-primary)' }} 
+                placeholder="e.g. 5" 
+              />
+            </div>
+            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>DAILY LOGIN REWARD STATUS (1x PER DAY)</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{(settings.daily_login_reward_enabled ?? true) ? 'ENABLED' : 'DISABLED'}</span>
+                <button 
+                  className="primary" 
+                  style={{ padding: '8px 16px', background: (settings.daily_login_reward_enabled ?? true) ? '#10b981' : '#ef4444' }}
+                  onClick={() => handleUpdate('daily_login_reward_enabled', !(settings.daily_login_reward_enabled ?? true))}
+                >
+                  {(settings.daily_login_reward_enabled ?? true) ? 'DISABLE REWARD' : 'ENABLE REWARD'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

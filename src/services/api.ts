@@ -111,6 +111,10 @@ export const adminService = {
   getBackgrounds: () => api.get('/admin/ambience/backgrounds'),
   manageAmbience: (action: string, data: any, id?: string) => 
     api.post(`/admin/ambience/action?action=${action}${id ? `&id=${id}` : ''}`, data),
+  
+  // Database Synchronization
+  syncMasterDataToProd: (params?: { qaUrl?: string; prodUrl?: string }) => 
+    api.get(`/sync-master-qa-to-prod`, { params }),
 
   // PK Battle Management
   getPKBattles: () => api.get('/admin/pk-battles'),
