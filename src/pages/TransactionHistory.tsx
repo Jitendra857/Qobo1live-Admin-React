@@ -67,13 +67,18 @@ const TransactionHistory: React.FC = () => {
                                 <td>
                                     <span className={`asset-tag ${(txn.metadata?.currency === 'diamonds' || txn.type === 'GIFT') ? 'diamonds' : 'coins'}`}>
                                         {txn.metadata?.currency === 'diamonds' ? <Gem size={14} /> : <Coins size={14} />}
-                                        {txn.metadata?.currency ? txn.metadata.currency.toUpperCase() : 'MANUAL RECHARGE'}
+                                        {txn.type ? txn.type.replace(/_/g, ' ') : (txn.metadata?.currency ? txn.metadata.currency.toUpperCase() : 'COINS')}
                                     </span>
                                 </td>
                                 <td>
-                                    <span className="name-bold" style={{ color: txn.type === 'RECHARGE' ? '#10b981' : '#ef4444' }}>
-                                        {txn.amount}
-                                    </span>
+                                    {(() => {
+                                        const isCredit = txn.type === 'RECHARGE' || txn.type === 'SIGNUP_REWARD' || txn.type === 'DAILY_LOGIN_REWARD' || txn.type?.includes('REWARD') || txn.type?.includes('BONUS');
+                                        return (
+                                            <span className="name-bold" style={{ color: isCredit ? '#10b981' : '#ef4444' }}>
+                                                {isCredit ? `+${txn.amount}` : `-${txn.amount}`}
+                                            </span>
+                                        );
+                                    })()}
                                 </td>
                                 <td>
                                     <div className="identity-block">
