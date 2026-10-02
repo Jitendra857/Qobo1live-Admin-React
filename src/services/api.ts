@@ -148,7 +148,7 @@ export const adminService = {
   getSettings: () => api.get('/admin/settings'),
   updateSetting: (data: any) => api.put('/admin/settings/update', data),
 
-  assignCoins: (data: { user_id: string; amount: number; type: 'coins' | 'diamonds' }) => 
+  assignCoins: (data: { user_id: string; amount: number; type?: 'coins' | 'diamonds'; action?: 'add' | 'remove' | 'set' }) => 
     api.post('/admin/assign-coins', data),
   
   approveHost: (data: { application_id: string; status: string; feedback?: string }) => 
