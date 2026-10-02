@@ -173,7 +173,7 @@ const Gifts: React.FC = () => {
             fetchGifts();
         } catch (err: any) {
             console.error('Submission Error:', err);
-            const errorMsg = err.response?.data?.message || 'Operation failed. Please check file sizes and formats.';
+            const errorMsg = err.response?.data?.message || (err.response?.status === 413 ? "File too large (blocked by proxy limit e.g. Nginx)" : err.message || 'Operation failed.');
             toast.error(errorMsg, { id: toastId });
         } finally {
             setIsSubmitting(false);
@@ -494,22 +494,22 @@ const Gifts: React.FC = () => {
                             <div className="file-upload-grid-premium">
                                 <div className="upload-unit">
                                     <span className="unit-label">Icon</span>
-                                    <input type="file" className="hidden" id="icon-up" onChange={e => handleFileChange(e, 'icon')} />
-                                    <label htmlFor="icon-up" className={`unit-box ${files.icon ? 'done' : ''}`}>
+                                    <input type="file" accept="image/*,.svg" className="hidden" id="icon-up-1" onChange={e => handleFileChange(e, 'icon')} />
+                                    <label htmlFor="icon-up-1" className={`unit-box ${files.icon ? 'done' : ''}`}>
                                         {files.icon ? <Check size={20} /> : <GiftIcon size={24} />}
                                     </label>
                                 </div>
                                 <div className="upload-unit">
                                     <span className="unit-label">Anim</span>
-                                    <input type="file" className="hidden" id="lottie-up" onChange={e => handleFileChange(e, 'animation')} />
-                                    <label htmlFor="lottie-up" className={`unit-box ${files.animation ? 'done' : ''}`}>
+                                    <input type="file" accept=".json,.svga,.gif,image/*" className="hidden" id="lottie-up-1" onChange={e => handleFileChange(e, 'animation')} />
+                                    <label htmlFor="lottie-up-1" className={`unit-box ${files.animation ? 'done' : ''}`}>
                                         {files.animation ? <Check size={20} /> : <Layout size={24} />}
                                     </label>
                                 </div>
                                 <div className="upload-unit">
                                     <span className="unit-label">Audio</span>
-                                    <input type="file" className="hidden" id="sound-up" onChange={e => handleFileChange(e, 'sound')} />
-                                    <label htmlFor="sound-up" className={`unit-box ${files.sound ? 'done' : ''}`}>
+                                    <input type="file" accept="audio/*,.mp3,.wav" className="hidden" id="sound-up-1" onChange={e => handleFileChange(e, 'sound')} />
+                                    <label htmlFor="sound-up-1" className={`unit-box ${files.sound ? 'done' : ''}`}>
                                         {files.sound ? <Check size={20} /> : <Music size={24} />}
                                     </label>
                                 </div>
@@ -675,21 +675,21 @@ const Gifts: React.FC = () => {
                             <div className="file-upload-grid-premium">
                                 <div className="upload-unit">
                                     <span className="unit-label">Icon</span>
-                                    <input type="file" className="hidden" id="icon-up" onChange={e => handleFileChange(e, 'icon')} />
+                                    <input type="file" accept="image/*,.svg" className="hidden" id="icon-up" onChange={e => handleFileChange(e, 'icon')} />
                                     <label htmlFor="icon-up" className={`unit-box ${files.icon ? 'done' : ''}`}>
                                         {files.icon ? <Check size={20} /> : <GiftIcon size={24} />}
                                     </label>
                                 </div>
                                 <div className="upload-unit">
                                     <span className="unit-label">Anim</span>
-                                    <input type="file" className="hidden" id="lottie-up" onChange={e => handleFileChange(e, 'animation')} />
+                                    <input type="file" accept=".json,.svga,.gif,image/*" className="hidden" id="lottie-up" onChange={e => handleFileChange(e, 'animation')} />
                                     <label htmlFor="lottie-up" className={`unit-box ${files.animation ? 'done' : ''}`}>
                                         {files.animation ? <Check size={20} /> : <Layout size={24} />}
                                     </label>
                                 </div>
                                 <div className="upload-unit">
                                     <span className="unit-label">Audio</span>
-                                    <input type="file" className="hidden" id="sound-up" onChange={e => handleFileChange(e, 'sound')} />
+                                    <input type="file" accept="audio/*,.mp3,.wav" className="hidden" id="sound-up" onChange={e => handleFileChange(e, 'sound')} />
                                     <label htmlFor="sound-up" className={`unit-box ${files.sound ? 'done' : ''}`}>
                                         {files.sound ? <Check size={20} /> : <Music size={24} />}
                                     </label>
