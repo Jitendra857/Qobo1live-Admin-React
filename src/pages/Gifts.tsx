@@ -173,7 +173,7 @@ const Gifts: React.FC = () => {
             fetchGifts();
         } catch (err: any) {
             console.error('Submission Error:', err);
-            const errorMsg = err.response?.data?.message || 'Operation failed. Please check file sizes and formats.';
+            const errorMsg = err.response?.data?.message || (err.response?.status === 413 ? "File too large (blocked by proxy limit e.g. Nginx)" : err.message || 'Operation failed.');
             toast.error(errorMsg, { id: toastId });
         } finally {
             setIsSubmitting(false);
