@@ -22,15 +22,15 @@ const CoinModal: React.FC<CoinModalProps> = ({ user, onClose, onSuccess }) => {
     scrollToModalTop();
   }, []);
 
-  const currentCoins = Number(user?.wallet?.coins ?? user?.coins ?? 0);
+  const currentDiamonds = Number(user?.wallet?.diamonds ?? user?.diamonds ?? 0);
   const numAmount = Math.max(0, Number(amount) || 0);
 
   const calculatedBalance = () => {
     if (action === 'add') {
-      return currentCoins + numAmount;
+      return currentDiamonds + numAmount;
     }
     if (action === 'remove') {
-      return Math.max(0, currentCoins - numAmount);
+      return Math.max(0, currentDiamonds - numAmount);
     }
     // set / update
     return numAmount;
@@ -50,16 +50,16 @@ const CoinModal: React.FC<CoinModalProps> = ({ user, onClose, onSuccess }) => {
       await adminService.assignCoins({
         user_id: user.id,
         amount: numAmount,
-        type: 'coins',
+        type: 'diamonds',
         action: action
       });
 
       const actionText = action === 'add' ? 'added to' : action === 'remove' ? 'deducted from' : 'updated for';
-      toast.success(`Coins successfully ${actionText} ${user.name || 'user'}`);
+      toast.success(`Diamonds successfully ${actionText} ${user.name || 'user'}`);
       onSuccess();
       onClose();
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Failed to update coins');
+      toast.error(err?.response?.data?.message || 'Failed to update Diamonds');
     } finally {
       setLoading(false);
     }
@@ -72,7 +72,7 @@ const CoinModal: React.FC<CoinModalProps> = ({ user, onClose, onSuccess }) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Coins size={20} color="#f59e0b" />
             <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600 }}>
-              Manage Coins: {user.name || 'User'}
+              Manage Diamonds: {user.name || 'User'}
             </h3>
           </div>
           <button className="close-btn" type="button" onClick={onClose}><X size={20} /></button>
@@ -94,7 +94,7 @@ const CoinModal: React.FC<CoinModalProps> = ({ user, onClose, onSuccess }) => {
               <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500, display: 'block' }}>Current Balance</span>
               <strong style={{ fontSize: '1.25rem', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Coins size={18} color="#f59e0b" />
-                {currentCoins.toLocaleString()} <span style={{ fontSize: '0.85rem', fontWeight: 500, color: '#64748b' }}>Coins</span>
+                {currentDiamonds.toLocaleString()} <span style={{ fontSize: '0.85rem', fontWeight: 500, color: '#64748b' }}>Diamonds</span>
               </strong>
             </div>
 
@@ -140,7 +140,7 @@ const CoinModal: React.FC<CoinModalProps> = ({ user, onClose, onSuccess }) => {
                 }}
               >
                 <PlusCircle size={16} color={action === 'add' ? '#10b981' : '#64748b'} />
-                Add Coins
+                Add Diamonds
               </button>
 
               <button
@@ -195,8 +195,8 @@ const CoinModal: React.FC<CoinModalProps> = ({ user, onClose, onSuccess }) => {
           <div className="form-group" style={{ marginBottom: '16px' }}>
             <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Coins size={15} />
-              {action === 'add' && 'Amount of Coins to Add'}
-              {action === 'remove' && 'Amount of Coins to Deduct'}
+              {action === 'add' && 'Amount of Diamonds to Add'}
+              {action === 'remove' && 'Amount of Diamonds to Deduct'}
               {action === 'set' && 'New Exact Coin Balance'}
             </label>
             <input 
@@ -204,7 +204,7 @@ const CoinModal: React.FC<CoinModalProps> = ({ user, onClose, onSuccess }) => {
               className="admin-input" 
               value={amount}
               onChange={e => setAmount(e.target.value)}
-              placeholder={action === 'set' ? 'Enter exact new balance (e.g. 10000)...' : 'Enter amount of coins...'}
+              placeholder={action === 'set' ? 'Enter exact new balance (e.g. 10000)...' : 'Enter amount of Diamonds...'}
               min={action === 'set' ? '0' : '1'}
               style={{ fontSize: '1rem', padding: '10px 12px' }}
             />
@@ -246,8 +246,8 @@ const CoinModal: React.FC<CoinModalProps> = ({ user, onClose, onSuccess }) => {
           }}>
             <ShieldAlert size={16} />
             <span>
-              {action === 'add' && 'Coins will be added immediately to the user account.'}
-              {action === 'remove' && 'Coins will be deducted immediately. Balance cannot go below 0.'}
+              {action === 'add' && 'Diamonds will be added immediately to the user account.'}
+              {action === 'remove' && 'Diamonds will be deducted immediately. Balance cannot go below 0.'}
               {action === 'set' && 'The user coin balance will be updated directly to this amount.'}
             </span>
           </div>
@@ -274,10 +274,10 @@ const CoinModal: React.FC<CoinModalProps> = ({ user, onClose, onSuccess }) => {
               {loading 
                 ? 'Processing...' 
                 : action === 'add'
-                  ? `Add ${numAmount > 0 ? numAmount.toLocaleString() + ' ' : ''}Coins`
+                  ? `Add ${numAmount > 0 ? numAmount.toLocaleString() + ' ' : ''}Diamonds`
                   : action === 'remove'
-                    ? `Deduct ${numAmount > 0 ? numAmount.toLocaleString() + ' ' : ''}Coins`
-                    : `Update Balance to ${numAmount.toLocaleString()} Coins`
+                    ? `Deduct ${numAmount > 0 ? numAmount.toLocaleString() + ' ' : ''}Diamonds`
+                    : `Update Balance to ${numAmount.toLocaleString()} Diamonds`
               }
             </span>
           </button>
