@@ -19,7 +19,7 @@ const LoginPage: React.FC = () => {
             if (res.data.statusCode === 1) {
                 localStorage.setItem('admin_token', res.data.data.token);
                 localStorage.setItem('admin_user', JSON.stringify(res.data.data.admin));
-                window.location.href = '/';
+                window.location.href = '/dashboard';
             }
         } catch (err: any) {
             setError(err.response?.data?.message || 'Login failed. Check credentials.');

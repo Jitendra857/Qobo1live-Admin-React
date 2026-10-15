@@ -131,7 +131,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
         showToast('success', 'Access Granted! Welcome to Qobo1 Dashboard.');
         localStorage.setItem('admin_token', res.data.data.token);
         localStorage.setItem('admin_user', JSON.stringify(res.data.data.admin));
-        setTimeout(onLogin, 600);
+        setTimeout(() => {
+          onLogin();
+          window.location.href = '/dashboard';
+        }, 400);
       } else {
         const msg = res.data.message || 'Invalid or expired OTP';
         setError(msg);

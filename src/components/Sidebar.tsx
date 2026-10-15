@@ -2,14 +2,14 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   Home, Gift, Settings, UserCheck, Wallet,
-  Tv, Headset, LogOut, ChevronDown, ChevronRight,
+  Tv, Headset, ChevronDown, ChevronRight,
   Monitor, ChevronLeft, Menu as MenuIcon, Building2
 } from 'lucide-react';
 import { useLayout } from '../context/LayoutContext';
 import '../styles/Sidebar.css';
 
 interface SidebarProps {
-  onLogout: () => void;
+  onLogout?: () => void;
 }
 
 // Each menu item carries an optional iconClass for per-section color
@@ -50,8 +50,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
 
   // ─── Menu Structure ─────────────────────────────────────────────────────────
   const menuItems: MenuItem[] = [
-    // 1. Overview (Direct link to dashboard)
-    { title: 'Overview', path: '/dashboard', icon: <Home size={17} />, iconClass: 'icon-blue' },
+    // 1. Dashboard (Direct link to dashboard)
+    { title: 'Dashboard', path: '/dashboard', icon: <Home size={17} />, iconClass: 'icon-blue' },
 
     // 2. Community & Users
     {
@@ -251,14 +251,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
             </div>
           ))}
         </nav>
-
-        {/* Footer */}
-        <div className="sidebar-footer">
-          <button className="logout-btn" onClick={onLogout}>
-            <div className="logout-icon-wrap"><LogOut size={16} /></div>
-            {!isSidebarCollapsed && <span className="logout-text">Power Off</span>}
-          </button>
-        </div>
 
       </div>
     </>

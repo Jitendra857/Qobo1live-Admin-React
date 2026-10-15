@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Users, Gift, Crown, Wallet, Activity, TrendingUp, 
   ArrowUpRight, Clock, ShieldCheck, Zap, Star, Trophy,
   UserCheck, Heart, Layout, Calendar, Globe,
   Package, CheckCircle, Tag, RotateCcw, Trash2, Wrench, ChevronRight,
-  Ban, Target, ShieldAlert, Sparkles
+  Ban, Target, ShieldAlert, Sparkles, Building2, Radio, Tv, Coins,
+  RefreshCw
 } from 'lucide-react';
 import { adminService } from '../services/api';
 import { 
@@ -14,33 +16,39 @@ import {
 import '../styles/Dashboard.css';
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
   const role = currentUser?.role || 'admin';
 
   const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
   const [period, setPeriod] = useState<'DAILY' | 'WEEKLY' | 'ALL_TIME'>('DAILY');
   const [chartMetric, setChartMetric] = useState<'users' | 'revenue'>('users');
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        let res;
-        if (role === 'super_admin') {
-          res = await adminService.getSuperAdminDashboard();
-        } else if (role === 'agency') {
-          res = await adminService.getAgencyDashboard();
-        } else {
-          res = await adminService.getStats();
-        }
-        if (res && res.data.statusCode === 1) {
-          setStats(res.data.data);
-        }
-      } catch (err) {
-        console.error('Dashboard Stats Fetch Error:', err);
+  const fetchStats = useCallback(async () => {
+    setLoading(true);
+    try {
+      let res;
+      if (role === 'super_admin') {
+        res = await adminService.getSuperAdminDashboard();
+      } else if (role === 'agency') {
+        res = await adminService.getAgencyDashboard();
+      } else {
+        res = await adminService.getStats();
       }
-    };
-    fetchStats();
+      if (res && res.data.statusCode === 1) {
+        setStats(res.data.data);
+      }
+    } catch (err) {
+      console.error('Dashboard Stats Fetch Error:', err);
+    } finally {
+      setLoading(false);
+    }
   }, [role]);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
 
   const growthData = [
     { name: 'Mon', users: 420, revenue: 1200 },
@@ -61,30 +69,74 @@ const Dashboard: React.FC = () => {
 
   const COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b'];
 
-  // Dynamic Card Mappings based on role
+  // Dynamic Card Mappings based on role with clear labels and navigation
   const getCardData = () => {
-    if (role === 'super_admin') {
-      return [
-        { label: 'TOTAL AGENCIES', value: stats?.totalAgencies || 0, change: '+12%', color: 'blue', icon: <Users size={26} /> },
-        { label: 'ACTIVE HOSTS', value: stats?.activeHosts || 0, change: '+18%', color: 'green', icon: <Activity size={26} /> },
-        { label: 'PENDING HOSTS', value: stats?.pendingHosts || 0, change: 'Action Needed', color: 'purple', icon: <Crown size={26} /> },
-        { label: 'TOTAL COMMISSIONS', value: `₹${(stats?.totalCommissions || 0).toLocaleString()}`, change: '+24%', color: 'gold', icon: <Wallet size={26} /> },
-      ];
-    }
     if (role === 'agency') {
       return [
-        { label: 'AGENCY CODE', value: stats?.agency?.code || '—', sub: stats?.agency?.name, change: 'Active Network', color: 'blue', icon: <Users size={26} /> },
-        { label: 'ACTIVE HOSTS', value: stats?.summary?.activeHosts || 0, change: '+15%', color: 'green', icon: <Activity size={26} /> },
-        { label: 'PENDING APPLICATIONS', value: stats?.summary?.pendingHostApplications || 0, change: 'Review Required', color: 'purple', icon: <Crown size={26} /> },
-        { label: 'TOTAL EARNINGS', value: `₹${(stats?.summary?.totalAgencyEarnings || 0).toLocaleString()}`, change: '+28%', color: 'gold', icon: <Wallet size={26} /> },
+        { label: 'AGENCY CODE', value: stats?.agency?.code || '—', sub: stats?.agency?.name, change: 'Active Network', color: 'blue', icon: <Building2 size={26} />, path: '/host-registry' },
+        { label: 'TOTAL HOSTS', value: stats?.summary?.activeHosts || 0, sub: 'Active Talent', change: '+15%', color: 'green', icon: <UserCheck size={26} />, path: '/host-registry' },
+        { label: 'PENDING APPLICATIONS', value: stats?.summary?.pendingHostApplications || 0, sub: 'Review Required', change: 'Action Needed', color: 'purple', icon: <Crown size={26} />, path: '/host-registry' },
+        { label: 'TOTAL EARNINGS', value: `₹${(stats?.summary?.totalAgencyEarnings || 0).toLocaleString()}`, sub: 'Commission Balance', change: '+28%', color: 'gold', icon: <Wallet size={26} />, path: '/economy' },
+        { label: 'TOTAL TASKS', value: stats?.totalTasks || 0, sub: 'Active Missions', change: 'Ecosystem Tasks', color: 'rose', icon: <Target size={26} />, path: '/dynamic-tasks' },
+        { label: 'TOTAL GIFTS', value: stats?.totalGifts || stats?.giftCount || 0, sub: 'Rewards Store', change: 'Gift Catalog', color: 'cyan', icon: <Gift size={26} />, path: '/gifts' },
       ];
     }
-    // Default: global Admin
+    // Default Admin & Super Admin: Shows all requested core application entities
     return [
-      { label: 'TOTAL USERS', value: stats?.totalUsers?.toLocaleString() || 0, change: '+14%', color: 'blue', icon: <Users size={26} /> },
-      { label: 'ACTIVE ROOMS', value: stats?.roomCount || 0, change: 'Live Now', color: 'green', icon: <Activity size={26} /> },
-      { label: 'PENDING HOSTS', value: stats?.pendingHosts || 0, change: 'Review Required', color: 'purple', icon: <Crown size={26} /> },
-      { label: 'DAILY EARNINGS', value: `₹${(stats?.revenue || 0).toLocaleString()}`, change: '+22%', color: 'gold', icon: <Wallet size={26} /> },
+      { 
+        label: 'TOTAL AGENCY', 
+        value: stats?.totalAgencies ?? 0, 
+        sub: `${stats?.activeAgencies ?? stats?.totalAgencies ?? 0} Approved / Active`, 
+        change: 'Agencies Network', 
+        color: 'blue', 
+        icon: <Building2 size={26} />,
+        path: '/agents'
+      },
+      { 
+        label: 'TOTAL HOST', 
+        value: stats?.totalHosts ?? stats?.activeHosts ?? 0, 
+        sub: `${stats?.pendingHosts ?? 0} Pending Approvals`, 
+        change: 'Talent Network', 
+        color: 'green', 
+        icon: <UserCheck size={26} />,
+        path: '/host-registry'
+      },
+      { 
+        label: 'TOTAL USER', 
+        value: (stats?.totalUsers ?? 0).toLocaleString(), 
+        sub: `${stats?.activeUsers ?? 0} Active Community`, 
+        change: '+14% Growth', 
+        color: 'purple', 
+        icon: <Users size={26} />,
+        path: '/users'
+      },
+      { 
+        label: 'TOTAL SUPER ADMIN', 
+        value: stats?.totalSuperAdmins ?? 1, 
+        sub: 'Platform Master Admins', 
+        change: 'System Staff', 
+        color: 'cyan', 
+        icon: <ShieldCheck size={26} />,
+        path: '/super-admin-forms'
+      },
+      { 
+        label: 'TOTAL TASK', 
+        value: stats?.totalTasks ?? 0, 
+        sub: 'Daily & Dynamic Tasks', 
+        change: 'Mission Center', 
+        color: 'rose', 
+        icon: <Target size={26} />,
+        path: '/dynamic-tasks'
+      },
+      { 
+        label: 'TOTAL GIFT', 
+        value: stats?.totalGifts ?? stats?.giftCount ?? 0, 
+        sub: 'Virtual Rewards Catalog', 
+        change: 'Store Active', 
+        color: 'gold', 
+        icon: <Gift size={26} />,
+        path: '/gifts'
+      },
     ];
   };
 
@@ -100,11 +152,29 @@ const Dashboard: React.FC = () => {
             <span>SYSTEM HEALTH OPERATIONAL</span>
           </div>
           <h1 className="dashboard-main-title">
-            {role === 'super_admin' ? 'Super Admin Overview' : role === 'agency' ? 'Agency Control Hub' : 'System Overview'}
+            {role === 'super_admin' ? 'Super Admin Dashboard' : role === 'agency' ? 'Agency Dashboard' : 'System Dashboard'}
           </h1>
         </div>
 
         <div className="header-right-controls">
+          <button 
+            className="period-btn" 
+            onClick={fetchStats} 
+            title="Refresh dashboard metrics"
+            disabled={loading}
+            style={{ 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              gap: '6px', 
+              background: 'var(--bg-surface)', 
+              border: '1px solid var(--glass-border)',
+              cursor: 'pointer'
+            }}
+          >
+            <RefreshCw size={13} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
+            <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
+          </button>
+
           <div className="period-selector">
             {(['DAILY', 'WEEKLY', 'ALL_TIME'] as const).map(p => (
               <button
@@ -125,10 +195,32 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Row 1: Primary Stats Cards ─────────────────────────────────────── */}
+      {/* ── Quick Navigation Shortcuts ──────────────────────────────────────── */}
+      <div className="quick-nav-row">
+        <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--text-secondary)', alignSelf: 'center', marginRight: '4px' }}>
+          Quick Jump:
+        </span>
+        <button className="quick-nav-chip" onClick={() => navigate('/agents')}><Building2 size={13} /> Agencies</button>
+        <button className="quick-nav-chip" onClick={() => navigate('/host-registry')}><UserCheck size={13} /> Hosts</button>
+        <button className="quick-nav-chip" onClick={() => navigate('/users')}><Users size={13} /> Users</button>
+        <button className="quick-nav-chip" onClick={() => navigate('/super-admin-forms')}><ShieldCheck size={13} /> Super Admins</button>
+        <button className="quick-nav-chip" onClick={() => navigate('/dynamic-tasks')}><Target size={13} /> Tasks</button>
+        <button className="quick-nav-chip" onClick={() => navigate('/gifts')}><Gift size={13} /> Gifts</button>
+        <button className="quick-nav-chip" onClick={() => navigate('/audio-rooms')}><Radio size={13} /> Rooms</button>
+        <button className="quick-nav-chip" onClick={() => navigate('/coins-seller-requests')}><Coins size={13} /> Coins Sellers</button>
+        <button className="quick-nav-chip" onClick={() => navigate('/withdrawals')}><Wallet size={13} /> Withdrawals</button>
+        <button className="quick-nav-chip" onClick={() => navigate('/moderation')}><ShieldAlert size={13} /> Moderation</button>
+      </div>
+
+      {/* ── Row 1: Primary Stats Cards (Core Application Entities) ─────────── */}
       <div className="stats-row">
         {cards.map((card, idx) => (
-          <div className={`stat-card-new ${card.color}`} key={idx}>
+          <div 
+            className={`stat-card-new ${card.color} clickable`} 
+            key={idx}
+            onClick={() => card.path && navigate(card.path)}
+            title={`View ${card.label}`}
+          >
             <div className="stat-header">
               <span className="stat-label-new">{card.label}</span>
               <div className={`stat-icon-wrapper ${card.color}`}>
@@ -147,34 +239,84 @@ const Dashboard: React.FC = () => {
         ))}
       </div>
 
-      {/* ── Row 2: Ecosystem Pulse Cards ───────────────────────────────────── */}
+      {/* ── Row 2: Real-time Application Operations & Tracking ──────────────── */}
+      <div className="dashboard-section-header">
+        <div className="section-title-tag">
+          <Zap size={15} />
+          <span>Real-time Application Operations & Tracking</span>
+        </div>
+      </div>
+
       <div className="mini-stats-row-new">
-        <div className="mini-card red">
-          <div className="mini-icon-box red"><Ban size={18} /></div>
+        <div className="mini-card green clickable" onClick={() => navigate('/audio-rooms')} title="View Active Voice Rooms">
+          <div className="mini-icon-box green"><Radio size={18} /></div>
           <div>
-            <div className="mini-num">84</div>
-            <div className="mini-lbl">Active Bans</div>
+            <div className="mini-num">{stats?.activeRooms ?? stats?.roomCount ?? 0}</div>
+            <div className="mini-lbl">Active Audio Rooms</div>
+            <div className="mini-sub">{stats?.roomCount ?? 0} Total Rooms</div>
           </div>
         </div>
-        <div className="mini-card blue">
-          <div className="mini-icon-box blue"><Target size={18} /></div>
+
+        <div className="mini-card blue clickable" onClick={() => navigate('/live-streams')} title="View Live Video Broadcasts">
+          <div className="mini-icon-box blue"><Tv size={18} /></div>
           <div>
-            <div className="mini-num">12</div>
-            <div className="mini-lbl">Live PK Battles</div>
+            <div className="mini-num">{stats?.activeLiveStreams ?? stats?.totalLiveStreams ?? 0}</div>
+            <div className="mini-lbl">Live Streams</div>
+            <div className="mini-sub">{stats?.totalLiveStreams ?? 0} Total Streams</div>
           </div>
         </div>
-        <div className="mini-card purple">
-          <div className="mini-icon-box purple"><Zap size={18} /></div>
+
+        <div className="mini-card amber clickable" onClick={() => navigate('/coins-seller-requests')} title="View Coins Sellers">
+          <div className="mini-icon-box amber"><Coins size={18} /></div>
           <div>
-            <div className="mini-num">156</div>
-            <div className="mini-lbl">Active System Bots</div>
+            <div className="mini-num">{stats?.totalCoinsSellers ?? 0}</div>
+            <div className="mini-lbl">Total Coins Sellers</div>
+            <div className="mini-sub">Merchant Distributors</div>
           </div>
         </div>
-        <div className="mini-card amber">
-          <div className="mini-icon-box amber"><ShieldAlert size={18} /></div>
+
+        <div className="mini-card purple clickable" onClick={() => navigate('/vip-store')} title="View VIP Members">
+          <div className="mini-icon-box purple"><Crown size={18} /></div>
           <div>
-            <div className="mini-num">12</div>
-            <div className="mini-lbl">Pending Reports</div>
+            <div className="mini-num">{stats?.totalVipUsers ?? 0}</div>
+            <div className="mini-lbl">VIP Members</div>
+            <div className="mini-sub">Subscribers & Packages</div>
+          </div>
+        </div>
+
+        <div className="mini-card red clickable" onClick={() => navigate('/withdrawals')} title="View Pending Withdrawals">
+          <div className="mini-icon-box red"><Wallet size={18} /></div>
+          <div>
+            <div className="mini-num">{stats?.pendingWithdrawals ?? 0}</div>
+            <div className="mini-lbl">Pending Withdrawals</div>
+            <div className="mini-sub">Payout Approvals</div>
+          </div>
+        </div>
+
+        <div className="mini-card amber clickable" onClick={() => navigate('/host-registry')} title="View Pending Host Applications">
+          <div className="mini-icon-box amber"><Clock size={18} /></div>
+          <div>
+            <div className="mini-num">{stats?.pendingHosts ?? 0}</div>
+            <div className="mini-lbl">Pending Hosts</div>
+            <div className="mini-sub">Candidate Reviews</div>
+          </div>
+        </div>
+
+        <div className="mini-card red clickable" onClick={() => navigate('/moderation')} title="View Moderation Reports">
+          <div className="mini-icon-box red"><ShieldAlert size={18} /></div>
+          <div>
+            <div className="mini-num">{stats?.pendingReports ?? 0}</div>
+            <div className="mini-lbl">Moderation Reports</div>
+            <div className="mini-sub">Flagged User Issues</div>
+          </div>
+        </div>
+
+        <div className="mini-card green clickable" onClick={() => navigate('/economy')} title="View Platform Revenue">
+          <div className="mini-icon-box green"><TrendingUp size={18} /></div>
+          <div>
+            <div className="mini-num">₹{(stats?.revenue ?? stats?.totalCommissions ?? 0).toLocaleString()}</div>
+            <div className="mini-lbl">Platform Revenue</div>
+            <div className="mini-sub">Total Monetary Inflow</div>
           </div>
         </div>
       </div>

@@ -2,12 +2,12 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Gift, Crown, Wallet,
-  ShieldCheck, Settings, LogOut, Palette, Check
+  ShieldCheck, Settings, Palette, Check
 } from 'lucide-react';
 import { useLayout, SIDEBAR_THEMES, APP_THEMES } from '../context/LayoutContext';
 
 const menuItems = [
-  { path: '/dashboard',  label: 'Overview',   icon: LayoutDashboard },
+  { path: '/dashboard',  label: 'Dashboard',  icon: LayoutDashboard },
   { path: '/users',      label: 'Users',      icon: Users },
   { path: '/gifts',      label: 'Gifts',      icon: Gift },
   { path: '/agents',     label: 'Agencies',   icon: Crown },
@@ -17,15 +17,13 @@ const menuItems = [
 ];
 
 /* ── Top-bar menu (used when menuPosition === 'top') ─────── */
-export const TopMenu: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
+export const TopMenu: React.FC<{ onLogout?: () => void }> = () => {
   const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
 
   const visibleMenuItems = (() => {
     if (currentUser?.role === 'admin' || currentUser?.role === 'super_admin') return menuItems;
     return [];
   })();
-
-
 
   return (
     <nav className="top-menu">
@@ -39,12 +37,6 @@ export const TopMenu: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
             <span>{item.label}</span>
           </NavLink>
         ))}
-      </div>
-      <div className="top-actions">
-        <button onClick={onLogout} className="top-logout-btn compact">
-          <LogOut size={18} />
-          <span className="logout-label">Power Off</span>
-        </button>
       </div>
     </nav>
   );
