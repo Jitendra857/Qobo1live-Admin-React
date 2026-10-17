@@ -74,12 +74,18 @@ const SuperAdminRequests: React.FC = () => {
 
     setInviting(true);
     try {
-      await adminService.inviteSuperAdmin({ email: inviteEmail.trim().toLowerCase() });
-      toast.success(`Invitation successfully dispatched to ${inviteEmail}`);
+      const res = await adminService.inviteSuperAdmin({ email: inviteEmail.trim().toLowerCase() });
+      const link = res.data?.data?.inviteLink;
+      if (link && navigator.clipboard) {
+        await navigator.clipboard.writeText(link).catch(() => {});
+        toast.success(`Invite link created & copied to clipboard! (No email sent)`);
+      } else {
+        toast.success(`Invite link generated successfully! (No email sent)`);
+      }
       setInviteEmail('');
     } catch (err: any) {
       console.error(err);
-      toast.error(err.response?.data?.message || 'Failed to send invitation link.');
+      toast.error(err.response?.data?.message || 'Failed to generate invitation link.');
     } finally {
       setInviting(false);
     }
@@ -91,11 +97,17 @@ const SuperAdminRequests: React.FC = () => {
       return;
     }
     try {
-      await adminService.inviteSuperAdmin({ email: userEmail.trim().toLowerCase() });
-      toast.success(`Invitation successfully sent to ${userEmail}`);
+      const res = await adminService.inviteSuperAdmin({ email: userEmail.trim().toLowerCase() });
+      const link = res.data?.data?.inviteLink;
+      if (link && navigator.clipboard) {
+        await navigator.clipboard.writeText(link).catch(() => {});
+        toast.success(`Invite link copied to clipboard! (No email sent)`);
+      } else {
+        toast.success(`Invite link generated! (No email sent)`);
+      }
     } catch (err: any) {
       console.error(err);
-      toast.error(err.response?.data?.message || 'Failed to dispatch invitation link.');
+      toast.error(err.response?.data?.message || 'Failed to generate invitation link.');
     }
   };
 
@@ -134,11 +146,17 @@ const SuperAdminRequests: React.FC = () => {
 
   const handleDispatchFromCard = async (req: any) => {
     try {
-      await adminService.inviteSuperAdmin({ email: req.email });
+      const res = await adminService.inviteSuperAdmin({ email: req.email });
       await handleProcessRequest(req.id, 'email_dispatched');
-      toast.success(`Application link securely dispatched to ${req.email}`);
+      const link = res.data?.data?.inviteLink;
+      if (link && navigator.clipboard) {
+        await navigator.clipboard.writeText(link).catch(() => {});
+        toast.success(`Invite link generated & copied to clipboard! (No email sent)`);
+      } else {
+        toast.success(`Invite link generated! (No email sent)`);
+      }
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to dispatch application link.');
+      toast.error(err.response?.data?.message || 'Failed to generate application link.');
     }
   };
 
@@ -262,7 +280,7 @@ const SuperAdminRequests: React.FC = () => {
                     gap: '8px'
                   }}
                 >
-                  {inviting ? 'Sending...' : <><UserPlus size={18} /> Send Invite Link</>}
+                  {inviting ? 'Generating...' : <><UserPlus size={18} /> Generate & Copy Invite Link</>}
                 </button>
               </form>
             </div>
@@ -539,7 +557,7 @@ const SuperAdminRequests: React.FC = () => {
                             display: 'inline-flex', alignItems: 'center', gap: '6px'
                           }}
                         >
-                          <Send size={14} /> Send Invite
+                          <Send size={14} /> Copy Invite Link
                         </button>
                       </td>
                     </tr>
