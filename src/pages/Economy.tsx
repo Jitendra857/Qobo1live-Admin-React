@@ -190,7 +190,11 @@ const Economy: React.FC = () => {
                   <tr key={pkg.id} className="row-premium">
                     <td><div style={{ fontWeight: 800 }}>{pkg.name}</div></td>
                     <td><span style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>{pkg.amount} {pkg.type}</span></td>
-                    <td><span style={{ fontWeight: 800, color: 'var(--accent-green)' }}>₹{pkg.price}</span></td>
+                    <td>
+                      <span style={{ fontWeight: 800, color: 'var(--accent-green)' }}>
+                        ₹{pkg.price} {pkg.usdPrice ? <span style={{ color: 'var(--text-secondary)', fontSize: '0.85em', marginLeft: '4px' }}>(${pkg.usdPrice})</span> : ''}
+                      </span>
+                    </td>
                     <td><span className={`status-neon ${pkg.status === 'active' ? 'active' : 'inactive'}`}>{pkg.status || 'active'}</span></td>
                     <td>
                       <div className="flex gap-2 justify-end" style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
