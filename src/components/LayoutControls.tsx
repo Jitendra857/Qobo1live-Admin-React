@@ -2,13 +2,14 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Gift, Crown, Wallet,
-  ShieldCheck, Settings, Palette, Check
+  ShieldCheck, Settings, Palette, Check, Coins
 } from 'lucide-react';
 import { useLayout, SIDEBAR_THEMES, APP_THEMES } from '../context/LayoutContext';
 
 const menuItems = [
   { path: '/dashboard',  label: 'Dashboard',  icon: LayoutDashboard },
   { path: '/users',      label: 'Users',      icon: Users },
+  { path: '/coins-setup', label: 'Coins Setup', icon: Coins },
   { path: '/gifts',      label: 'Gifts',      icon: Gift },
   { path: '/agents',     label: 'Agencies',   icon: Crown },
   { path: '/economy',    label: 'Finance',    icon: Wallet },

@@ -13,6 +13,7 @@ import Withdrawals from './pages/Withdrawals';
 import StaffManagement from './pages/StaffManagement';
 import TransactionHistory from './pages/TransactionHistory';
 import Economy from './pages/Economy';
+import CoinsSetup from './pages/CoinsSetup';
 import SupportDesk from './pages/SupportDesk';
 import OperationalSettings from './pages/OperationalSettings';
 import TaskCenter from './pages/TaskCenter';
@@ -170,6 +171,7 @@ function AppContent() {
                   <Route path="/transactions" element={<TransactionHistory />} />
                   <Route path="/operational-settings" element={<OperationalSettings />} />
                   <Route path="/economy" element={<Economy />} />
+                  <Route path="/coins-setup" element={<CoinsSetup />} />
                   <Route path="/banners" element={<Banners />} />
                   <Route path="/backgrounds" element={<AmbienceManager />} />
 

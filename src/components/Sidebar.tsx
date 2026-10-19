@@ -81,6 +81,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
         { title: 'Emojis Catalog', path: '/emojis' },
         { title: 'Gift Categories', path: '/gift-categories' },
         { title: 'VIP Packages', path: '/vip-store' },
+        { title: 'Coins Setup', path: '/coins-setup' },
         { title: 'Avatar Frames', path: '/avatar-frames' },
         { title: 'Profile Backgrounds', path: '/profile-backgrounds' },
         { title: 'User Levels', path: '/level-system' },
@@ -92,6 +93,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     {
       title: 'Earnings & Payouts', icon: <Wallet size={17} />, iconClass: 'icon-green',
       subItems: [
+        { title: 'Coins Setup', path: '/coins-setup' },
         { title: 'User Balances', path: '/economy' },
         { title: 'Withdraw Requests', path: '/withdrawals' },
         { title: 'Payment History', path: '/transactions' },
