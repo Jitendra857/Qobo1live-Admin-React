@@ -269,19 +269,22 @@ const Gifts: React.FC = () => {
                         <div className="card-content flex flex-col items-center py-2">
                             <div 
                                 className="asset-icon-box mb-3" 
-                                style={{ position: 'relative', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: gift.animationUrl ? 'pointer' : 'default' }}
+                                style={{ position: 'relative', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: (gift.animationUrl || gift.icon) ? 'pointer' : 'default' }}
                                 onClick={() => { 
-                                    if (gift.animationUrl) {
-                                        window.open(`/gift-preview?url=${encodeURIComponent(gift.animationUrl)}&name=${encodeURIComponent(gift.name)}`, '_blank');
+                                    if (gift.animationUrl || gift.icon) {
+                                        const previewUrl = gift.animationUrl || gift.icon;
+                                        const soundParam = gift.soundUrl ? `&soundUrl=${encodeURIComponent(gift.soundUrl)}` : '';
+                                        window.open(`/gift-preview?url=${encodeURIComponent(previewUrl)}&name=${encodeURIComponent(gift.name)}${soundParam}`, '_blank');
                                     }
                                 }}
-                                title={gift.animationUrl ? "Click to preview full animation" : undefined}
+                                title="Click to preview gift animation & play sound in new tab"
                             >
                                 {isSvgaUrl(gift.animationUrl) ? (
                                     <SvgaPlayer 
                                         src={gift.animationUrl} 
                                         className="asset-icon" 
                                         style={{ width: '80px', height: '80px', objectFit: 'contain' }}
+                                        mute={true}
                                     />
                                 ) : gift.animationUrl && (gift.animationUrl.toLowerCase().endsWith('.gif') || gift.animationUrl.toLowerCase().includes('giphy.com')) ? (
                                     <img 
@@ -330,7 +333,20 @@ const Gifts: React.FC = () => {
                                     </div>
                                 )}
                             </div>
-                            <h3 className="asset-name" style={{ color: '#333', fontWeight: 800 }}>{gift.name}</h3>
+                            <h3 
+                                className="asset-name" 
+                                style={{ color: '#333', fontWeight: 800, cursor: 'pointer' }}
+                                title="Click to preview gift animation & play sound in new tab"
+                                onClick={() => {
+                                    if (gift.animationUrl || gift.icon) {
+                                        const previewUrl = gift.animationUrl || gift.icon;
+                                        const soundParam = gift.soundUrl ? `&soundUrl=${encodeURIComponent(gift.soundUrl)}` : '';
+                                        window.open(`/gift-preview?url=${encodeURIComponent(previewUrl)}&name=${encodeURIComponent(gift.name)}${soundParam}`, '_blank');
+                                    }
+                                }}
+                            >
+                                {gift.name}
+                            </h3>
                             <div className="asset-price" style={{ color: '#4e73df', fontWeight: 900, fontSize: '1.2rem' }}>₹{gift.price}</div>
                             {gift.winRate && (
                                 <div className="win-badge mt-1" style={{ fontSize: '10px', background: '#fef3c7', color: '#d97706', padding: '2px 8px', fontWeight: 800 }}>
@@ -346,16 +362,16 @@ const Gifts: React.FC = () => {
                                 </div>
                                 <div 
                                     className={`meta-pill ${gift.soundUrl ? 'active' : ''}`}
-                                    onClick={() => {
-                                        if (gift.soundUrl) {
-                                            const audio = new Audio(gift.soundUrl);
-                                            audio.volume = 0.4;
-                                            audio.play().catch(e => console.error("Audio playback blocked:", e));
-                                            toast.success(`Playing SFX for ${gift.name}`, { id: 'sfx-play', duration: 1000 });
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (gift.soundUrl || gift.animationUrl || gift.icon) {
+                                            const previewUrl = gift.animationUrl || gift.icon || '';
+                                            const soundParam = gift.soundUrl ? `&soundUrl=${encodeURIComponent(gift.soundUrl)}` : '';
+                                            window.open(`/gift-preview?url=${encodeURIComponent(previewUrl)}&name=${encodeURIComponent(gift.name)}${soundParam}`, '_blank');
                                         }
                                     }}
                                     style={{ cursor: gift.soundUrl ? 'pointer' : 'default' }}
-                                    title={gift.soundUrl ? "Click to play sound effect" : "No audio loaded"}
+                                    title={gift.soundUrl ? "Click to open preview & listen to sound in new tab" : "No audio loaded"}
                                 >
                                     <Music size={12} /> <span style={{ fontSize: '10px' }}>Audio</span>
                                 </div>

@@ -8,7 +8,7 @@ interface SvgaPlayerProps {
     mute?: boolean;
 }
 
-const SvgaPlayer: React.FC<SvgaPlayerProps> = ({ src, style, className, mute }) => {
+const SvgaPlayer: React.FC<SvgaPlayerProps> = ({ src, style, className, mute = true }) => {
     const containerRef = useRef<HTMLDivElement>(null);
 
     const getFullUrl = (url?: string) => {
@@ -46,8 +46,10 @@ const SvgaPlayer: React.FC<SvgaPlayerProps> = ({ src, style, className, mute }) 
                 fullUrl,
                 (videoItem: any) => {
                     if (mute && videoItem) {
-                        // clear audio to prevent sound playing
-                        videoItem.audios = [];
+                        // strip audio completely so no sound plays in catalog/listing
+                        if (videoItem.audios) videoItem.audios = [];
+                        if (videoItem.audioList) videoItem.audioList = [];
+                        if (videoItem.audio) videoItem.audio = null;
                     }
                     player.setVideoItem(videoItem);
                     player.startAnimation();
