@@ -12,8 +12,12 @@ import { scrollToModalTop } from '../utils/scrollToModalTop';
 
 const PRESET_PRIVILEGES = [
   'Exclusive VIP Badge',
+  'Special Entrance',
+  'Kick and Mute Immunity',
+  'VVIP Chat Style',
+  'Custom Backgrounds',
+  'VIP Support Line',
   'Custom Avatar Frame',
-  'Unique Entrance Effect',
   '1.5x XP Boost',
   'Stealth / Invisible Mode',
   'Custom Short User ID',
@@ -414,12 +418,12 @@ const VipStore: React.FC = () => {
                 </div>
 
                 <div className="form-group" style={{ marginBottom: '0px' }}>
-                  <label>Price Exchange Value (₹)</label>
+                  <label>Price in Coins (🪙)</label>
                   <input 
                     type="number"
-                    step="0.01"
+                    step="1"
                     className="admin-input" 
-                    placeholder="0.00"
+                    placeholder="e.g. 5000"
                     value={formData.price} 
                     onChange={e => setFormData({...formData, price: Number(e.target.value)})}
                     required
