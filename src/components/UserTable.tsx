@@ -168,8 +168,26 @@ const UserTable: React.FC<UserTableProps> = ({
                       />
                       <div className="identity-text" style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                         <span className="name-bold">{user.name || 'Anonymous User'}</span>
-                        <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                           {getRoleBadge(user.role, user.isCoinsSeller)}
+                          {user.role === 'agency' && (
+                            <span style={{ 
+                              fontSize: '0.68rem', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', 
+                              background: 'rgba(245, 158, 11, 0.1)', color: '#d97706', border: '1px solid rgba(245, 158, 11, 0.25)',
+                              display: 'inline-flex', alignItems: 'center', gap: '3px'
+                            }} title="Linked Agency Code & Name">
+                              🏷️ {user.ownedAgency?.name || user.name} ({user.ownedAgency?.code || user.agencyCode || 'Code Pending'})
+                            </span>
+                          )}
+                          {user.role === 'host' && user.agencyCode && (
+                            <span style={{ 
+                              fontSize: '0.68rem', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', 
+                              background: 'rgba(236, 72, 153, 0.1)', color: '#db2777', border: '1px solid rgba(236, 72, 153, 0.2)',
+                              display: 'inline-flex', alignItems: 'center', gap: '3px'
+                            }} title="Assigned Agency">
+                              🏢 Agency: {user.agencyCode}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>

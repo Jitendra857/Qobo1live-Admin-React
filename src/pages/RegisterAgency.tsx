@@ -11,6 +11,8 @@ const RegisterAgency: React.FC = () => {
   const invitedByParam = searchParams.get('invitedBy') || '';
 
   const [invitedBy, setInvitedBy] = useState('');
+  const [agencyName, setAgencyName] = useState('');
+  const [ownerName, setOwnerName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
 
@@ -88,8 +90,8 @@ const RegisterAgency: React.FC = () => {
     formData.append('invitedBy', invitedBy.trim());
     formData.append('email', email.toLowerCase().trim());
     formData.append('phone', phone.trim());
-    formData.append('agency_name', `Agency (${invitedBy.trim()})`);
-    formData.append('owner_name', email ? email.split('@')[0] : 'Agency Owner');
+    formData.append('agency_name', agencyName.trim() || ownerName.trim() || `Agency (${invitedBy.trim()})`);
+    formData.append('owner_name', ownerName.trim() || (email ? email.split('@')[0] : 'Agency Owner'));
     
     formData.append('doc_photo_front', docPhotoFront);
     formData.append('doc_photo_back', docPhotoBack);
@@ -244,6 +246,32 @@ const RegisterAgency: React.FC = () => {
                 required
                 className="input-field-premium" 
                 style={invitedByParam ? { background: '#f1f5f9', cursor: 'not-allowed', color: '#64748b', fontWeight: 'bold' } : {}}
+              />
+            </div>
+
+            {/* Field: Agency Name */}
+            <div>
+              <label className="input-label-premium">Agency Name</label>
+              <input 
+                type="text" 
+                id="agencyName" 
+                value={agencyName} 
+                onChange={(e) => setAgencyName(e.target.value)} 
+                placeholder="e.g. Apex Stars Media"
+                className="input-field-premium" 
+              />
+            </div>
+
+            {/* Field: Owner Name */}
+            <div>
+              <label className="input-label-premium">Agency Owner Full Name</label>
+              <input 
+                type="text" 
+                id="ownerName" 
+                value={ownerName} 
+                onChange={(e) => setOwnerName(e.target.value)} 
+                placeholder="Enter full legal name"
+                className="input-field-premium" 
               />
             </div>
 

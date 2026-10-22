@@ -62,11 +62,15 @@ const AgencyHub: React.FC = () => {
         a.name?.toLowerCase().includes(q) ||
         a.code?.toLowerCase().includes(q) ||
         a.owner?.name?.toLowerCase().includes(q) ||
-        a.owner?.phone?.includes(q)
+        a.owner?.phone?.includes(q) ||
+        a.owner?.email?.toLowerCase().includes(q)
       );
     }
     if (statusFilter !== 'all') {
-      result = result.filter(a => a.status === statusFilter);
+      result = result.filter(a => {
+        const norm = (a.status === 'approved' || a.status === 'active') ? 'active' : a.status;
+        return norm === statusFilter;
+      });
     }
     if (selectedSuperAdmin !== 'all') {
       result = result.filter(a => a.owner?.email === selectedSuperAdmin);
@@ -125,7 +129,7 @@ const AgencyHub: React.FC = () => {
   };
 
   const pendingCount  = agencies.filter(a => a.status === 'pending').length;
-  const approvedCount = agencies.filter(a => a.status === 'active').length;
+  const approvedCount = agencies.filter(a => a.status === 'active' || a.status === 'approved').length;
 
   return (
     <div className="user-management fade-in">
@@ -415,9 +419,11 @@ const AgencyHub: React.FC = () => {
                         {(agency.name || 'A').charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <div style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '0.92rem' }}>{agency.name}</div>
+                        <div style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '0.92rem' }}>
+                          {agency.name || (agency.owner ? agency.owner.name : 'Agency')}
+                        </div>
                         <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                          {new Date(agency.createdAt).toLocaleDateString()}
+                          Created: {new Date(agency.createdAt).toLocaleDateString()}
                         </div>
                       </div>
                     </div>
@@ -426,15 +432,16 @@ const AgencyHub: React.FC = () => {
                   <td>
                     {agency.owner ? (
                       <div>
-                        <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.88rem' }}>
-                          {agency.owner.name || 'Unnamed'}
+                        <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span>{agency.owner.name || 'Unnamed'}</span>
+                          <span style={{ fontSize: '0.65rem', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.25)', padding: '1px 5px', borderRadius: '4px', fontWeight: 700 }}>User</span>
                         </div>
                         <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontFamily: 'monospace', marginTop: 2 }}>
-                          {agency.owner.phone || agency.owner.email || '—'}
+                          {agency.owner.phone || agency.owner.email || ('ID: ' + agency.owner.id)}
                         </div>
                       </div>
                     ) : (
-                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>System</span>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>System / Direct</span>
                     )}
                   </td>
                   {/* Code */}

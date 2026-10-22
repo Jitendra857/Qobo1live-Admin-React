@@ -208,8 +208,8 @@ export const adminService = {
     api.post(`/admin/gateway-action?action=${action}${id ? `&id=${id}` : ''}`, data),
 
   // Tracking
-  getAgencyTracking: () => api.get('/admin/agency-tracking'),
-  getHostTracking: () => api.get('/admin/host-tracking'),
+  getAgencyTracking: () => api.get('/admin/tracking/agencies').catch(() => api.get('/admin/agency-tracking')),
+  getHostTracking: () => api.get('/admin/tracking/hosts').catch(() => api.get('/admin/host-tracking')),
   clearEconomyData: () => api.get('/clean-economy-test'),
   clearUserEconomyData: (id: string) => api.get(`/clean-user-economy/${id}`),
 
