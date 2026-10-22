@@ -293,6 +293,8 @@ const UserHistoryModal: React.FC<UserHistoryModalProps> = ({ user, onClose }) =>
     transactions.forEach((tx: any) => {
       const isSender = tx.senderId === user.id;
       const meta = getDateMeta(tx.createdAt);
+      const isGooglePlay = tx.metadata?.provider === 'google_play' || tx.senderId === 'GOOGLE_PLAY_STORE';
+      const orderId = tx.metadata?.orderId;
       events.push({
         id: `tx_${tx.id}`,
         timestamp: meta.rawDate.getTime(),
@@ -301,11 +303,11 @@ const UserHistoryModal: React.FC<UserHistoryModalProps> = ({ user, onClose }) =>
         dateLabel: meta.dateLabel,
         timeLabel: meta.timeLabel,
         category: 'transaction',
-        moduleName: 'Wallet Ledger',
-        title: `Wallet ${tx.type?.toUpperCase() || 'TRANSACTION'}`,
+        moduleName: isGooglePlay ? 'Google Play In-App Recharge' : 'Wallet Ledger',
+        title: isGooglePlay ? `Google Play Recharge (+${tx.amount?.toLocaleString()} Coins)` : `Wallet ${tx.type?.toUpperCase() || 'TRANSACTION'}`,
         actionType: isSender ? 'DEBIT' : 'CREDIT',
         coinsImpact: isSender ? -(tx.amount || 0) : (tx.amount || 0),
-        details: `Type: ${tx.type} | Status: ${tx.status}`,
+        details: isGooglePlay ? `Google Order ID: ${orderId || tx.id} | Product: ${tx.metadata?.productId || 'Coins'} | Status: ${tx.status}` : `Type: ${tx.type} | Status: ${tx.status}`,
         status: tx.status
       });
     });
