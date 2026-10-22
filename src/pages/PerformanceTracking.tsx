@@ -384,6 +384,18 @@ const PerformanceTracking: React.FC = () => {
           background: linear-gradient(90deg, #3b82f6, #06b6d4);
           border-radius: 10px;
         }
+
+        .perf-bottom-card {
+          width: 100% !important;
+          max-width: 100% !important;
+          background: var(--bg-surface, #ffffff);
+          border: 1px solid var(--glass-border, #e2e8f0);
+          border-radius: 20px;
+          padding: 24px;
+          margin-bottom: 30px;
+          box-shadow: var(--card-shadow, 0 4px 16px rgba(0,0,0,0.03));
+          box-sizing: border-box;
+        }
       `}</style>
 
       {/* ── Page Header ──────────────────────────────────────────────────────── */}
@@ -727,7 +739,7 @@ const PerformanceTracking: React.FC = () => {
       </div>
 
       {/* ── Bottom Side Grid Section ────────────────────────────────────────── */}
-      <div className="glass-panel" style={{ borderRadius: '24px', border: '1px solid var(--glass-border)', padding: '24px', marginBottom: '30px' }}>
+      <div className="perf-bottom-card" style={{ width: '100%', maxWidth: '100%', borderRadius: '20px', border: '1px solid var(--glass-border)', padding: '24px', marginBottom: '30px', boxSizing: 'border-box' }}>
         
         {/* Tab & Controls Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '20px', borderBottom: '1px solid var(--glass-border)', paddingBottom: '16px' }}>
@@ -862,14 +874,14 @@ const PerformanceTracking: React.FC = () => {
         </div>
 
         {/* ── Table Grid ──────────────────────────────────────────────────────── */}
-        <div style={{ overflowX: 'auto' }}>
+        <div style={{ width: '100%', overflowX: 'auto' }}>
           {loading ? (
             <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-secondary)' }}>
               <RefreshCw size={32} className="animate-spin" style={{ margin: '0 auto 12px auto', color: '#3b82f6' }} />
               <p style={{ fontWeight: 700 }}>Synchronizing dynamic metrics...</p>
             </div>
           ) : activeTab === 'hosts' ? (
-            <table className="modern-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table className="modern-table" style={{ width: '100%', minWidth: '850px', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
                   <th style={{ width: '28%', textAlign: 'left' }}>Host Identity</th>
@@ -986,7 +998,7 @@ const PerformanceTracking: React.FC = () => {
             </table>
           ) : (
             /* ── Agency Grid ─────────────────────────────────────────────────── */
-            <table className="modern-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table className="modern-table" style={{ width: '100%', minWidth: '850px', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
                   <th style={{ width: '26%', textAlign: 'left' }}>Agency Network</th>
