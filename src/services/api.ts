@@ -60,7 +60,7 @@ export const adminService = {
   updateUser: (id: string, data: any) => api.put(`/admin/user/${id}`, data),
   deleteUser: (id: string) => api.delete(`/admin/user/${id}`),
   getLoginMulti: (data: any) => api.post('/admin/login-multi', data),
-  getHosts: () => api.get('/admin/host-list'),
+  getHosts: (superAdmin?: string) => api.get(`/admin/host-list${superAdmin && superAdmin !== 'all' ? `?superAdmin=${encodeURIComponent(superAdmin)}` : ''}`),
   getPackages: () => api.get('/admin/package-list'),
   getGifts: () => api.get('/admin/gift-list'),
   getGiftStats: () => api.get('/admin/gift-stats'),
@@ -71,7 +71,7 @@ export const adminService = {
   getCategories: () => api.get('/admin/category-list'),
   manageCategory: (action: string, data: any, id?: string) => 
     api.post(`/admin/category-action?action=${action}${id ? `&id=${id}` : ''}`, data),
-  getAgencies: () => api.get('/admin/agency-list'),
+  getAgencies: (superAdmin?: string) => api.get(`/admin/agency-list${superAdmin && superAdmin !== 'all' ? `?superAdmin=${encodeURIComponent(superAdmin)}` : ''}`),
   getWithdrawals: () => api.get('/admin/withdrawals'),
   getTransactions: (page?: number, limit?: number, type?: string, search?: string) => {
     const params = new URLSearchParams();
@@ -216,8 +216,13 @@ export const adminService = {
     api.post(`/admin/gateway-action?action=${action}${id ? `&id=${id}` : ''}`, data),
 
   // Tracking
-  getAgencyTracking: () => api.get('/admin/tracking/agencies').catch(() => api.get('/admin/agency-tracking')),
-  getHostTracking: () => api.get('/admin/tracking/hosts').catch(() => api.get('/admin/host-tracking')),
+  getAgencyTracking: (superAdmin?: string) => 
+    api.get(`/admin/tracking/agencies${superAdmin && superAdmin !== 'all' ? `?superAdmin=${encodeURIComponent(superAdmin)}` : ''}`)
+      .catch(() => api.get(`/admin/agency-tracking${superAdmin && superAdmin !== 'all' ? `?superAdmin=${encodeURIComponent(superAdmin)}` : ''}`)),
+  getHostTracking: (superAdmin?: string) => 
+    api.get(`/admin/tracking/hosts${superAdmin && superAdmin !== 'all' ? `?superAdmin=${encodeURIComponent(superAdmin)}` : ''}`)
+      .catch(() => api.get(`/admin/host-tracking${superAdmin && superAdmin !== 'all' ? `?superAdmin=${encodeURIComponent(superAdmin)}` : ''}`)),
+  getSuperAdmins: () => api.get('/admin/super-admins').catch(() => api.get('/admin/admins')),
   clearEconomyData: () => api.get('/clean-economy-test'),
   clearUserEconomyData: (id: string) => api.get(`/clean-user-economy/${id}`),
 

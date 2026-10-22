@@ -23,22 +23,32 @@ const PerformanceTracking: React.FC = () => {
   const [selectedAgencyFilter, setSelectedAgencyFilter] = useState('all');
   const [sortBy, setSortBy] = useState<'duration' | 'commission' | 'assets' | 'name'>('duration');
   
+  // Super Admin filtering
+  const [superAdmins, setSuperAdmins] = useState<any[]>([]);
+  const [selectedSuperAdmin, setSelectedSuperAdmin] = useState<string>('all');
+
   // Chart controls
   const [chartMetric, setChartMetric] = useState<'duration' | 'commission' | 'assets'>('duration');
   const [chartType, setChartType] = useState<'area' | 'bar'>('area');
 
-  const fetchTracking = async () => {
+  const fetchTracking = async (adminFilter = selectedSuperAdmin) => {
     try {
       setLoading(true);
-      const [agenciesRes, hostsRes, directAgenciesRes, directHostsRes] = await Promise.allSettled([
-        adminService.getAgencyTracking(),
-        adminService.getHostTracking(),
-        adminService.getAgencies(),
-        adminService.getHosts()
+      const [agenciesRes, hostsRes, directAgenciesRes, directHostsRes, adminsRes] = await Promise.allSettled([
+        adminService.getAgencyTracking(adminFilter),
+        adminService.getHostTracking(adminFilter),
+        adminService.getAgencies(adminFilter),
+        adminService.getHosts(adminFilter),
+        adminService.getSuperAdmins()
       ]);
       
       let agencyData: any[] = agenciesRes.status === 'fulfilled' && agenciesRes.value?.data?.data ? agenciesRes.value.data.data : [];
       let hostData: any[] = hostsRes.status === 'fulfilled' && hostsRes.value?.data?.data ? hostsRes.value.data.data : [];
+
+      if (adminsRes.status === 'fulfilled') {
+        const adminList = adminsRes.value?.data?.data || [];
+        setSuperAdmins(adminList.filter((a: any) => a.role === 'super_admin'));
+      }
 
       // Supplement from agency-list and host-list if tracking endpoints returned partial data
       const directAgencies: any[] = directAgenciesRes.status === 'fulfilled' && directAgenciesRes.value?.data?.data ? directAgenciesRes.value.data.data : [];
@@ -53,6 +63,8 @@ const PerformanceTracking: React.FC = () => {
           status: a.status || 'active',
           ownerName: a.owner?.name || a.owner?.email || 'System',
           ownerPhone: a.owner?.phone || '',
+          ownerEmail: a.owner?.email || '',
+          invitedBy: a.invitedBy || '',
           totalHosts: a.approvedCount || a.hostCount || 0,
           pendingHosts: a.pendingCount || 0,
           totalStreamSeconds: 0,
@@ -80,8 +92,8 @@ const PerformanceTracking: React.FC = () => {
         }));
       }
 
-      // If database is completely brand new with 0 records, provide realistic initial preview records
-      if (agencyData.length === 0 && hostData.length === 0) {
+      // If database is completely brand new with 0 records and no specific filter, provide realistic preview records
+      if (adminFilter === 'all' && agencyData.length === 0 && hostData.length === 0) {
         agencyData = [
           { id: '1', name: 'Alpha Creators', code: 'ALP01', status: 'active', commissionRate: 0.10, totalHosts: 12, totalStreamSeconds: 432000, totalCommission: 4500.50, ownerName: 'Vikram Singh' },
           { id: '2', name: 'Star Talent Hub', code: 'STAR01', status: 'active', commissionRate: 0.15, totalHosts: 8, totalStreamSeconds: 288000, totalCommission: 3200.00, ownerName: 'Aarav Mehta' },
@@ -107,8 +119,8 @@ const PerformanceTracking: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchTracking();
-  }, []);
+    fetchTracking(selectedSuperAdmin);
+  }, [selectedSuperAdmin]);
 
   const formatDuration = (seconds: number) => {
     if (!seconds || seconds <= 0) return '0h 0m';
@@ -208,6 +220,23 @@ const PerformanceTracking: React.FC = () => {
     if (selectedAgencyFilter !== 'all') {
       list = list.filter(h => (h.agencyCode || '').toLowerCase() === selectedAgencyFilter.toLowerCase());
     }
+    if (selectedSuperAdmin !== 'all') {
+      const qAdmin = selectedSuperAdmin.toLowerCase().trim();
+      const matchingAgencyCodes = agencies
+        .filter(agency => {
+          const invited = (agency.invitedBy || '').toLowerCase();
+          const ownerEmail = (agency.ownerEmail || agency.owner?.email || '').toLowerCase();
+          const ownerPhone = (agency.ownerPhone || agency.owner?.phone || '').toLowerCase();
+          const ownerId = (agency.ownerId || '').toLowerCase();
+          return invited.includes(qAdmin) || ownerEmail === qAdmin || ownerPhone === qAdmin || ownerId === qAdmin;
+        })
+        .map(agency => (agency.code || '').toLowerCase());
+
+      list = list.filter(h => {
+        const code = (h.agencyCode || '').toLowerCase();
+        return matchingAgencyCodes.includes(code);
+      });
+    }
 
     return list.sort((a, b) => {
       if (sortBy === 'duration') return (b.totalStreamSeconds || 0) - (a.totalStreamSeconds || 0);
@@ -215,7 +244,7 @@ const PerformanceTracking: React.FC = () => {
       if (sortBy === 'assets') return ((b.coins || 0) + (b.diamonds || 0)) - ((a.coins || 0) + (a.diamonds || 0));
       return (a.name || '').localeCompare(b.name || '');
     });
-  }, [hosts, search, selectedAgencyFilter, sortBy]);
+  }, [hosts, agencies, search, selectedAgencyFilter, selectedSuperAdmin, sortBy]);
 
   const filteredAgencies = useMemo(() => {
     let list = agencies;
@@ -225,8 +254,19 @@ const PerformanceTracking: React.FC = () => {
         (a.name || '').toLowerCase().includes(q) ||
         (a.code || '').toLowerCase().includes(q) ||
         (a.ownerName || '').toLowerCase().includes(q) ||
-        (a.ownerPhone || '').includes(q)
+        (a.ownerPhone || '').includes(q) ||
+        (a.invitedBy || '').toLowerCase().includes(q)
       );
+    }
+    if (selectedSuperAdmin !== 'all') {
+      const qAdmin = selectedSuperAdmin.toLowerCase().trim();
+      list = list.filter(a => {
+        const invited = (a.invitedBy || '').toLowerCase();
+        const ownerEmail = (a.ownerEmail || a.owner?.email || '').toLowerCase();
+        const ownerPhone = (a.ownerPhone || a.owner?.phone || '').toLowerCase();
+        const ownerId = (a.ownerId || '').toLowerCase();
+        return invited.includes(qAdmin) || ownerEmail === qAdmin || ownerPhone === qAdmin || ownerId === qAdmin;
+      });
     }
 
     return list.sort((a, b) => {
@@ -235,7 +275,7 @@ const PerformanceTracking: React.FC = () => {
       if (sortBy === 'assets') return (b.totalHosts || 0) - (a.totalHosts || 0);
       return (a.name || '').localeCompare(b.name || '');
     });
-  }, [agencies, search, sortBy]);
+  }, [agencies, search, selectedSuperAdmin, sortBy]);
 
   // Unique agency codes for filter dropdown
   const uniqueAgencyCodes = useMemo(() => {
@@ -347,7 +387,7 @@ const PerformanceTracking: React.FC = () => {
       `}</style>
 
       {/* ── Page Header ──────────────────────────────────────────────────────── */}
-      <div className="header-actions" style={{ marginBottom: '24px' }}>
+      <div className="header-actions" style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '20px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', fontSize: '0.75rem', fontWeight: 800, marginBottom: '8px' }}>
             <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
@@ -358,10 +398,32 @@ const PerformanceTracking: React.FC = () => {
             Real-time streaming duration, agency yields and talent performance metrics.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <select
+            className="filter-select"
+            value={selectedSuperAdmin}
+            onChange={e => setSelectedSuperAdmin(e.target.value)}
+            style={{
+              padding: '9px 16px',
+              borderRadius: '12px',
+              border: '1px solid var(--glass-border)',
+              background: 'var(--bg-surface)',
+              color: 'var(--text-primary)',
+              fontWeight: 700,
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              outline: 'none',
+              boxShadow: 'var(--card-shadow)'
+            }}
+          >
+            <option value="all">🌐 All Super Admins</option>
+            {superAdmins.map(sa => (
+              <option key={sa.id} value={sa.email}>👤 {sa.name || sa.email}</option>
+            ))}
+          </select>
           <button
             className="secondary flex items-center gap-2"
-            onClick={fetchTracking}
+            onClick={() => fetchTracking(selectedSuperAdmin)}
             disabled={loading}
             style={{ borderRadius: '12px', padding: '10px 18px', fontWeight: 700 }}
           >
@@ -749,6 +811,29 @@ const PerformanceTracking: React.FC = () => {
                 <option value="all">All Agencies</option>
                 {uniqueAgencyCodes.map(code => (
                   <option key={code} value={code}>Agency: {code}</option>
+                ))}
+              </select>
+            )}
+
+            {superAdmins.length > 0 && (
+              <select
+                value={selectedSuperAdmin}
+                onChange={e => setSelectedSuperAdmin(e.target.value)}
+                style={{
+                  padding: '9px 14px',
+                  borderRadius: '10px',
+                  border: '1px solid var(--glass-border)',
+                  background: 'var(--input-bg)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.85rem',
+                  fontWeight: 700,
+                  outline: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="all">Super Admin: All</option>
+                {superAdmins.map(sa => (
+                  <option key={sa.id} value={sa.email}>{sa.name || sa.email}</option>
                 ))}
               </select>
             )}

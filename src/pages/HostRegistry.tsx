@@ -36,12 +36,12 @@ const HostRegistry: React.FC = () => {
     setSidebarCollapsed(false);
   }, [setMenuPosition, setSidebarCollapsed]);
 
-  const fetchApps = async () => {
+  const fetchApps = async (adminFilter = selectedSuperAdmin) => {
     try {
       setLoading(true);
       if (currentUser?.role === 'agency') {
         const res = await adminService.getAgencyHostList();
-        if (res.data.statusCode === 1) {
+        if (res.data?.statusCode === 1 || res.data?.success) {
           const list = (res.data.data || []).map((h: any) => ({
             id: h.applicationId || h.id,
             userId: h.id,
@@ -57,17 +57,21 @@ const HostRegistry: React.FC = () => {
           setApps(list);
         }
       } else {
-        const [res, adminsRes, agenciesRes] = await Promise.all([
-          adminService.getHosts(),
-          adminService.getAdmins(),
-          adminService.getAgencies()
+        const [res, adminsRes, agenciesRes] = await Promise.allSettled([
+          adminService.getHosts(adminFilter),
+          adminService.getSuperAdmins(),
+          adminService.getAgencies(adminFilter)
         ]);
-        if (res.data.statusCode === 1) {
-          setApps(res.data.data || []);
+        if (res.status === 'fulfilled' && (res.value.data?.statusCode === 1 || res.value.data?.success)) {
+          setApps(res.value.data.data || []);
         }
-        const adminList = adminsRes.data.data || [];
-        setSuperAdmins(adminList.filter((a: any) => a.role === 'super_admin'));
-        setAgenciesList(agenciesRes.data.data || []);
+        if (adminsRes.status === 'fulfilled') {
+          const adminList = adminsRes.value.data?.data || [];
+          setSuperAdmins(adminList.filter((a: any) => a.role === 'super_admin'));
+        }
+        if (agenciesRes.status === 'fulfilled') {
+          setAgenciesList(agenciesRes.value.data?.data || []);
+        }
       }
     } catch {
       toast.error('Registry synchronization failure');
@@ -76,7 +80,9 @@ const HostRegistry: React.FC = () => {
     }
   };
 
-  useEffect(() => { fetchApps(); }, []);
+  useEffect(() => { 
+    fetchApps(selectedSuperAdmin); 
+  }, [selectedSuperAdmin]);
 
   // Live filter
   useEffect(() => {
@@ -95,11 +101,18 @@ const HostRegistry: React.FC = () => {
       );
     }
     if (selectedSuperAdmin !== 'all') {
-      const ownedAgencyCodes = agenciesList
-        .filter(agency => agency.owner?.email === selectedSuperAdmin)
-        .map(agency => agency.code?.toLowerCase());
+      const qAdmin = selectedSuperAdmin.toLowerCase().trim();
+      const matchingAgencyCodes = agenciesList
+        .filter(agency => {
+          const invited = (agency.invitedBy || '').toLowerCase();
+          const ownerEmail = (agency.owner?.email || '').toLowerCase();
+          const ownerPhone = (agency.owner?.phone || '').toLowerCase();
+          const ownerId = (agency.ownerId || '').toLowerCase();
+          return invited.includes(qAdmin) || ownerEmail === qAdmin || ownerPhone === qAdmin || ownerId === qAdmin;
+        })
+        .map(agency => (agency.code || '').toLowerCase());
       
-      result = result.filter(a => ownedAgencyCodes.includes(a.agencyCode?.toLowerCase()));
+      result = result.filter(a => matchingAgencyCodes.includes((a.agencyCode || '').toLowerCase()));
     }
     setFiltered(result);
   }, [search, activeTab, selectedSuperAdmin, apps, agenciesList]);
@@ -280,7 +293,7 @@ const HostRegistry: React.FC = () => {
         </div>
         <button
           className="secondary flex items-center gap-2"
-          onClick={fetchApps}
+          onClick={() => fetchApps()}
           style={{ borderRadius: '12px', padding: '10px 18px', fontWeight: 700 }}
         >
           <RefreshCw size={15} /> Refresh

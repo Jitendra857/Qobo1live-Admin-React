@@ -30,20 +30,24 @@ const AgencyHub: React.FC = () => {
   const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
   const canApprove = currentUser?.role === 'super_admin';
 
-  const fetchData = async () => {
+  const fetchData = async (adminFilter = selectedSuperAdmin) => {
     try {
       setLoading(true);
-      const [agenciesRes, revenueRes, adminsRes] = await Promise.all([
-        adminService.getAgencies(),
+      const [agenciesRes, revenueRes, adminsRes] = await Promise.allSettled([
+        adminService.getAgencies(adminFilter),
         adminService.getGlobalAgencyStats(),
-        adminService.getAdmins()
+        adminService.getSuperAdmins()
       ]);
-      const list = agenciesRes.data.data || [];
+      const list = agenciesRes.status === 'fulfilled' && agenciesRes.value?.data?.data ? agenciesRes.value.data.data : [];
       setAgencies(list);
       setFiltered(list);
-      setRevenue(revenueRes.data.data || null);
-      const adminList = adminsRes.data.data || [];
-      setSuperAdmins(adminList.filter((a: any) => a.role === 'super_admin'));
+      if (revenueRes.status === 'fulfilled') {
+        setRevenue(revenueRes.value?.data?.data || null);
+      }
+      if (adminsRes.status === 'fulfilled') {
+        const adminList = adminsRes.value?.data?.data || [];
+        setSuperAdmins(adminList.filter((a: any) => a.role === 'super_admin'));
+      }
     } catch (err) {
       toast.error('Failed to load agency data');
     } finally {
@@ -51,7 +55,9 @@ const AgencyHub: React.FC = () => {
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { 
+    fetchData(selectedSuperAdmin); 
+  }, [selectedSuperAdmin]);
 
   // Live search + status filter
   useEffect(() => {
@@ -63,7 +69,8 @@ const AgencyHub: React.FC = () => {
         a.code?.toLowerCase().includes(q) ||
         a.owner?.name?.toLowerCase().includes(q) ||
         a.owner?.phone?.includes(q) ||
-        a.owner?.email?.toLowerCase().includes(q)
+        a.owner?.email?.toLowerCase().includes(q) ||
+        a.invitedBy?.toLowerCase().includes(q)
       );
     }
     if (statusFilter !== 'all') {
@@ -73,7 +80,14 @@ const AgencyHub: React.FC = () => {
       });
     }
     if (selectedSuperAdmin !== 'all') {
-      result = result.filter(a => a.owner?.email === selectedSuperAdmin);
+      const qAdmin = selectedSuperAdmin.toLowerCase().trim();
+      result = result.filter(a => {
+        const invited = (a.invitedBy || '').toLowerCase();
+        const ownerEmail = (a.owner?.email || '').toLowerCase();
+        const ownerPhone = (a.owner?.phone || '').toLowerCase();
+        const ownerId = (a.ownerId || '').toLowerCase();
+        return invited.includes(qAdmin) || ownerEmail === qAdmin || ownerPhone === qAdmin || ownerId === qAdmin;
+      });
     }
     setFiltered(result);
   }, [search, statusFilter, selectedSuperAdmin, agencies]);
@@ -263,7 +277,7 @@ const AgencyHub: React.FC = () => {
         <div className="flex gap-3">
           <button
             className="secondary flex items-center gap-2"
-            onClick={fetchData}
+            onClick={() => fetchData()}
             style={{ borderRadius: '12px', padding: '10px 18px', fontWeight: 700 }}
           >
             <RefreshCw size={15} /> Refresh
