@@ -33,11 +33,11 @@ const AvatarFrames: React.FC = () => {
     const fetchFrames = async () => {
         try {
             setLoading(true);
-            const response = await adminService.getFrames();
+            const response = await adminService.getFrames('frames');
             if (response.data && response.data.statusCode === 1) {
                 setFrames(response.data.data || []);
             } else {
-                toast.error('Failed to sync avatar frames catalog');
+                toast.error('Failed to sync frames catalog');
             }
         } catch (err) {
             console.error('Failed to fetch frames:', err);
@@ -158,8 +158,8 @@ const AvatarFrames: React.FC = () => {
             {/* Header section */}
             <div className="dashboard-header">
                 <div className="header-text-group">
-                    <h1>Avatar Frames</h1>
-                    <p className="subtitle">Configure frame catalog, coin pricing, validity durations, and category rules.</p>
+                    <h1>Frames</h1>
+                    <p className="subtitle">Configure avatar and profile frames catalog, coin pricing, validity durations, and category rules.</p>
                 </div>
                 <div className="header-actions">
                     <button className="primary flex items-center gap-2" onClick={handleOpenCreateModal}>

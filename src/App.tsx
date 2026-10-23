@@ -43,6 +43,7 @@ import RegisterAgency from './pages/RegisterAgency';
 import RegisterHost from './pages/RegisterHost';
 import SuperAdminRequests from './pages/SuperAdminRequests';
 import AvatarFrames from './pages/AvatarFrames';
+import EntryFrames from './pages/EntryFrames';
 import ProfileBackgrounds from './pages/ProfileBackgrounds';
 import RoomBackgrounds from './pages/RoomBackgrounds';
 import Banners from './pages/Banners';
@@ -156,6 +157,8 @@ function AppContent() {
                   <Route path="/gift-categories" element={<GiftCategories />} />
                   <Route path="/vip-store" element={<VipStore />} />
                   <Route path="/avatar-frames" element={<AvatarFrames />} />
+                  <Route path="/frames" element={<AvatarFrames />} />
+                  <Route path="/entry-frames" element={<EntryFrames />} />
                   <Route path="/profile-backgrounds" element={<ProfileBackgrounds />} />
                   <Route path="/room-backgrounds" element={<RoomBackgrounds />} />
                   <Route path="/dynamic-tasks" element={<TaskCenter />} />
