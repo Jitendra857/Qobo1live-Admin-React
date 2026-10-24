@@ -50,6 +50,7 @@ import Banners from './pages/Banners';
 import GiftPreview from './pages/GiftPreview';
 
 import Emojis from './pages/Emojis';
+import LuckyGifts from './pages/LuckyGifts';
 
 import { Menu as MenuIcon } from 'lucide-react';
 import { useSocket } from './hooks/useSocket';
@@ -153,6 +154,8 @@ function AppContent() {
                   <Route path="/users" element={<UserManagement />} />
                   <Route path="/coins-seller-requests" element={<CoinsSellerRequests />} />
                   <Route path="/gifts" element={<Gifts />} />
+                  <Route path="/lucky-gifts" element={<LuckyGifts />} />
+                  <Route path="/lucky" element={<LuckyGifts />} />
                   <Route path="/emojis" element={<Emojis />} />
                   <Route path="/gift-categories" element={<GiftCategories />} />
                   <Route path="/vip-store" element={<VipStore />} />

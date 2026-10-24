@@ -63,9 +63,12 @@ export const adminService = {
   getHosts: (superAdmin?: string) => api.get(`/admin/host-list${superAdmin && superAdmin !== 'all' ? `?superAdmin=${encodeURIComponent(superAdmin)}` : ''}`),
   getPackages: () => api.get('/admin/package-list'),
   getGifts: () => api.get('/admin/gift-list'),
+  getLuckyGifts: () => api.get('/admin/lucky-gifts'),
   getGiftStats: () => api.get('/admin/gift-stats'),
   manageGift: (action: string, data: any, id?: string) => 
     api.post(`/admin/gift-action?action=${action}${id ? `&id=${id}` : ''}`, data),
+  manageLuckyGift: (action: string, data: any, id?: string) => 
+    api.post(`/admin/lucky-gift-action?action=${action}${id ? `&id=${id}` : ''}`, data),
   managePackage: (action: string, data: any, id?: string) => 
     api.post(`/admin/package-action?action=${action}${id ? `&id=${id}` : ''}`, data),
   getCategories: () => api.get('/admin/category-list'),
