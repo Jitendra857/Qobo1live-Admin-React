@@ -20,7 +20,6 @@ const Gifts: React.FC = () => {
     const [categories, setCategories] = useState<any[]>([]);
     const [stats, setStats] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [hoveredGiftId, setHoveredGiftId] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -252,12 +251,7 @@ const Gifts: React.FC = () => {
             {/* Assets Grid */}
             <div className="gift-grid">
                 {gifts.map((gift) => (
-                    <div 
-                        key={gift.id} 
-                        className="gift-card"
-                        onMouseEnter={() => setHoveredGiftId(gift.id)}
-                        onMouseLeave={() => setHoveredGiftId(null)}
-                    >
+                    <div key={gift.id} className="gift-card">
                         <div className="card-top">
                             <div className={`card-label ${gift.type}`}>
                                 {gift.type === 'lucky' ? <Trophy size={12} /> : gift.type === 'luxury' ? <Gem size={12} /> : <GiftIcon size={12} />}
@@ -286,7 +280,7 @@ const Gifts: React.FC = () => {
                                 }}
                                 title="Click to preview gift animation & play sound in new tab"
                             >
-                                {hoveredGiftId === gift.id && isSvgaUrl(gift.animationUrl) ? (
+                                {isSvgaUrl(gift.animationUrl) ? (
                                     <SvgaPlayer 
                                         src={gift.animationUrl} 
                                         className="asset-icon" 
@@ -298,26 +292,15 @@ const Gifts: React.FC = () => {
                                         src={gift.animationUrl} 
                                         alt={gift.name} 
                                         className="asset-icon" 
-                                        loading="lazy"
                                         style={{ width: '80px', height: '80px', objectFit: 'contain' }}
                                     />
-                                ) : gift.icon && !isSvgaUrl(gift.icon) ? (
+                                ) : (
                                     <MediaImage 
                                         src={gift.icon} 
                                         alt={gift.name} 
                                         className="asset-icon" 
-                                        loading="lazy"
                                         fallbackIcon={gift.type === 'luxury' ? <Gem className="text-purple-500" size={36} /> : <GiftIcon className="text-blue-500" size={36} />}
                                     />
-                                ) : (
-                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#6366f1' }}>
-                                        {gift.type === 'luxury' ? <Gem className="text-purple-500" size={36} /> : <GiftIcon className="text-blue-500" size={36} />}
-                                        {isSvgaUrl(gift.animationUrl) && (
-                                            <span style={{ fontSize: '9px', marginTop: '4px', fontWeight: 800, background: '#eff6ff', color: '#2563eb', padding: '1px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>
-                                                Hover to Play
-                                            </span>
-                                        )}
-                                    </div>
                                 )}
 
                                 {/* Small Static Icon Badge overlayed on the bottom-right (only when real separate static icon exists) */}

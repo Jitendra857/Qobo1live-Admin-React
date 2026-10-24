@@ -23,7 +23,6 @@ const LuckyGifts: React.FC = () => {
     const [gifts, setGifts] = useState<any[]>([]);
     const [categories, setCategories] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [hoveredGiftId, setHoveredGiftId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
@@ -378,13 +377,7 @@ const LuckyGifts: React.FC = () => {
                         const totalWin = base + bonus;
 
                         return (
-                            <div 
-                                key={gift.id} 
-                                className="gift-card" 
-                                style={{ border: '1px solid #f1f5f9' }}
-                                onMouseEnter={() => setHoveredGiftId(gift.id)}
-                                onMouseLeave={() => setHoveredGiftId(null)}
-                            >
+                            <div key={gift.id} className="gift-card" style={{ border: '1px solid #f1f5f9' }}>
                                 <div className="card-top">
                                     <div className="card-label lucky" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                                         <Trophy size={11} /> LUCKY
@@ -400,22 +393,11 @@ const LuckyGifts: React.FC = () => {
                                 </div>
 
                                 <div className="card-center">
-                                    <div className="asset-icon-box" style={{ width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        {hoveredGiftId === gift.id && isSvgaUrl(gift.animationUrl) ? (
+                                    <div className="asset-icon-box">
+                                        {isSvgaUrl(gift.animationUrl) ? (
                                             <SvgaPlayer src={gift.animationUrl} style={{ width: '80px', height: '80px' }} />
-                                        ) : gift.icon && !isSvgaUrl(gift.icon) ? (
-                                            <MediaImage src={gift.icon} alt={gift.name} className="asset-icon" loading="lazy" />
-                                        ) : gift.image && !isSvgaUrl(gift.image) ? (
-                                            <MediaImage src={gift.image} alt={gift.name} className="asset-icon" loading="lazy" />
                                         ) : (
-                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#f59e0b' }}>
-                                                <Trophy size={36} />
-                                                {isSvgaUrl(gift.animationUrl) && (
-                                                    <span style={{ fontSize: '9px', marginTop: '4px', fontWeight: 800, background: '#fef3c7', color: '#b45309', padding: '1px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>
-                                                        Hover to Play
-                                                    </span>
-                                                )}
-                                            </div>
+                                            <MediaImage src={gift.icon || gift.image || '/default_gift.png'} alt={gift.name} className="asset-icon" />
                                         )}
                                     </div>
                                     <h3 className="asset-name" style={{ marginTop: '10px' }}>{gift.name}</h3>
