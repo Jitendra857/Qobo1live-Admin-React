@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { adminService, BACKEND_URL } from '../services/api';
-import { toast } from 'react-hot-toast';
+import { adminService } from '../services/api';
+import { toast, Toaster } from 'react-hot-toast';
 import { 
     Sparkles, Plus, Trash2, Edit, Coins, Percent, Trophy, 
-    TrendingUp, Info, Layout, X, Save, Search, AlertCircle, 
-    Gift as GiftIcon, ArrowUpRight, Zap
+    TrendingUp, Layout, X, Save, Search, Check, Gift as GiftIcon, 
+    ArrowUpRight, Zap, Activity, Music, Archive, RefreshCw, List, Grid
 } from 'lucide-react';
 import ConfirmationModal from '../components/ConfirmationModal';
 import MediaImage from '../components/MediaImage';
@@ -25,6 +25,7 @@ const LuckyGifts: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
+    const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -58,17 +59,27 @@ const LuckyGifts: React.FC = () => {
             ]);
 
             if (luckyRes.status === 'fulfilled') {
-                setGifts(luckyRes.value.data.data || []);
+                const fetched = luckyRes.value?.data?.data;
+                setGifts(Array.isArray(fetched) ? fetched : []);
             } else {
-                console.error('Lucky gifts fetch error:', luckyRes.reason);
-                toast.error('Failed to load lucky gifts');
+                console.warn('Lucky gifts fetch warning:', luckyRes.reason);
+                // Fallback attempt via standard gift list with lucky filter
+                try {
+                    const fallbackRes = await adminService.getGifts();
+                    const allGifts = fallbackRes?.data?.data || [];
+                    const filtered = allGifts.filter((g: any) => g.type === 'lucky' || g.isLucky === true);
+                    setGifts(filtered);
+                } catch {
+                    setGifts([]);
+                }
             }
 
             if (catRes.status === 'fulfilled') {
-                setCategories(catRes.value.data.data || []);
+                setCategories(catRes.value?.data?.data || []);
             }
         } catch (err) {
             console.error('Failed fetching lucky gifts:', err);
+            setGifts([]);
         } finally {
             setLoading(false);
         }
@@ -198,7 +209,7 @@ const LuckyGifts: React.FC = () => {
         }
     };
 
-    // Calculations for preview in modal
+    // Live calculation values for modal preview
     const previewPrice = Math.max(0, parseFloat(formData.price) || 0);
     const previewThreshold = Math.max(1, parseInt(formData.luckyThreshold, 10) || 5);
     const previewRate = Math.max(0, parseFloat(formData.luckyRewardRate) || 0);
@@ -216,114 +227,102 @@ const LuckyGifts: React.FC = () => {
 
     return (
         <div className="dashboard-page gifts-page">
-            {/* Header */}
-            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                <div>
-                    <h1 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '24px', fontWeight: 'bold' }}>
-                        <Sparkles className="icon-amber" size={28} />
+            <Toaster position="top-right" />
+            
+            {/* Standard Dashboard Header */}
+            <div className="dashboard-header">
+                <div className="header-text-group">
+                    <h1 className="flex items-center gap-2">
+                        <Sparkles className="icon-amber" size={26} />
                         Lucky Gifts Management
                     </h1>
-                    <p style={{ color: '#64748b', marginTop: '4px', fontSize: '14px' }}>
-                        Configure lucky items with instant reward multipliers, bonus win percentages, and combo thresholds.
-                    </p>
+                    <p className="subtitle">Configure lucky items with instant reward multipliers, bonus win percentages, and combo thresholds</p>
                 </div>
-                <button 
-                    className="primary-btn" 
-                    onClick={() => handleOpenModal()} 
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
-                >
-                    <Plus size={18} />
-                    Add Lucky Gift
-                </button>
+                <div className="header-actions">
+                    <button className="secondary flex items-center gap-2" onClick={fetchLuckyGifts}>
+                        <RefreshCw size={18} />
+                        <span>Reload</span>
+                    </button>
+                    <button className="primary flex items-center gap-2" onClick={() => handleOpenModal()}>
+                        <Plus size={20} />
+                        <span>Add Lucky Gift</span>
+                    </button>
+                </div>
             </div>
 
-            {/* Mechanics Highlight Card */}
+            {/* Mechanics Explanation Banner */}
             <div style={{
-                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.04) 100%)',
-                border: '1px solid rgba(245, 158, 11, 0.25)',
-                borderRadius: '12px',
-                padding: '16px 20px',
-                marginBottom: '24px',
+                background: '#fff',
+                border: '1px solid #fef3c7',
+                borderLeft: '4px solid #f59e0b',
+                borderRadius: '8px',
+                padding: '14px 18px',
+                marginBottom: '20px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '16px'
+                gap: '14px'
             }}>
-                <div style={{ background: '#f59e0b', color: '#fff', borderRadius: '50%', padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Zap size={22} />
+                <div style={{ background: '#fef3c7', color: '#d97706', borderRadius: '50%', padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Zap size={20} />
                 </div>
-                <div style={{ flex: 1 }}>
-                    <h4 style={{ margin: '0 0 4px 0', fontSize: '15px', color: '#1e293b', fontWeight: 700 }}>
-                        How Lucky Gifts Work (Active In Mobile App)
-                    </h4>
-                    <p style={{ margin: 0, fontSize: '13px', color: '#475569', lineHeight: 1.5 }}>
-                        When a user taps a lucky gift <strong>instantly or reaches the threshold</strong> (e.g., 5 times at 10 coins = 50 coins), 
-                        the user triggers the lucky reward percentage (e.g., 40%) and receives <strong>50 + 20 = 70 coins</strong> credited directly back to their wallet. 
-                        If they send only 1 or 2 times without reaching threshold, standard coin price is debited without reward.
-                    </p>
+                <div style={{ flex: 1, fontSize: '13px', color: '#475569', lineHeight: 1.5 }}>
+                    <strong style={{ color: '#0f172a' }}>How Lucky Gifts Operate: </strong>
+                    When a user sends 1 or 2 times, standard coins are debited. When the user reaches the configured threshold 
+                    (e.g., <strong>5 sends at 10 coins = 50 coins</strong>), the bonus reward rate (e.g., <strong>40% = 20 coins</strong>) triggers instantly, 
+                    crediting <strong>50 + 20 = 70 coins</strong> directly back to the user's wallet!
                 </div>
             </div>
 
-            {/* Stat Cards */}
-            <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-                <div className="stat-card" style={{ background: '#fff', borderRadius: '12px', padding: '18px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#d97706', padding: '12px', borderRadius: '10px' }}>
-                        <GiftIcon size={24} />
+            {/* Stats Row */}
+            <div className="stats-row mb-6">
+                <div className="stat-card">
+                    <div className="stat-info">
+                        <span className="label label-blue">Active Lucky Items</span>
+                        <span className="value" style={{ fontSize: '22px' }}>{gifts.length} Gifts</span>
                     </div>
-                    <div>
-                        <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>Active Lucky Gifts</div>
-                        <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f172a' }}>{gifts.length}</div>
-                    </div>
-                </div>
-
-                <div className="stat-card" style={{ background: '#fff', borderRadius: '12px', padding: '18px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#2563eb', padding: '12px', borderRadius: '10px' }}>
-                        <Zap size={24} />
-                    </div>
-                    <div>
-                        <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>Default Threshold</div>
-                        <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f172a' }}>5 Times</div>
+                    <div className="stat-icon">
+                        <GiftIcon size={32} color="#dddfeb" />
                     </div>
                 </div>
-
-                <div className="stat-card" style={{ background: '#fff', borderRadius: '12px', padding: '18px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#059669', padding: '12px', borderRadius: '10px' }}>
-                        <Percent size={24} />
+                <div className="stat-card">
+                    <div className="stat-info">
+                        <span className="label label-orange">Default Threshold</span>
+                        <span className="value" style={{ fontSize: '22px' }}>5 Times Combo</span>
                     </div>
-                    <div>
-                        <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>Standard Reward Rate</div>
-                        <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f172a' }}>40% Bonus</div>
+                    <div className="stat-icon">
+                        <Zap size={32} color="#dddfeb" />
                     </div>
                 </div>
-
-                <div className="stat-card" style={{ background: '#fff', borderRadius: '12px', padding: '18px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#7c3aed', padding: '12px', borderRadius: '10px' }}>
-                        <Coins size={24} />
+                <div className="stat-card">
+                    <div className="stat-info">
+                        <span className="label label-green">Standard Bonus Return</span>
+                        <span className="value" style={{ fontSize: '22px' }}>+40% Bonus (140% Total)</span>
                     </div>
-                    <div>
-                        <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>Reward Return Formula</div>
-                        <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#0f172a' }}>Base + Bonus (140%)</div>
+                    <div className="stat-icon">
+                        <Percent size={32} color="#dddfeb" />
                     </div>
                 </div>
             </div>
 
-            {/* Filter and Search Bar */}
+            {/* Controls Bar */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', marginBottom: '20px', flexWrap: 'wrap' }}>
-                <div style={{ position: 'relative', minWidth: '280px', flex: '1' }}>
-                    <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                    <input 
-                        type="text" 
-                        placeholder="Search lucky gifts by name..." 
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        style={{ width: '100%', padding: '10px 12px 10px 38px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', outline: 'none' }}
-                    />
-                </div>
-
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={{ display: 'flex', gap: '12px', flex: '1', minWidth: '280px', maxWidth: '500px' }}>
+                    <div style={{ position: 'relative', width: '100%' }}>
+                        <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                        <input 
+                            type="text" 
+                            className="premium-input-field" 
+                            placeholder="Search lucky gifts by name..." 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            style={{ paddingLeft: '36px' }}
+                        />
+                    </div>
                     <select 
+                        className="premium-input-field select"
                         value={selectedCategory} 
                         onChange={(e) => setSelectedCategory(e.target.value)}
-                        style={{ padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', background: '#fff', outline: 'none' }}
+                        style={{ width: 'auto', minWidth: '160px' }}
                     >
                         <option value="all">All Categories</option>
                         {categories.map((cat: any) => (
@@ -331,39 +330,137 @@ const LuckyGifts: React.FC = () => {
                         ))}
                     </select>
                 </div>
+
+                <div style={{ display: 'flex', gap: '6px' }}>
+                    <button 
+                        type="button" 
+                        onClick={() => setViewMode('grid')}
+                        className={`action-circle ${viewMode === 'grid' ? 'active' : ''}`}
+                        style={{ background: viewMode === 'grid' ? '#2563eb' : '#fff', color: viewMode === 'grid' ? '#fff' : '#64748b', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '8px', cursor: 'pointer' }}
+                        title="Grid View"
+                    >
+                        <Grid size={16} />
+                    </button>
+                    <button 
+                        type="button" 
+                        onClick={() => setViewMode('table')}
+                        className={`action-circle ${viewMode === 'table' ? 'active' : ''}`}
+                        style={{ background: viewMode === 'table' ? '#2563eb' : '#fff', color: viewMode === 'table' ? '#fff' : '#64748b', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '8px', cursor: 'pointer' }}
+                        title="Table View"
+                    >
+                        <List size={16} />
+                    </button>
+                </div>
             </div>
 
-            {/* Lucky Gifts Table */}
-            <div className="table-responsive" style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px' }}>
-                    <thead>
-                        <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#475569', fontWeight: 600 }}>
-                            <th style={{ padding: '14px 16px' }}>Icon / Preview</th>
-                            <th style={{ padding: '14px 16px' }}>Lucky Gift Name</th>
-                            <th style={{ padding: '14px 16px' }}>Price (Coins)</th>
-                            <th style={{ padding: '14px 16px' }}>Lucky Threshold</th>
-                            <th style={{ padding: '14px 16px' }}>Reward %</th>
-                            <th style={{ padding: '14px 16px' }}>Win Payout (Base + Bonus)</th>
-                            <th style={{ padding: '14px 16px' }}>Status</th>
-                            <th style={{ padding: '14px 16px', textAlign: 'right' }}>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {loading ? (
-                            <tr>
-                                <td colSpan={8} style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
-                                    Loading lucky gifts catalog...
-                                </td>
+            {/* Content Area */}
+            {loading ? (
+                <div style={{ padding: '60px', textAlign: 'center', color: '#64748b', background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                    <Activity size={32} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 12px auto', display: 'block', color: '#2563eb' }} />
+                    Loading lucky gifts catalog...
+                </div>
+            ) : filteredGifts.length === 0 ? (
+                <div style={{ padding: '60px', textAlign: 'center', color: '#64748b', background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                    <Sparkles size={36} style={{ color: '#cbd5e1', margin: '0 auto 12px auto', display: 'block' }} />
+                    <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#1e293b', marginBottom: '6px' }}>No Lucky Gifts Found</h3>
+                    <p style={{ fontSize: '13px', margin: 0 }}>Click <strong>"Add Lucky Gift"</strong> above to create your first lucky reward item.</p>
+                </div>
+            ) : viewMode === 'grid' ? (
+                /* Card Grid View Matching Gifts.tsx */
+                <div className="gift-grid">
+                    {filteredGifts.map((gift) => {
+                        const price = gift.price || 0;
+                        const threshold = gift.luckyThreshold || 5;
+                        const rate = gift.luckyRewardRate !== null && gift.luckyRewardRate !== undefined ? gift.luckyRewardRate : 40;
+                        const base = price * threshold;
+                        const bonus = Math.round(base * (rate / 100));
+                        const totalWin = base + bonus;
+
+                        return (
+                            <div key={gift.id} className="gift-card" style={{ border: '1px solid #f1f5f9' }}>
+                                <div className="card-top">
+                                    <div className="card-label lucky" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                        <Trophy size={11} /> LUCKY
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button className="action-circle edit" onClick={() => handleOpenModal(gift)} title="Edit Gift">
+                                            <Edit size={13} />
+                                        </button>
+                                        <button className="action-circle delete" onClick={() => setShowDeleteConfirm(gift.id)} title="Delete Gift">
+                                            <Trash2 size={13} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="card-center">
+                                    <div className="asset-icon-box">
+                                        {isSvgaUrl(gift.animationUrl) ? (
+                                            <SvgaPlayer src={gift.animationUrl} style={{ width: '80px', height: '80px' }} />
+                                        ) : (
+                                            <MediaImage src={gift.icon || gift.image || '/default_gift.png'} alt={gift.name} className="asset-icon" />
+                                        )}
+                                    </div>
+                                    <h3 className="asset-name" style={{ marginTop: '10px' }}>{gift.name}</h3>
+                                    <div className="asset-price" style={{ color: '#d97706', fontWeight: 800, fontSize: '1.15rem' }}>
+                                        {price} Coins
+                                    </div>
+
+                                    {/* Reward Pill */}
+                                    <div style={{
+                                        background: '#ecfdf5',
+                                        color: '#065f46',
+                                        fontSize: '11px',
+                                        fontWeight: 700,
+                                        padding: '4px 10px',
+                                        borderRadius: '20px',
+                                        marginTop: '8px',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        border: '1px solid #a7f3d0'
+                                    }}>
+                                        <Zap size={12} color="#059669" />
+                                        {threshold} sends → Win {totalWin} Coins (+{rate}%)
+                                    </div>
+                                </div>
+
+                                <div className="card-footer mt-auto border-t border-slate-50 pt-3 flex flex-col gap-2">
+                                    <div className="flex justify-between items-center w-full">
+                                        <div className={`meta-pill ${gift.animationUrl ? 'active' : ''}`}>
+                                            <Layout size={12} /> <span style={{ fontSize: '10px' }}>{isSvgaUrl(gift.animationUrl) ? 'SVGA' : 'PNG/SVG'}</span>
+                                        </div>
+                                        <div className={`meta-pill ${gift.soundUrl ? 'active' : ''}`}>
+                                            <Music size={12} /> <span style={{ fontSize: '10px' }}>Audio</span>
+                                        </div>
+                                    </div>
+                                    {gift.category && (
+                                        <div className="text-[10px] uppercase font-black text-slate-400 flex items-center gap-1">
+                                            <Archive size={10} /> {gift.category.name}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            ) : (
+                /* Table View */
+                <div className="table-responsive" style={{ background: '#fff', borderRadius: '10px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+                        <thead>
+                            <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#475569', fontWeight: 600 }}>
+                                <th style={{ padding: '12px 16px' }}>Icon</th>
+                                <th style={{ padding: '12px 16px' }}>Name</th>
+                                <th style={{ padding: '12px 16px' }}>Price</th>
+                                <th style={{ padding: '12px 16px' }}>Threshold</th>
+                                <th style={{ padding: '12px 16px' }}>Bonus %</th>
+                                <th style={{ padding: '12px 16px' }}>Total Win Payout</th>
+                                <th style={{ padding: '12px 16px' }}>Category</th>
+                                <th style={{ padding: '12px 16px', textAlign: 'right' }}>Actions</th>
                             </tr>
-                        ) : filteredGifts.length === 0 ? (
-                            <tr>
-                                <td colSpan={8} style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
-                                    <Sparkles size={32} style={{ color: '#cbd5e1', margin: '0 auto 10px auto', display: 'block' }} />
-                                    No lucky gifts found. Click <strong>"Add Lucky Gift"</strong> above to create your first lucky reward item.
-                                </td>
-                            </tr>
-                        ) : (
-                            filteredGifts.map((gift) => {
+                        </thead>
+                        <tbody>
+                            {filteredGifts.map((gift) => {
                                 const price = gift.price || 0;
                                 const threshold = gift.luckyThreshold || 5;
                                 const rate = gift.luckyRewardRate !== null && gift.luckyRewardRate !== undefined ? gift.luckyRewardRate : 40;
@@ -373,293 +470,224 @@ const LuckyGifts: React.FC = () => {
 
                                 return (
                                     <tr key={gift.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                        <td style={{ padding: '12px 16px' }}>
-                                            <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+                                        <td style={{ padding: '10px 16px' }}>
+                                            <div style={{ width: '40px', height: '40px', borderRadius: '6px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                                                 {isSvgaUrl(gift.animationUrl) ? (
-                                                    <SvgaPlayer src={gift.animationUrl} style={{ width: '44px', height: '44px' }} />
+                                                    <SvgaPlayer src={gift.animationUrl} style={{ width: '38px', height: '38px' }} />
                                                 ) : (
                                                     <MediaImage src={gift.icon || gift.image || '/default_gift.png'} alt={gift.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                                                 )}
                                             </div>
                                         </td>
-                                        <td style={{ padding: '12px 16px' }}>
-                                            <div style={{ fontWeight: 600, color: '#1e293b' }}>{gift.name}</div>
-                                            <div style={{ fontSize: '12px', color: '#64748b' }}>
-                                                {gift.category?.name || 'Standard'} • ID: {gift.id?.slice(0, 8)}...
-                                            </div>
-                                        </td>
-                                        <td style={{ padding: '12px 16px' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, color: '#d97706' }}>
-                                                <Coins size={16} />
-                                                {price} Coins
-                                            </div>
-                                        </td>
-                                        <td style={{ padding: '12px 16px' }}>
-                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#eff6ff', color: '#2563eb', padding: '4px 10px', borderRadius: '12px', fontSize: '13px', fontWeight: 600 }}>
-                                                <Zap size={14} />
-                                                {threshold} Times
+                                        <td style={{ padding: '10px 16px', fontWeight: 600, color: '#1e293b' }}>{gift.name}</td>
+                                        <td style={{ padding: '10px 16px', fontWeight: 600, color: '#d97706' }}>{price} Coins</td>
+                                        <td style={{ padding: '10px 16px' }}>
+                                            <span style={{ background: '#eff6ff', color: '#2563eb', padding: '3px 8px', borderRadius: '10px', fontSize: '12px', fontWeight: 600 }}>
+                                                {threshold} sends
                                             </span>
                                         </td>
-                                        <td style={{ padding: '12px 16px' }}>
-                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#ecfdf5', color: '#059669', padding: '4px 10px', borderRadius: '12px', fontSize: '13px', fontWeight: 600 }}>
-                                                <Percent size={14} />
+                                        <td style={{ padding: '10px 16px' }}>
+                                            <span style={{ background: '#ecfdf5', color: '#059669', padding: '3px 8px', borderRadius: '10px', fontSize: '12px', fontWeight: 600 }}>
                                                 +{rate}%
                                             </span>
                                         </td>
-                                        <td style={{ padding: '12px 16px' }}>
-                                            <div style={{ fontWeight: 600, color: '#059669' }}>
-                                                {totalWin} Coins
-                                            </div>
-                                            <div style={{ fontSize: '11px', color: '#64748b' }}>
-                                                ({base} base + {bonus} bonus)
-                                            </div>
+                                        <td style={{ padding: '10px 16px' }}>
+                                            <strong style={{ color: '#059669' }}>{totalWin} Coins</strong>
+                                            <div style={{ fontSize: '11px', color: '#94a3b8' }}>({base} base + {bonus} bonus)</div>
                                         </td>
-                                        <td style={{ padding: '12px 16px' }}>
-                                            <span style={{
-                                                display: 'inline-block',
-                                                padding: '4px 10px',
-                                                borderRadius: '12px',
-                                                fontSize: '12px',
-                                                fontWeight: 600,
-                                                background: (gift.status || 'active').toLowerCase() === 'active' ? '#ecfdf5' : '#f1f5f9',
-                                                color: (gift.status || 'active').toLowerCase() === 'active' ? '#059669' : '#64748b'
-                                            }}>
-                                                {(gift.status || 'active').toUpperCase()}
-                                            </span>
-                                        </td>
-                                        <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                                            <div style={{ display: 'inline-flex', gap: '8px' }}>
-                                                <button 
-                                                    onClick={() => handleOpenModal(gift)} 
-                                                    title="Edit Lucky Gift"
-                                                    style={{ background: '#f1f5f9', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer', color: '#475569' }}
-                                                >
-                                                    <Edit size={16} />
+                                        <td style={{ padding: '10px 16px', color: '#64748b' }}>{gift.category?.name || 'Standard'}</td>
+                                        <td style={{ padding: '10px 16px', textAlign: 'right' }}>
+                                            <div style={{ display: 'inline-flex', gap: '6px' }}>
+                                                <button className="action-circle edit" onClick={() => handleOpenModal(gift)} title="Edit">
+                                                    <Edit size={14} />
                                                 </button>
-                                                <button 
-                                                    onClick={() => setShowDeleteConfirm(gift.id)} 
-                                                    title="Delete Lucky Gift"
-                                                    style={{ background: '#fee2e2', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer', color: '#dc2626' }}
-                                                >
-                                                    <Trash2 size={16} />
+                                                <button className="action-circle delete" onClick={() => setShowDeleteConfirm(gift.id)} title="Delete">
+                                                    <Trash2 size={14} />
                                                 </button>
                                             </div>
                                         </td>
                                     </tr>
                                 );
-                            })
-                        )}
-                    </tbody>
-                </table>
-            </div>
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+            )}
 
-            {/* Add / Edit Lucky Gift Modal */}
+            {/* Premium Add / Edit Modal Matching Gifts.tsx Style */}
             {isModalOpen && (
-                <div className="modal-overlay" style={{
-                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: 'rgba(15, 23, 42, 0.65)',
-                    backdropFilter: 'blur(4px)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    zIndex: 99999, padding: '20px'
-                }}>
-                    <div className="modal-content" style={{
-                        background: '#ffffff', borderRadius: '16px',
-                        width: '100%', maxWidth: '640px', maxHeight: '90vh',
-                        overflowY: 'auto', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                        position: 'relative', border: '1px solid #e2e8f0'
-                    }}>
-                        <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <Sparkles size={20} className="icon-amber" />
-                                {editingGift ? 'Edit Lucky Gift' : 'Create New Lucky Gift'}
-                            </h3>
-                            <button 
-                                onClick={() => setIsModalOpen(false)}
-                                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}
-                            >
-                                <X size={20} />
+                <div className="modal-overlay-refined fade-in">
+                    <div className="modal-content-premium slide-up" style={{ maxWidth: '580px', width: '92%' }}>
+                        <div className="modal-header-glass">
+                            <div className="header-identity">
+                                <div>
+                                    <h3 className="modal-headline">
+                                        {editingGift ? 'Update Lucky Gift' : 'Provision New Lucky Gift'}
+                                    </h3>
+                                    <p className="modal-subline" style={{ display: 'block', fontSize: '12px', color: '#64748b', margin: '2px 0 0 0' }}>
+                                        Configure instant winning return rate and send thresholds
+                                    </p>
+                                </div>
+                            </div>
+                            <button className="close-circle" onClick={() => setIsModalOpen(false)}>
+                                <X size={18} />
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} style={{ padding: '24px' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
-                                <div style={{ gridColumn: 'span 2' }}>
-                                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                                        Lucky Gift Name *
-                                    </label>
+                        <form onSubmit={handleSubmit} className="modal-body-refined" style={{ padding: '20px' }}>
+                            {/* Gift Name */}
+                            <div className="form-section">
+                                <label className="input-label-premium">Lucky Gift Name *</label>
+                                <div className="input-wrapper-glass">
                                     <input 
                                         type="text" 
-                                        required 
+                                        className="premium-input-field"
                                         placeholder="e.g. Lucky Clover, Golden Fortune, Dragon Egg"
                                         value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }}
+                                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                        required
                                     />
                                 </div>
+                            </div>
 
-                                <div>
-                                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                                        Coin Price Per Send (Coins) *
-                                    </label>
-                                    <div style={{ position: 'relative' }}>
-                                        <Coins size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                            {/* Price & Category */}
+                            <div className="grid-row-premium" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                                <div className="form-section">
+                                    <label className="input-label-premium">Coin Price Per Send (Coins) *</label>
+                                    <div className="input-wrapper-glass">
                                         <input 
                                             type="number" 
                                             step="any"
-                                            required 
+                                            className="premium-input-field"
                                             placeholder="10"
                                             value={formData.price}
-                                            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                                            style={{ width: '100%', padding: '10px 12px 10px 36px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }}
+                                            onChange={e => setFormData({ ...formData, price: e.target.value })}
+                                            required
                                         />
                                     </div>
-                                    <small style={{ color: '#64748b', fontSize: '11px', display: 'block', marginTop: '4px' }}>
-                                        Amount debited from user per instant tap
+                                    <small style={{ color: '#94a3b8', fontSize: '11px', marginTop: '3px', display: 'block' }}>
+                                        Amount debited from user per tap
                                     </small>
                                 </div>
 
-                                <div>
-                                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                                        Category
-                                    </label>
-                                    <select 
-                                        value={formData.categoryId} 
-                                        onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                                        style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', background: '#fff' }}
-                                    >
-                                        <option value="">Select Category (Optional)</option>
-                                        {categories.map((c: any) => (
-                                            <option key={c.id} value={c.id}>{c.name}</option>
-                                        ))}
-                                    </select>
+                                <div className="form-section">
+                                    <label className="input-label-premium">Category</label>
+                                    <div className="input-wrapper-glass">
+                                        <select 
+                                            className="premium-input-field select"
+                                            value={formData.categoryId}
+                                            onChange={e => setFormData({ ...formData, categoryId: e.target.value })}
+                                        >
+                                            <option value="">Uncategorized (Standard)</option>
+                                            {categories.map((c: any) => (
+                                                <option key={c.id} value={c.id}>{c.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
+                            </div>
 
-                                <div>
-                                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                                        Lucky Threshold (Times) *
-                                    </label>
-                                    <div style={{ position: 'relative' }}>
-                                        <Zap size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#2563eb' }} />
+                            {/* Threshold & Bonus Rate */}
+                            <div className="grid-row-premium" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                                <div className="form-section">
+                                    <label className="input-label-premium">Lucky Threshold (Times) *</label>
+                                    <div className="input-wrapper-glass">
                                         <input 
                                             type="number" 
                                             min="1"
-                                            required 
+                                            className="premium-input-field"
                                             placeholder="5"
                                             value={formData.luckyThreshold}
-                                            onChange={(e) => setFormData({ ...formData, luckyThreshold: e.target.value })}
-                                            style={{ width: '100%', padding: '10px 12px 10px 36px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }}
+                                            onChange={e => setFormData({ ...formData, luckyThreshold: e.target.value })}
+                                            required
                                         />
                                     </div>
-                                    <small style={{ color: '#64748b', fontSize: '11px', display: 'block', marginTop: '4px' }}>
-                                        Number of times sent instantly or in combo to trigger reward
+                                    <small style={{ color: '#94a3b8', fontSize: '11px', marginTop: '3px', display: 'block' }}>
+                                        Required sends in combo to win
                                     </small>
                                 </div>
 
-                                <div>
-                                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                                        Reward Bonus Percentage (%) *
-                                    </label>
-                                    <div style={{ position: 'relative' }}>
-                                        <Percent size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#059669' }} />
+                                <div className="form-section">
+                                    <label className="input-label-premium">Reward Bonus Percentage (%) *</label>
+                                    <div className="input-wrapper-glass">
                                         <input 
                                             type="number" 
                                             min="0"
                                             step="any"
-                                            required 
+                                            className="premium-input-field"
                                             placeholder="40"
                                             value={formData.luckyRewardRate}
-                                            onChange={(e) => setFormData({ ...formData, luckyRewardRate: e.target.value })}
-                                            style={{ width: '100%', padding: '10px 12px 10px 36px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }}
+                                            onChange={e => setFormData({ ...formData, luckyRewardRate: e.target.value })}
+                                            required
                                         />
                                     </div>
-                                    <small style={{ color: '#64748b', fontSize: '11px', display: 'block', marginTop: '4px' }}>
-                                        Bonus on top of base cost (e.g. 40% = 50 + 20 = 70)
+                                    <small style={{ color: '#94a3b8', fontSize: '11px', marginTop: '3px', display: 'block' }}>
+                                        Bonus return on top of base cost
                                     </small>
                                 </div>
                             </div>
 
-                            {/* Live Reward Simulator Box */}
+                            {/* Live Win Simulator Box */}
                             <div style={{
                                 background: '#f8fafc',
-                                border: '1px dashed #cbd5e1',
-                                borderRadius: '10px',
-                                padding: '16px',
-                                marginBottom: '20px'
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '8px',
+                                padding: '12px 16px',
+                                marginTop: '4px',
+                                marginBottom: '10px'
                             }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, color: '#0f172a', marginBottom: '8px', fontSize: '13px' }}>
-                                    <Trophy size={16} style={{ color: '#f59e0b' }} />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, color: '#0f172a', marginBottom: '6px', fontSize: '12px' }}>
+                                    <Trophy size={14} style={{ color: '#f59e0b' }} />
                                     Live Win Simulator For This Gift:
                                 </div>
-                                <div style={{ fontSize: '13px', color: '#334155', lineHeight: 1.6 }}>
-                                    <div>• 1-2 sends: Only <strong>{previewPrice} coins</strong> debited per tap (No reward).</div>
-                                    <div>• At <strong>{previewThreshold} sends</strong> (Total spent: {previewPrice} × {previewThreshold} = <strong>{previewBase} coins</strong>):</div>
-                                    <div style={{ padding: '6px 10px', background: '#ecfdf5', borderRadius: '6px', marginTop: '6px', color: '#065f46', fontWeight: 600 }}>
-                                        User receives {previewBase} base + {previewBonus} bonus ({previewRate}%) = <span style={{ color: '#059669', fontSize: '15px' }}>{previewTotalReward} Coins</span> credited back!
+                                <div style={{ fontSize: '12px', color: '#475569', lineHeight: 1.6 }}>
+                                    <div>• Sends 1 to {previewThreshold - 1}: User pays <strong>{previewPrice} coins</strong> per tap (No reward).</div>
+                                    <div>• On Send {previewThreshold} (Total spent: {previewPrice} × {previewThreshold} = <strong>{previewBase} coins</strong>):</div>
+                                    <div style={{ padding: '6px 10px', background: '#ecfdf5', borderRadius: '6px', marginTop: '4px', color: '#065f46', fontWeight: 600 }}>
+                                        User receives {previewBase} base + {previewBonus} bonus ({previewRate}%) = <span style={{ color: '#059669', fontSize: '14px', fontWeight: 800 }}>{previewTotalReward} Coins</span> credited back!
                                     </div>
                                 </div>
                             </div>
 
-                            {/* File Uploads */}
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
-                                <div>
-                                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                                        Gift Icon / Image
+                            {/* File Upload Grid Matching Gifts.tsx */}
+                            <div className="file-upload-grid-premium">
+                                <div className="upload-unit">
+                                    <span className="unit-label">Icon</span>
+                                    <input type="file" accept="image/*,.svg" className="hidden" id="lucky-icon-up" onChange={e => handleFileChange(e, 'icon')} />
+                                    <label htmlFor="lucky-icon-up" className={`unit-box ${files.icon ? 'done' : ''}`} style={{ cursor: 'pointer' }}>
+                                        {files.icon ? <Check size={20} /> : <GiftIcon size={22} />}
                                     </label>
-                                    <input 
-                                        type="file" 
-                                        accept="image/*"
-                                        onChange={(e) => handleFileChange(e, 'icon')}
-                                        style={{ width: '100%', fontSize: '13px' }}
-                                    />
-                                    <small style={{ color: '#64748b', fontSize: '11px', display: 'block', marginTop: '4px' }}>
-                                        PNG, JPG, SVG or WEBP
-                                    </small>
                                 </div>
-
-                                <div>
-                                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                                        Animation File (SVGA / Lottie)
+                                <div className="upload-unit">
+                                    <span className="unit-label">SVGA Anim</span>
+                                    <input type="file" accept=".json,.svga,.gif,image/*" className="hidden" id="lucky-anim-up" onChange={e => handleFileChange(e, 'animation')} />
+                                    <label htmlFor="lucky-anim-up" className={`unit-box ${files.animation ? 'done' : ''}`} style={{ cursor: 'pointer' }}>
+                                        {files.animation ? <Check size={20} /> : <Layout size={22} />}
                                     </label>
-                                    <input 
-                                        type="file" 
-                                        accept=".svga,.json,.gif"
-                                        onChange={(e) => handleFileChange(e, 'animation')}
-                                        style={{ width: '100%', fontSize: '13px' }}
-                                    />
-                                    <small style={{ color: '#64748b', fontSize: '11px', display: 'block', marginTop: '4px' }}>
-                                        SVGA, Lottie JSON, or animated GIF
-                                    </small>
                                 </div>
-
-                                <div style={{ gridColumn: 'span 2' }}>
-                                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                                        Sound Effect (Optional)
+                                <div className="upload-unit">
+                                    <span className="unit-label">Audio Sound</span>
+                                    <input type="file" accept="audio/*,.mp3,.wav" className="hidden" id="lucky-sound-up" onChange={e => handleFileChange(e, 'sound')} />
+                                    <label htmlFor="lucky-sound-up" className={`unit-box ${files.sound ? 'done' : ''}`} style={{ cursor: 'pointer' }}>
+                                        {files.sound ? <Check size={20} /> : <Music size={22} />}
                                     </label>
-                                    <input 
-                                        type="file" 
-                                        accept="audio/*"
-                                        onChange={(e) => handleFileChange(e, 'sound')}
-                                        style={{ width: '100%', fontSize: '13px' }}
-                                    />
                                 </div>
                             </div>
 
                             {/* Modal Footer */}
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
-                                <button 
-                                    type="button" 
-                                    onClick={() => setIsModalOpen(false)}
-                                    style={{ padding: '10px 18px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#fff', color: '#475569', fontWeight: 600, cursor: 'pointer' }}
-                                >
+                            <div className="modal-footer" style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                                <button type="button" className="secondary-btn" onClick={() => setIsModalOpen(false)}>
                                     Cancel
                                 </button>
-                                <button 
-                                    type="submit" 
-                                    disabled={isSubmitting}
-                                    style={{ padding: '10px 22px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: '#fff', fontWeight: 600, cursor: isSubmitting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
-                                >
-                                    <Save size={16} />
-                                    {isSubmitting ? 'Saving...' : editingGift ? 'Save Changes' : 'Create Lucky Gift'}
+                                <button type="submit" className="primary-btn" disabled={isSubmitting} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    {isSubmitting ? (
+                                        <>Saving Asset...</>
+                                    ) : (
+                                        <>
+                                            {editingGift ? 'Update Lucky Gift' : 'Publish Lucky Gift'}
+                                            <ArrowUpRight size={16} />
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </form>
@@ -667,11 +695,11 @@ const LuckyGifts: React.FC = () => {
                 </div>
             )}
 
-            {/* Confirmation Modal */}
+            {/* Standard Confirmation Modal */}
             {showDeleteConfirm && (
                 <ConfirmationModal
                     title="Delete Lucky Gift"
-                    message="Are you sure you want to delete this lucky gift? It will no longer appear in the mobile app lucky menu."
+                    message="Are you sure you want to permanently delete this lucky gift? It will no longer appear in the mobile app lucky menu."
                     confirmText={isDeleting ? 'Deleting...' : 'Delete Gift'}
                     onConfirm={() => handleDelete(showDeleteConfirm)}
                     onClose={() => setShowDeleteConfirm(null)}
