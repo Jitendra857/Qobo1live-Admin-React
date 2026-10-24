@@ -8,35 +8,20 @@ interface SvgaPlayerProps {
     mute?: boolean;
 }
 
-// Global in-memory cache for parsed SVGA video items to prevent duplicate network downloads
-const svgaCache = new Map<string, any>();
-
 const SvgaPlayer: React.FC<SvgaPlayerProps> = ({ src, style, className, mute = true }) => {
     const containerRef = useRef<HTMLDivElement>(null);
 
     const getFullUrl = (url?: string) => {
         if (!url) return '';
-        const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
-
-        let targetUrl = url;
-        if (isHttps && targetUrl.startsWith('http://')) {
-            targetUrl = targetUrl.replace('http://', 'https://');
-        }
-
-        let resolvedBackend = BACKEND_URL;
-        if (isHttps && resolvedBackend.startsWith('http://')) {
-            resolvedBackend = resolvedBackend.replace('http://', 'https://');
-        }
-
-        if (targetUrl.startsWith('http://') || targetUrl.startsWith('https://')) return targetUrl;
-        const uploadsIndex = targetUrl.indexOf('uploads');
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+        const uploadsIndex = url.indexOf('uploads');
         if (uploadsIndex !== -1) {
-            let path = targetUrl.substring(uploadsIndex);
-            return `${resolvedBackend}/${path}`;
+            let path = url.substring(uploadsIndex);
+            return `${BACKEND_URL}/${path}`;
         }
-        let cleanUrl = targetUrl.startsWith('/') ? targetUrl : `/${targetUrl}`;
+        let cleanUrl = url.startsWith('/') ? url : `/${url}`;
         if (!cleanUrl.startsWith('/uploads')) cleanUrl = `/uploads${cleanUrl}`;
-        return `${resolvedBackend}${cleanUrl}`;
+        return `${BACKEND_URL}${cleanUrl}`;
     };
 
     useEffect(() => {
@@ -53,23 +38,9 @@ const SvgaPlayer: React.FC<SvgaPlayerProps> = ({ src, style, className, mute = t
 
         try {
             const player = new SVGA.Player(containerRef.current);
-            const parser = new SVGA.Parser();
+            const parser = new SVGA.Parser(); // Parser does not require a selector/element
             
             const fullUrl = getFullUrl(src);
-            if (!fullUrl) return;
-
-            // Use cached parsed SVGA item if available for instant playback
-            if (svgaCache.has(fullUrl)) {
-                const cachedVideoItem = svgaCache.get(fullUrl);
-                player.setVideoItem(cachedVideoItem);
-                player.startAnimation();
-                return () => {
-                    try {
-                        player.stopAnimation();
-                        player.clear();
-                    } catch (e) {}
-                };
-            }
 
             parser.load(
                 fullUrl,
@@ -80,11 +51,8 @@ const SvgaPlayer: React.FC<SvgaPlayerProps> = ({ src, style, className, mute = t
                         if (videoItem.audioList) videoItem.audioList = [];
                         if (videoItem.audio) videoItem.audio = null;
                     }
-                    svgaCache.set(fullUrl, videoItem);
-                    if (containerRef.current) {
-                        player.setVideoItem(videoItem);
-                        player.startAnimation();
-                    }
+                    player.setVideoItem(videoItem);
+                    player.startAnimation();
                 },
                 (error: any) => {
                     console.error('SVGA load error:', error, 'for source:', src);

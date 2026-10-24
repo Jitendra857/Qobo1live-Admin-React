@@ -41,38 +41,37 @@ const Gifts: React.FC = () => {
 
     const fetchGifts = async () => {
         try {
-            // Fetch gifts & categories concurrently to render catalog immediately
-            const [giftsRes, catsRes] = await Promise.allSettled([
+            const results = await Promise.allSettled([
                 adminService.getGifts(),
+                adminService.getGiftStats(),
                 adminService.getCategories()
             ]);
 
             // Gifts
-            if (giftsRes.status === 'fulfilled') {
-                setGifts(giftsRes.value.data.data || []);
+            if (results[0].status === 'fulfilled') {
+                setGifts(results[0].value.data.data || []);
             } else {
-                console.error('Gifts fetch failed:', giftsRes?.reason);
+                console.error('Gifts fetch failed:', results[0]?.reason);
                 toast.error('Sync failure: Inventory assets unreachable');
             }
 
-            // Categories
-            if (catsRes.status === 'fulfilled') {
-                const fetchedCats = catsRes.value.data.data || [];
-                setCategories(fetchedCats);
+            // Stats
+            if (results[1].status === 'fulfilled') {
+                setStats(results[1].value.data.data || []);
             }
 
-            // Immediately unblock the UI so gifts display in under 300ms
-            setLoading(false);
-
-            // Fetch statistics in the background asynchronously so it never delays catalog rendering
-            adminService.getGiftStats().then((res) => {
-                setStats(res.data.data || []);
-            }).catch((err) => {
-                console.warn('Stats background sync failed:', err);
-            });
+            // Categories
+            if (results[2].status === 'fulfilled') {
+                const fetchedCats = results[2].value.data.data || [];
+                console.log('Categories synced:', fetchedCats.length);
+                setCategories(fetchedCats);
+            } else {
+                console.warn('Category resonance failed:', results[2]?.reason);
+            }
 
         } catch (err) {
             console.error('Core Registry Failure:', err);
+        } finally {
             setLoading(false);
         }
     };
@@ -303,8 +302,8 @@ const Gifts: React.FC = () => {
                                     />
                                 )}
 
-                                {/* Small Static Icon Badge overlayed on the bottom-right (only when real separate static icon exists) */}
-                                {gift.animationUrl && gift.icon && !isSvgaUrl(gift.icon) && gift.icon !== gift.animationUrl && (
+                                {/* Small Static Icon Badge overlayed on the bottom-right */}
+                                {gift.animationUrl && gift.icon && (
                                     <div 
                                         style={{ 
                                             position: 'absolute', 
