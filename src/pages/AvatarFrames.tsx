@@ -35,7 +35,12 @@ const AvatarFrames: React.FC = () => {
             setLoading(true);
             const response = await adminService.getFrames('frames');
             if (response.data && response.data.statusCode === 1) {
-                setFrames(response.data.data || []);
+                const list = response.data.data || [];
+                // Only show avatar profile frames (exclude VIP frames and Entry frames)
+                setFrames(list.filter((f: any) => {
+                    const c = (f.category || '').toLowerCase();
+                    return !c.includes('vip') && !c.includes('entry');
+                }));
             } else {
                 toast.error('Failed to sync frames catalog');
             }
@@ -329,10 +334,13 @@ const AvatarFrames: React.FC = () => {
                                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                     >
                                         <option value="General">General</option>
-                                        <option value="VIP">VIP</option>
                                         <option value="Elite">Elite</option>
+                                        <option value="Premium">Premium</option>
                                         <option value="Seasonal">Seasonal</option>
                                         <option value="Event">Event</option>
+                                        {formData.category && !['General', 'Elite', 'Premium', 'Seasonal', 'Event'].includes(formData.category) && (
+                                            <option value={formData.category}>{formData.category}</option>
+                                        )}
                                     </select>
                                 </div>
                                 {editingFrame && (

@@ -14,13 +14,7 @@ const isSvgaFrame = (url?: string) => {
 };
 
 const ENTRY_CATEGORIES = [
-    'VIP Entry',
-    'Royal Entry',
-    'Knight Entry',
-    'Legendary Entry',
-    'Exclusive Entry',
-    'Luxury Vehicle Entry',
-    'General Entry'
+    'VIP'
 ];
 
 const EntryFrames: React.FC = () => {
@@ -34,7 +28,7 @@ const EntryFrames: React.FC = () => {
     const [formData, setFormData] = useState<any>({
         name: '',
         price: '',
-        category: 'VIP Entry',
+        category: 'VIP',
         durationDays: 30,
         status: 'active'
     });
@@ -45,7 +39,12 @@ const EntryFrames: React.FC = () => {
             setLoading(true);
             const response = await adminService.getEntryFrames();
             if (response.data && response.data.statusCode === 1) {
-                setFrames(response.data.data || []);
+                const list = response.data.data || [];
+                // Show all VIP and Entry frames
+                setFrames(list.filter((f: any) => {
+                    const c = (f.category || '').toLowerCase();
+                    return c.includes('vip') || c.includes('entry');
+                }));
             } else {
                 toast.error('Failed to sync entry frames catalog');
             }
@@ -66,7 +65,7 @@ const EntryFrames: React.FC = () => {
         setFormData({
             name: '',
             price: '',
-            category: 'VIP Entry',
+            category: 'VIP',
             durationDays: 30,
             status: 'active'
         });
@@ -79,7 +78,7 @@ const EntryFrames: React.FC = () => {
         setFormData({
             name: frame.name,
             price: frame.price,
-            category: frame.category || 'VIP Entry',
+            category: frame.category || 'VIP',
             durationDays: frame.durationDays || 30,
             status: frame.status || 'active'
         });
@@ -103,7 +102,7 @@ const EntryFrames: React.FC = () => {
         const data = new FormData();
         data.append('name', formData.name);
         data.append('price', String(formData.price));
-        data.append('category', formData.category || 'VIP Entry');
+        data.append('category', formData.category || 'VIP');
         data.append('durationDays', String(formData.durationDays));
         
         if (editingFrame) {
@@ -368,6 +367,9 @@ const EntryFrames: React.FC = () => {
                                     {ENTRY_CATEGORIES.map(cat => (
                                         <option key={cat} value={cat}>{cat}</option>
                                     ))}
+                                    {formData.category && !ENTRY_CATEGORIES.includes(formData.category) && (
+                                        <option value={formData.category}>{formData.category}</option>
+                                    )}
                                 </select>
                             </div>
 
