@@ -89,6 +89,17 @@ const LuckyGifts: React.FC = () => {
         fetchLuckyGifts();
     }, []);
 
+    const isLuckyGift = (gift: any): boolean => {
+        if (!gift) return false;
+        return gift.type === 'lucky' || 
+               gift.isLucky === true || 
+               Boolean(gift.category && gift.category.name && gift.category.name.toLowerCase().includes('lucky'));
+    };
+
+    const luckyGifts = gifts.filter(isLuckyGift);
+    const luckyCategories = categories.filter((c: any) => c.name?.toLowerCase().includes('lucky'));
+    const defaultLuckyCat = luckyCategories[0];
+
     const handleOpenModal = (gift: any = null) => {
         if (gift) {
             setEditingGift(gift);
@@ -99,7 +110,7 @@ const LuckyGifts: React.FC = () => {
                 isLucky: true,
                 luckyThreshold: (gift.luckyThreshold || 5).toString(),
                 luckyRewardRate: (gift.luckyRewardRate !== null && gift.luckyRewardRate !== undefined ? gift.luckyRewardRate : 40).toString(),
-                categoryId: gift.categoryId || '',
+                categoryId: gift.categoryId || defaultLuckyCat?.id || '',
                 animationUrl: gift.animationUrl || '',
                 status: gift.status || 'active'
             });
@@ -112,7 +123,7 @@ const LuckyGifts: React.FC = () => {
                 isLucky: true,
                 luckyThreshold: '5',
                 luckyRewardRate: '40',
-                categoryId: '',
+                categoryId: defaultLuckyCat?.id || '',
                 animationUrl: '',
                 status: 'active'
             });
@@ -217,7 +228,7 @@ const LuckyGifts: React.FC = () => {
     const previewBonus = Math.round(previewBase * (previewRate / 100));
     const previewTotalReward = previewBase + previewBonus;
 
-    const filteredGifts = gifts.filter(gift => {
+    const filteredGifts = luckyGifts.filter(gift => {
         const matchesSearch = !searchQuery || 
             (gift.name && gift.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
             (gift.id && gift.id.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -278,7 +289,7 @@ const LuckyGifts: React.FC = () => {
                 <div className="stat-card">
                     <div className="stat-info">
                         <span className="label label-blue">Active Lucky Items</span>
-                        <span className="value" style={{ fontSize: '22px' }}>{gifts.length} Gifts</span>
+                        <span className="value" style={{ fontSize: '22px' }}>{luckyGifts.length} Gifts</span>
                     </div>
                     <div className="stat-icon">
                         <GiftIcon size={32} color="#dddfeb" />
@@ -318,17 +329,19 @@ const LuckyGifts: React.FC = () => {
                             style={{ paddingLeft: '36px' }}
                         />
                     </div>
-                    <select 
-                        className="premium-input-field select"
-                        value={selectedCategory} 
-                        onChange={(e) => setSelectedCategory(e.target.value)}
-                        style={{ width: 'auto', minWidth: '160px' }}
-                    >
-                        <option value="all">All Categories</option>
-                        {categories.map((cat: any) => (
-                            <option key={cat.id} value={cat.id}>{cat.name}</option>
-                        ))}
-                    </select>
+                    {luckyCategories.length > 1 && (
+                        <select 
+                            className="premium-input-field select"
+                            value={selectedCategory} 
+                            onChange={(e) => setSelectedCategory(e.target.value)}
+                            style={{ width: 'auto', minWidth: '160px' }}
+                        >
+                            <option value="all">All Lucky Categories</option>
+                            {luckyCategories.map((cat: any) => (
+                                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                            ))}
+                        </select>
+                    )}
                 </div>
 
                 <div style={{ display: 'flex', gap: '6px' }}>
@@ -575,13 +588,16 @@ const LuckyGifts: React.FC = () => {
                                     <div className="input-wrapper-glass">
                                         <select 
                                             className="premium-input-field select"
-                                            value={formData.categoryId}
+                                            value={formData.categoryId || defaultLuckyCat?.id || ''}
                                             onChange={e => setFormData({ ...formData, categoryId: e.target.value })}
                                         >
-                                            <option value="">Uncategorized (Standard)</option>
-                                            {categories.map((c: any) => (
-                                                <option key={c.id} value={c.id}>{c.name}</option>
-                                            ))}
+                                            {luckyCategories.length > 0 ? (
+                                                luckyCategories.map((c: any) => (
+                                                    <option key={c.id} value={c.id}>{c.name}</option>
+                                                ))
+                                            ) : (
+                                                <option value="">Lucky Category</option>
+                                            )}
                                         </select>
                                     </div>
                                 </div>

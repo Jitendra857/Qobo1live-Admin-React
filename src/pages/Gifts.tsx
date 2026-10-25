@@ -109,6 +109,16 @@ const Gifts: React.FC = () => {
         };
     }, []);
 
+    const isLuckyGift = (gift: any): boolean => {
+        if (!gift) return false;
+        return gift.type === 'lucky' || 
+               gift.isLucky === true || 
+               Boolean(gift.category && gift.category.name && gift.category.name.toLowerCase().includes('lucky'));
+    };
+
+    const regularGifts = gifts.filter((gift) => !isLuckyGift(gift));
+    const nonLuckyCategories = categories.filter((cat) => !cat.name?.toLowerCase().includes('lucky'));
+
     const handleOpenModal = (gift: any = null) => {
         refreshCategories(); // Sync categories whenever modal opens
         if (gift) {
@@ -116,8 +126,8 @@ const Gifts: React.FC = () => {
             setFormData({
                 name: gift.name,
                 price: gift.price,
-                type: gift.type,
-                winRate: gift.winRate || '',
+                type: gift.type === 'lucky' ? 'normal' : (gift.type || 'normal'),
+                winRate: '',
                 categoryId: gift.categoryId || '',
                 animationUrl: gift.animationUrl || '',
             });
@@ -159,6 +169,10 @@ const Gifts: React.FC = () => {
                     data.append(key, formData[key]);
                 }
             });
+            // Ensure type is regular and not lucky when submitted from Gift Catalog
+            data.set('type', formData.type === 'lucky' ? 'normal' : (formData.type || 'normal'));
+            data.set('isLucky', 'false');
+
             if (files.icon) data.append('icon', files.icon);
             if (files.animation) data.append('animation', files.animation);
             if (files.sound) data.append('sound', files.sound);
@@ -239,7 +253,7 @@ const Gifts: React.FC = () => {
                 <div className="stat-card">
                     <div className="stat-info">
                         <span className="label label-orange">Active Inventory</span>
-                        <span className="value" style={{ fontSize: '20px' }}>{gifts.length} Items</span>
+                        <span className="value" style={{ fontSize: '20px' }}>{regularGifts.length} Items</span>
                     </div>
                     <div className="stat-icon">
                         <GiftIcon size={32} color="#dddfeb" />
@@ -249,7 +263,7 @@ const Gifts: React.FC = () => {
 
             {/* Assets Grid */}
             <div className="gift-grid">
-                {gifts.map((gift) => (
+                {regularGifts.map((gift) => (
                     <div key={gift.id} className="gift-card">
                         <div className="card-top">
                             <div className={`card-label ${gift.type}`}>
@@ -444,29 +458,11 @@ const Gifts: React.FC = () => {
                                             onChange={e => setFormData({...formData, type: e.target.value})}
                                         >
                                             <option value="normal">Normal Gift</option>
-                                            <option value="lucky">Lucky Gift</option>
                                             <option value="luxury">Luxury Asset</option>
                                         </select>
                                     </div>
                                 </div>
                             </div>
-
-                            {formData.type === 'lucky' && (
-                                <div className="special-banner lucky fade-in">
-                                    <div className="banner-icon"><Trophy size={18} /></div>
-                                    <div className="banner-content">
-                                        <label className="banner-label">Win Probability</label>
-                                        <input 
-                                            type="number" 
-                                            step="0.1"
-                                            className="banner-input"
-                                            placeholder="Percentage chance..."
-                                            value={formData.winRate}
-                                            onChange={e => setFormData({...formData, winRate: e.target.value})}
-                                        />
-                                    </div>
-                                </div>
-                            )}
 
                             <div className="form-section">
                                 <div className="flex justify-between items-center mb-2">
@@ -487,7 +483,7 @@ const Gifts: React.FC = () => {
                                         onChange={e => setFormData({...formData, categoryId: e.target.value})}
                                     >
                                         <option value="">Uncategorized (Legacy Default)</option>
-                                        {categories.map(cat => (
+                                        {nonLuckyCategories.map(cat => (
                                             <option key={cat.id} value={cat.id}>{cat.name}</option>
                                         ))}
                                     </select>
