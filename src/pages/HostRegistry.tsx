@@ -3,7 +3,8 @@ import { adminService } from '../services/api';
 import {
   CheckCircle, XCircle, UserCheck, Eye, Phone, Mail,
   ShieldCheck, Clock, AlertCircle, Search, RefreshCw,
-  Users, Filter, Hash, Building2, Send, Trash2
+  Users, Filter, Hash, Building2, Send, Trash2,
+  LayoutGrid, List, Copy, Check
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import '../styles/UserManagement.css';
@@ -18,6 +19,8 @@ const HostRegistry: React.FC = () => {
   const [selectedApp, setSelectedApp] = useState<any | null>(null);
   const [search, setSearch]       = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  const [viewMode, setViewMode]   = useState<'cards' | 'table'>('cards');
+  const [copiedText, setCopiedText] = useState<string | null>(null);
 
   // Super Admins state
   const [superAdmins, setSuperAdmins] = useState<any[]>([]);
@@ -353,58 +356,255 @@ const HostRegistry: React.FC = () => {
       </div>
 
       {/* ── Toolbar ─────────────────────────────────────────────────────────── */}
-      <div className="hr-toolbar">
-        <div className="hr-search">
-          <Search size={15} style={{ color:'var(--text-secondary)', flexShrink:0 }}/>
-          <input
-            placeholder="Search by name, phone, agency code..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
+      <div className="hr-toolbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: '280px' }}>
+          <div className="hr-search" style={{ flex: 1 }}>
+            <Search size={15} style={{ color:'var(--text-secondary)', flexShrink:0 }}/>
+            <input
+              placeholder="Search by name, phone, agency code..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          <select
+            className="filter-select"
+            value={selectedSuperAdmin}
+            onChange={e => setSelectedSuperAdmin(e.target.value)}
+            style={{ height: '42px', border: '1px solid var(--glass-border)', borderRadius: '12px', background: 'var(--input-bg)', color: 'var(--text-primary)', fontWeight: '700', padding: '0 14px', outline: 'none' }}
+          >
+            <option value="all">All Super Admins</option>
+            {superAdmins.map(sa => (
+              <option key={sa.id} value={sa.email}>{sa.name || sa.email}</option>
+            ))}
+          </select>
         </div>
-        <select
-          className="filter-select"
-          value={selectedSuperAdmin}
-          onChange={e => setSelectedSuperAdmin(e.target.value)}
-          style={{ height: '42px', border: '1px solid var(--glass-border)', borderRadius: '12px', background: 'var(--input-bg)', color: 'var(--text-primary)', fontWeight: '700', padding: '0 14px', outline: 'none' }}
-        >
-          <option value="all">All Super Admins</option>
-          {superAdmins.map(sa => (
-            <option key={sa.id} value={sa.email}>{sa.name || sa.email}</option>
-          ))}
-        </select>
+
+        <div className="view-mode-toggle" style={{ margin: 0 }}>
+          <button 
+            type="button"
+            className={`view-mode-btn ${viewMode === 'cards' ? 'active' : ''}`}
+            onClick={() => setViewMode('cards')}
+            title="Card Box Grid View"
+          >
+            <LayoutGrid size={15} />
+            <span>Cards</span>
+          </button>
+          <button 
+            type="button"
+            className={`view-mode-btn ${viewMode === 'table' ? 'active' : ''}`}
+            onClick={() => setViewMode('table')}
+            title="Table View"
+          >
+            <List size={15} />
+            <span>Table</span>
+          </button>
+        </div>
       </div>
 
-      {/* ── Table ───────────────────────────────────────────────────────────── */}
-      <div className="glass" style={{ borderRadius: 24, border: '1px solid var(--glass-border)', padding: '8px' }}>
-        <table className="premium-table">
-          <thead>
-            <tr>
-              <th style={{ textAlign:'left',   width:'26%' }}>Applicant</th>
-              <th style={{ textAlign:'left',   width:'22%' }}>Contact</th>
-              <th style={{ textAlign:'center', width:'12%' }}>Agency Code</th>
-              <th style={{ textAlign:'center', width:'12%' }}>Category</th>
-              <th style={{ textAlign:'center', width:'10%' }}>Applied</th>
-              <th style={{ textAlign:'center', width:'10%' }}>Status</th>
-              <th style={{ textAlign:'right',  width:'8%'  }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr><td colSpan={7} style={{ textAlign:'center', padding: 40 }}>
-                <div style={{ color:'var(--text-secondary)', fontWeight:600 }}>Loading registry...</div>
-              </td></tr>
-            ) : filtered.length === 0 ? (
-              <tr><td colSpan={7} style={{ textAlign:'center', padding: 40 }}>
-                <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:8 }}>
-                  <UserCheck size={36} style={{ color:'var(--text-secondary)', opacity:0.3 }}/>
-                  <span style={{ color:'var(--text-secondary)', fontWeight:600 }}>
-                    {search || activeTab !== 'all' ? 'No results match your filter' : 'No host applications yet'}
+      {/* ── Host Listing (Cards / Table) ────────────────────────────────────── */}
+      {loading ? (
+        <div className="glass flex items-center justify-center" style={{ height: 280, borderRadius: 24, border: '1px solid var(--glass-border)' }}>
+          <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Loading registry...</p>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="glass flex items-center justify-center" style={{ height: 280, borderRadius: 24, border: '1px solid var(--glass-border)', flexDirection: 'column', gap: 12 }}>
+          <UserCheck size={40} style={{ color: 'var(--text-secondary)', opacity: 0.3 }} />
+          <p style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>
+            {search || activeTab !== 'all' ? 'No results match your filter' : 'No host applications yet'}
+          </p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', opacity: 0.7 }}>
+            Hosts register from the mobile app and appear here for authorization.
+          </p>
+        </div>
+      ) : viewMode === 'cards' ? (
+        /* ── Card Box Grid View ─────────────────────────────────────────────── */
+        <div className="host-cards-grid">
+          {filtered.map(app => {
+            const sc = statusColor(app.status);
+            return (
+              <div key={app.id} className="host-card-box">
+                {/* Header: Category Badge & Status Badge */}
+                <div className="host-card-header">
+                  <span style={{ 
+                    fontSize: '0.72rem', 
+                    fontWeight: 800, 
+                    color: '#8b5cf6', 
+                    background: 'rgba(139, 92, 246, 0.1)', 
+                    border: '1px solid rgba(139, 92, 246, 0.25)',
+                    padding: '3px 8px', 
+                    borderRadius: '6px',
+                    textTransform: 'uppercase'
+                  }}>
+                    🎙️ {(app.category || 'General')}
+                  </span>
+
+                  <span style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontSize: '0.68rem',
+                    fontWeight: 800,
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                    background: sc.bg,
+                    color: sc.color,
+                    border: `1px solid ${sc.border}`
+                  }}>
+                    {app.status?.toLowerCase() === 'pending'  && <AlertCircle size={10} />}
+                    {app.status?.toLowerCase() === 'approved' && <CheckCircle size={10} />}
+                    {app.status?.toLowerCase() === 'rejected' && <XCircle     size={10} />}
+                    {app.status?.toUpperCase()}
                   </span>
                 </div>
-              </td></tr>
-            ) : (
-              filtered.map(app => {
+
+                {/* Body: Applicant Photo + Info + Contact */}
+                <div className="host-card-body">
+                  <div className="host-card-avatar">
+                    <MediaImage
+                      src={app.realPhoto}
+                      className="h-full w-full object-cover"
+                      fallbackText={app.hostName?.[0] || 'H'}
+                    />
+                  </div>
+                  <div className="host-card-info">
+                    <div className="host-card-name" title={app.hostName}>
+                      {app.hostName}
+                    </div>
+                    <div className="host-card-id-pill" title="Host ID Number">
+                      ID: {app.hostIdNumber || '—'}
+                    </div>
+
+                    <div className="host-card-contact-row">
+                      <div 
+                        style={{ display: 'flex', alignItems: 'center', gap: 5, cursor: app.whatsapp ? 'pointer' : 'default' }}
+                        onClick={() => {
+                          if (app.whatsapp) {
+                            navigator.clipboard.writeText(app.whatsapp);
+                            setCopiedText(app.whatsapp);
+                            toast.success('Phone copied!');
+                            setTimeout(() => setCopiedText(null), 1500);
+                          }
+                        }}
+                        title={app.whatsapp ? 'Click to copy phone' : ''}
+                      >
+                        <Phone size={11} style={{ color: '#10b981', flexShrink: 0 }} />
+                        <span>{app.whatsapp || '—'}</span>
+                        {copiedText === app.whatsapp && <Check size={10} color="#10b981" />}
+                      </div>
+                      <div 
+                        style={{ display: 'flex', alignItems: 'center', gap: 5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                        title={app.gmail || ''}
+                      >
+                        <Mail size={11} style={{ color: '#3b82f6', flexShrink: 0 }} />
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{app.gmail || '—'}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Meta Grid: Agency Code & Applied Date */}
+                <div className="host-card-meta-grid">
+                  <div className="host-card-meta-item">
+                    <span className="host-card-meta-label">Agency Code</span>
+                    <span 
+                      className="host-card-meta-val"
+                      style={{
+                        fontFamily: 'monospace',
+                        fontSize: '0.82rem',
+                        color: '#3b82f6',
+                        background: 'rgba(59,130,246,0.08)',
+                        padding: '2px 7px',
+                        borderRadius: '6px',
+                        width: 'fit-content'
+                      }}
+                    >
+                      🏢 {app.agencyCode || 'Direct'}
+                    </span>
+                  </div>
+
+                  <div className="host-card-meta-item">
+                    <span className="host-card-meta-label">Applied Date</span>
+                    <span className="host-card-meta-val" style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
+                      📅 {new Date(app.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Action Footer */}
+                <div className="host-card-actions">
+                  <button
+                    className="op-btn edit"
+                    onClick={() => setSelectedApp(app)}
+                    title="View Full Details"
+                    style={{ borderRadius: 10, background: 'rgba(59,130,246,0.1)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.2)', height: 34, padding: '0 12px', width: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.78rem', fontWeight: 800 }}
+                  >
+                    <Eye size={15} /> Details
+                  </button>
+
+                  {app.status?.toLowerCase() === 'pending' && canApprove ? (
+                    <>
+                      <button
+                        className="op-btn edit"
+                        onClick={() => handleAction(app.id, 'APPROVED')}
+                        title="Approve Host"
+                        style={{ borderRadius: 10, background: 'rgba(16,185,129,0.1)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)', height: 34, padding: '0 12px', width: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.78rem', fontWeight: 800 }}
+                      >
+                        <CheckCircle size={15} /> Approve
+                      </button>
+                      <button
+                        className="op-btn delete"
+                        onClick={() => openRejectModal(app)}
+                        title="Reject Host"
+                        style={{ borderRadius: 10, background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)', height: 34, padding: '0 12px', width: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.78rem', fontWeight: 800 }}
+                      >
+                        <XCircle size={15} /> Reject
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      className="op-btn"
+                      disabled
+                      style={{ borderRadius: 10, opacity: 0.35, cursor: 'not-allowed', height: 34, padding: '0 10px', width: 'auto', display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.75rem', fontWeight: 700 }}
+                      title="Already processed"
+                    >
+                      <ShieldCheck size={15} /> Processed
+                    </button>
+                  )}
+
+                  {canApprove && (
+                    <button
+                      className="op-btn delete"
+                      onClick={() => handleDeleteHost(app.id)}
+                      title="Remove Application"
+                      style={{ borderRadius: 10, background: 'transparent', color: '#ef4444', border: '1px dashed #ef4444', height: 34, width: 34 }}
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        /* ── Table View ─────────────────────────────────────────────────────── */
+        <div className="glass" style={{ borderRadius: 24, border: '1px solid var(--glass-border)', padding: '8px' }}>
+          <table className="premium-table">
+            <thead>
+              <tr>
+                <th style={{ textAlign:'left',   width:'26%' }}>Applicant</th>
+                <th style={{ textAlign:'left',   width:'22%' }}>Contact</th>
+                <th style={{ textAlign:'center', width:'12%' }}>Agency Code</th>
+                <th style={{ textAlign:'center', width:'12%' }}>Category</th>
+                <th style={{ textAlign:'center', width:'10%' }}>Applied</th>
+                <th style={{ textAlign:'center', width:'10%' }}>Status</th>
+                <th style={{ textAlign:'right',  width:'8%'  }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map(app => {
                 const sc = statusColor(app.status);
                 return (
                   <tr key={app.id}>
@@ -515,11 +715,11 @@ const HostRegistry: React.FC = () => {
                     </td>
                   </tr>
                 );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* ── Detail Modal ─────────────────────────────────────────────────────── */}
       {selectedApp && (

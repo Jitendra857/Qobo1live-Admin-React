@@ -4,7 +4,8 @@ import toast from 'react-hot-toast';
 import {
   Users, ShieldCheck, CheckCircle, XCircle, AlertCircle,
   TrendingUp, DollarSign, Wallet, Search, RefreshCw,
-  Building2, UserCheck, Clock, ChevronDown, Edit3, Link2, Trash2, Mail, Send
+  Building2, UserCheck, Clock, ChevronDown, Edit3, Link2, Trash2, Mail, Send,
+  LayoutGrid, List, Copy, Check
 } from 'lucide-react';
 import '../styles/UserManagement.css';
 
@@ -16,6 +17,8 @@ const AgencyHub: React.FC = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [payoutLoading, setPayoutLoading] = useState(false);
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   // Super Admins state
   const [superAdmins, setSuperAdmins] = useState<any[]>([]);
@@ -367,28 +370,51 @@ const AgencyHub: React.FC = () => {
       </div>
 
       {/* ── Toolbar ─────────────────────────────────────────────────────────── */}
-      <div className="agency-toolbar">
-        <div className="agency-search">
-          <Search size={16} style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
-          <input
-            placeholder="Search by name, code, owner..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
+      <div className="agency-toolbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: '280px' }}>
+          <div className="agency-search" style={{ flex: 1 }}>
+            <Search size={16} style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
+            <input
+              placeholder="Search by name, code, owner..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          <select
+            className="filter-select"
+            value={selectedSuperAdmin}
+            onChange={e => setSelectedSuperAdmin(e.target.value)}
+          >
+            <option value="all">All Super Admins</option>
+            {superAdmins.map(sa => (
+              <option key={sa.id} value={sa.email}>{sa.name || sa.email}</option>
+            ))}
+          </select>
         </div>
-        <select
-          className="filter-select"
-          value={selectedSuperAdmin}
-          onChange={e => setSelectedSuperAdmin(e.target.value)}
-        >
-          <option value="all">All Super Admins</option>
-          {superAdmins.map(sa => (
-            <option key={sa.id} value={sa.email}>{sa.name || sa.email}</option>
-          ))}
-        </select>
+
+        <div className="view-mode-toggle" style={{ margin: 0 }}>
+          <button 
+            type="button"
+            className={`view-mode-btn ${viewMode === 'cards' ? 'active' : ''}`}
+            onClick={() => setViewMode('cards')}
+            title="Card Box Grid View"
+          >
+            <LayoutGrid size={15} />
+            <span>Cards</span>
+          </button>
+          <button 
+            type="button"
+            className={`view-mode-btn ${viewMode === 'table' ? 'active' : ''}`}
+            onClick={() => setViewMode('table')}
+            title="Table View"
+          >
+            <List size={15} />
+            <span>Table</span>
+          </button>
+        </div>
       </div>
 
-      {/* ── Table ───────────────────────────────────────────────────────────── */}
+      {/* ── Agencies Listing (Cards / Table) ─────────────────────────────────── */}
       {loading ? (
         <div className="glass flex items-center justify-center" style={{ height: 280, borderRadius: 24, border: '1px solid var(--glass-border)' }}>
           <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Loading agencies...</p>
@@ -403,7 +429,170 @@ const AgencyHub: React.FC = () => {
             Agencies are registered from the mobile app and appear here for review.
           </p>
         </div>
+      ) : viewMode === 'cards' ? (
+        /* ── Card Box Grid View ─────────────────────────────────────────────── */
+        <div className="agency-cards-grid">
+          {filtered.map(agency => {
+            const initial = (agency.name || (agency.owner ? agency.owner.name : 'Agency') || 'A').charAt(0).toUpperCase();
+            return (
+              <div key={agency.id} className="agency-card-box">
+                {/* Header */}
+                <div className="agency-card-header">
+                  <div className="agency-card-title-wrap">
+                    <div className="agency-card-avatar">
+                      {initial}
+                    </div>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div className="agency-card-name" title={agency.name || (agency.owner ? agency.owner.name : 'Agency')}>
+                        {agency.name || (agency.owner ? agency.owner.name : 'Agency')}
+                      </div>
+                      <div className="agency-card-date">
+                        Created: {new Date(agency.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                  <span className={`status-pill-ag ${agency.status}`}>
+                    {agency.status === 'pending'  && <AlertCircle size={11} />}
+                    {agency.status === 'active'   && <CheckCircle  size={11} />}
+                    {agency.status === 'rejected' && <XCircle      size={11} />}
+                    {agency.status?.toUpperCase()}
+                  </span>
+                </div>
+
+                {/* Owner Block */}
+                <div className="agency-card-owner">
+                  <div className="agency-card-owner-title">Agency Owner</div>
+                  {agency.owner ? (
+                    <div className="agency-card-owner-info">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                        <span className="agency-card-owner-name">{agency.owner.name || 'Unnamed'}</span>
+                        <span style={{ fontSize: '0.62rem', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.25)', padding: '1px 5px', borderRadius: '4px', fontWeight: 700, flexShrink: 0 }}>User</span>
+                      </div>
+                      <span className="agency-card-owner-contact" title={agency.owner.phone || agency.owner.email || ('ID: ' + agency.owner.id)}>
+                        {agency.owner.phone || agency.owner.email || ('ID: ' + agency.owner.id)}
+                      </span>
+                    </div>
+                  ) : (
+                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', fontWeight: 600 }}>System / Direct</span>
+                  )}
+                </div>
+
+                {/* Meta Grid (Code, Commission, Hosts) */}
+                <div className="agency-card-meta-grid">
+                  <div className="agency-card-meta-item">
+                    <span className="agency-card-meta-label">Agency Code</span>
+                    <span 
+                      className="agency-card-meta-val" 
+                      style={{ 
+                        fontFamily: 'monospace', 
+                        fontSize: '0.85rem', 
+                        color: '#3b82f6', 
+                        cursor: 'pointer',
+                        background: 'rgba(59,130,246,0.08)',
+                        padding: '2px 8px',
+                        borderRadius: '6px',
+                        width: 'fit-content'
+                      }}
+                      onClick={() => {
+                        if (agency.code) {
+                          navigator.clipboard.writeText(agency.code);
+                          setCopiedCode(agency.code);
+                          toast.success(`Agency code ${agency.code} copied!`);
+                          setTimeout(() => setCopiedCode(null), 1800);
+                        }
+                      }}
+                      title="Click to copy code"
+                    >
+                      {agency.code || '—'}
+                      {copiedCode === agency.code ? <Check size={12} color="#10b981" /> : <Copy size={12} style={{ opacity: 0.6 }} />}
+                    </span>
+                  </div>
+
+                  <div className="agency-card-meta-item">
+                    <span className="agency-card-meta-label">Commission</span>
+                    <span className="agency-card-meta-val" style={{ color: '#10b981', fontSize: '0.88rem' }}>
+                      💰 {((agency.commissionRate || 0) * 100).toFixed(0)}%
+                    </span>
+                  </div>
+
+                  <div className="agency-card-meta-item" style={{ gridColumn: 'span 2' }}>
+                    <span className="agency-card-meta-label">Active / Total Hosts</span>
+                    <span className="agency-card-meta-val" style={{ color: '#8b5cf6', fontSize: '0.88rem' }}>
+                      🎙️ {agency.approvedCount ?? 0} Approved / {agency.hostCount ?? 0} Total
+                    </span>
+                  </div>
+                </div>
+
+                {/* Card Actions Footer */}
+                <div className="agency-card-actions">
+                  {agency.status === 'pending' && canApprove ? (
+                    <>
+                      <button
+                        className="op-btn edit"
+                        onClick={() => handleApprove(agency.id, 'active')}
+                        title="Approve Agency"
+                        style={{ borderRadius: 10, background: 'rgba(16,185,129,0.1)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)', height: 34, padding: '0 12px', width: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.78rem', fontWeight: 800 }}
+                      >
+                        <CheckCircle size={15} /> Approve
+                      </button>
+                      <button
+                        className="op-btn delete"
+                        onClick={() => openRejectModal(agency)}
+                        title="Reject Agency"
+                        style={{ borderRadius: 10, background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)', height: 34, padding: '0 12px', width: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.78rem', fontWeight: 800 }}
+                      >
+                        <XCircle size={15} /> Reject
+                      </button>
+                    </>
+                  ) : (
+                    agency.status === 'active' ? (
+                      <button
+                        className="op-btn edit"
+                        onClick={async () => {
+                          try {
+                            const res = await adminService.getAgencyLink(agency.id);
+                            if (res.data.statusCode === 1) {
+                              await navigator.clipboard.writeText(res.data.data.link);
+                              toast.success('Recruitment link copied to clipboard!');
+                            }
+                          } catch (err) {
+                            toast.error('Failed to get recruitment link');
+                          }
+                        }}
+                        title="Copy Recruitment Link"
+                        style={{ borderRadius: 10, background: 'rgba(59,130,246,0.1)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.2)', height: 34, padding: '0 12px', width: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.78rem', fontWeight: 800 }}
+                      >
+                        <Link2 size={15} /> Copy Invite Link
+                      </button>
+                    ) : (
+                      <button
+                        className="op-btn"
+                        disabled
+                        title="Already Processed"
+                        style={{ borderRadius: 10, opacity: 0.4, cursor: 'not-allowed', height: 34, padding: '0 10px', width: 'auto', display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.75rem', fontWeight: 700 }}
+                      >
+                        <ShieldCheck size={15} /> Processed
+                      </button>
+                    )
+                  )}
+
+                  {canApprove && (
+                    <button
+                      className="op-btn delete"
+                      onClick={() => handleDeleteAgency(agency.id)}
+                      title="Remove Agency"
+                      style={{ borderRadius: 10, background: 'transparent', color: '#ef4444', border: '1px dashed #ef4444', height: 34, width: 34 }}
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       ) : (
+        /* ── Table View ─────────────────────────────────────────────────────── */
         <div className="glass" style={{ borderRadius: 24, border: '1px solid var(--glass-border)', padding: '8px', overflow: 'hidden' }}>
           <table className="premium-table">
             <thead>
