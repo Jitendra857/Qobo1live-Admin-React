@@ -6,6 +6,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import MediaImage from '../components/MediaImage';
 import SvgaPlayer from '../components/SvgaPlayer';
 import '../styles/UserManagement.css';
+import '../styles/Modal.css';
 
 const isSvgaFrame = (url?: string) => {
     if (!url) return false;
@@ -13,8 +14,13 @@ const isSvgaFrame = (url?: string) => {
     return lower.includes('.svga') || (lower.includes('/raw/upload/') && lower.includes('/frames/'));
 };
 
-const ENTRY_CATEGORIES = [
-    'VIP'
+const ENTRY_FRAME_CATEGORIES = [
+    { value: 'VIP', label: '👑 VIP (Entry Frame - Room Entrance / Live Arrival)' },
+    { value: 'General', label: '👤 General (Profile Avatar Frame)' },
+    { value: 'Elite', label: '⭐ Elite (Profile Avatar Frame)' },
+    { value: 'Premium', label: '💎 Premium (Profile Avatar Frame)' },
+    { value: 'Seasonal', label: '🍁 Seasonal (Profile Avatar Frame)' },
+    { value: 'Event', label: '🎉 Event (Profile Avatar Frame)' }
 ];
 
 const EntryFrames: React.FC = () => {
@@ -125,7 +131,11 @@ const EntryFrames: React.FC = () => {
             setIsSubmitting(true);
             const res = await adminService.manageFrame(editingFrame ? 'update' : 'create', data);
             if (res.data && res.data.statusCode === 1) {
-                toast.success(editingFrame ? 'Entry frame updated' : 'Entry frame created');
+                if (editingFrame && formData.category?.toLowerCase() !== 'vip' && editingFrame.category?.toLowerCase().includes('vip')) {
+                    toast.success(`Category updated to "${formData.category}"! Frame moved to Frames catalog.`, { duration: 4000 });
+                } else {
+                    toast.success(editingFrame ? 'Frame updated successfully' : 'Entry frame created successfully');
+                }
                 setIsModalOpen(false);
                 fetchFrames();
             } else {
@@ -302,118 +312,167 @@ const EntryFrames: React.FC = () => {
 
             {/* Create/Edit Modal */}
             {isModalOpen && (
-                <div className="modal-backdrop">
-                    <form onSubmit={handleSubmit} className="modal-content slide-up" style={{ maxWidth: '520px', borderRadius: '20px', padding: '24px', background: 'var(--bg-surface)' }}>
-                        <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <Crown size={20} color="#f59e0b" />
-                                {editingFrame ? 'Edit Entry Frame' : 'Add New Entry Frame'}
-                            </h2>
-                            <button type="button" className="close-btn" onClick={() => setIsModalOpen(false)}>
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                            <div className="form-group">
-                                <label style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: '6px', display: 'block' }}>Entry Frame Name</label>
-                                <input 
-                                    type="text" 
-                                    className="form-control" 
-                                    value={formData.name} 
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
-                                    placeholder="e.g. Royal Dragon Arrival, Golden Supercar Entry" 
-                                    required 
-                                    style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
-                                />
+                <div 
+                    className="modal-overlay" 
+                    onClick={() => setIsModalOpen(false)}
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        backgroundColor: 'rgba(15, 23, 42, 0.65)',
+                        backdropFilter: 'blur(6px)',
+                        zIndex: 999999,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '16px'
+                    }}
+                >
+                    <div 
+                        className="modal-content glass-panel slide-up" 
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ 
+                            maxWidth: '520px', 
+                            width: '100%',
+                            borderRadius: '16px', 
+                            padding: '0', 
+                            background: 'var(--bg-surface, #ffffff)',
+                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                            border: '1px solid var(--glass-border, #e2e8f0)',
+                            borderTop: '4px solid #f59e0b',
+                            overflow: 'hidden',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            maxHeight: '90vh'
+                        }}
+                    >
+                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+                            <div className="modal-header" style={{ padding: '18px 24px', borderBottom: '1px solid var(--glass-border, #e2e8f0)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <h2 style={{ fontSize: '1.2rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px', margin: 0, color: 'var(--text-primary, #0f172a)' }}>
+                                    <Crown size={20} color="#f59e0b" />
+                                    {editingFrame ? 'Edit Frame / Category' : 'Add New Entry Frame'}
+                                </h2>
+                                <button type="button" className="close-btn" onClick={() => setIsModalOpen(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', color: 'var(--text-secondary, #64748b)' }}>
+                                    <X size={20} />
+                                </button>
                             </div>
 
-                            <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                            <div className="modal-body" style={{ padding: '20px 24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                 <div className="form-group">
-                                    <label style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: '6px', display: 'block' }}>Price (Coins)</label>
+                                    <label style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: '6px', display: 'block', color: 'var(--text-primary)' }}>Frame Name *</label>
                                     <input 
-                                        type="number" 
+                                        type="text" 
                                         className="form-control" 
-                                        value={formData.price} 
-                                        onChange={(e) => setFormData({ ...formData, price: e.target.value })} 
-                                        placeholder="Coins required" 
+                                        value={formData.name} 
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
+                                        placeholder="e.g. Royal Dragon Arrival, Golden Supercar Entry" 
                                         required 
-                                        min="0"
-                                        style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
+                                        style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--glass-border, #cbd5e1)' }}
                                     />
                                 </div>
-                                <div className="form-group">
-                                    <label style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: '6px', display: 'block' }}>Validity (Days)</label>
-                                    <input 
-                                        type="number" 
-                                        className="form-control" 
-                                        value={formData.durationDays} 
-                                        onChange={(e) => setFormData({ ...formData, durationDays: e.target.value })} 
-                                        required 
-                                        min="1"
-                                        style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
-                                    />
+
+                                <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                                    <div className="form-group">
+                                        <label style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: '6px', display: 'block', color: 'var(--text-primary)' }}>Price (Coins) *</label>
+                                        <input 
+                                            type="number" 
+                                            className="form-control" 
+                                            value={formData.price} 
+                                            onChange={(e) => setFormData({ ...formData, price: e.target.value })} 
+                                            placeholder="Coins required" 
+                                            required 
+                                            min="0"
+                                            style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--glass-border, #cbd5e1)' }}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: '6px', display: 'block', color: 'var(--text-primary)' }}>Validity (Days)</label>
+                                        <input 
+                                            type="number" 
+                                            className="form-control" 
+                                            value={formData.durationDays} 
+                                            onChange={(e) => setFormData({ ...formData, durationDays: e.target.value })} 
+                                            required 
+                                            min="1"
+                                            style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--glass-border, #cbd5e1)' }}
+                                        />
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="form-group">
-                                <label style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: '6px', display: 'block' }}>Entry Category</label>
-                                <select 
-                                    className="form-control" 
-                                    value={formData.category} 
-                                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                    style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--glass-border)', fontWeight: 600 }}
-                                >
-                                    {ENTRY_CATEGORIES.map(cat => (
-                                        <option key={cat} value={cat}>{cat}</option>
-                                    ))}
-                                    {formData.category && !ENTRY_CATEGORIES.includes(formData.category) && (
-                                        <option value={formData.category}>{formData.category}</option>
-                                    )}
-                                </select>
-                            </div>
-
-                            {editingFrame && (
                                 <div className="form-group">
-                                    <label style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: '6px', display: 'block' }}>Status</label>
+                                    <label style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: '6px', display: 'block', color: 'var(--text-primary)' }}>
+                                        Target Category *
+                                    </label>
                                     <select 
                                         className="form-control" 
-                                        value={formData.status} 
-                                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                                        style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--glass-border)', fontWeight: 600 }}
+                                        value={formData.category} 
+                                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                        style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--glass-border, #cbd5e1)', fontWeight: 700, fontSize: '0.88rem' }}
                                     >
-                                        <option value="active">Active (Available in Store)</option>
-                                        <option value="inactive">Inactive (Hidden)</option>
+                                        <optgroup label="Entry Animations (Live Stream / Room Entrance)">
+                                            <option value="VIP">👑 VIP (Entry Frame - Room Entrance / Live Arrival)</option>
+                                        </optgroup>
+                                        <optgroup label="Avatar Profile Frames (Profile Borders in Frames Menu)">
+                                            <option value="General">👤 General (Profile Avatar Frame)</option>
+                                            <option value="Elite">⭐ Elite (Profile Avatar Frame)</option>
+                                            <option value="Premium">💎 Premium (Profile Avatar Frame)</option>
+                                            <option value="Seasonal">🍁 Seasonal (Profile Avatar Frame)</option>
+                                            <option value="Event">🎉 Event (Profile Avatar Frame)</option>
+                                        </optgroup>
+                                        {formData.category && !['vip', 'general', 'elite', 'premium', 'seasonal', 'event'].includes(formData.category.toLowerCase()) && (
+                                            <optgroup label="Current Custom Category">
+                                                <option value={formData.category}>{formData.category}</option>
+                                            </optgroup>
+                                        )}
                                     </select>
+                                    <div style={{ marginTop: '6px', fontSize: '0.74rem', color: formData.category?.toLowerCase() === 'vip' ? '#d97706' : '#2563eb', fontWeight: 600 }}>
+                                        {formData.category?.toLowerCase() === 'vip' 
+                                            ? '👑 VIP Entry: Remains in Entry Frames for room entrance & live stream arrival animations.' 
+                                            : `👤 Profile Frame: Selecting "${formData.category}" will move this frame to the Frames menu as a profile avatar frame.`}
+                                    </div>
                                 </div>
-                            )}
 
-                            <div className="form-group">
-                                <label style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: '6px', display: 'block' }}>
-                                    {editingFrame ? 'Replace Animation / Image (Optional)' : 'Entry Animation / Image (Required)'}
-                                </label>
-                                <input 
-                                    type="file" 
-                                    className="form-control" 
-                                    onChange={handleFileChange} 
-                                    accept=".svga,.png,.jpg,.jpeg,.webp,.gif" 
-                                    style={{ width: '100%', padding: '8px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
-                                />
-                                <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', display: 'block', marginTop: '4px' }}>
-                                    Supported: <strong>.svga</strong> (Dynamic entrance animation), <strong>.png</strong>, <strong>.webp</strong>, <strong>.gif</strong>
-                                </span>
+                                {editingFrame && (
+                                    <div className="form-group">
+                                        <label style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: '6px', display: 'block', color: 'var(--text-primary)' }}>Status</label>
+                                        <select 
+                                            className="form-control" 
+                                            value={formData.status} 
+                                            onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                            style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--glass-border, #cbd5e1)', fontWeight: 600 }}
+                                        >
+                                            <option value="active">Active (Available in Store)</option>
+                                            <option value="inactive">Inactive (Hidden)</option>
+                                        </select>
+                                    </div>
+                                )}
+
+                                <div className="form-group">
+                                    <label style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: '6px', display: 'block', color: 'var(--text-primary)' }}>
+                                        {editingFrame ? 'Replace Animation / Image (Optional)' : 'Entry Animation / Image (Required)'}
+                                    </label>
+                                    <input 
+                                        type="file" 
+                                        className="form-control" 
+                                        onChange={handleFileChange} 
+                                        accept=".svga,.png,.jpg,.jpeg,.webp,.gif" 
+                                        style={{ width: '100%', padding: '8px', borderRadius: '10px', border: '1px solid var(--glass-border, #cbd5e1)' }}
+                                    />
+                                    <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', display: 'block', marginTop: '4px' }}>
+                                        Supported: <strong>.svga</strong> (Dynamic entrance animation), <strong>.png</strong>, <strong>.webp</strong>, <strong>.gif</strong>
+                                    </span>
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
-                            <button type="button" className="secondary" onClick={() => setIsModalOpen(false)} style={{ borderRadius: '10px', padding: '10px 18px', fontWeight: 700 }}>
-                                Cancel
-                            </button>
-                            <button type="submit" className="primary" disabled={isSubmitting} style={{ background: '#f59e0b', borderRadius: '10px', padding: '10px 20px', fontWeight: 800 }}>
-                                {isSubmitting ? 'Saving...' : editingFrame ? 'Update Entry Frame' : 'Create Entry Frame'}
-                            </button>
-                        </div>
-                    </form>
+                            <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', padding: '16px 24px', borderTop: '1px solid var(--glass-border, #e2e8f0)', background: 'var(--input-bg, #f8fafc)' }}>
+                                <button type="button" className="secondary" onClick={() => setIsModalOpen(false)} style={{ borderRadius: '10px', padding: '10px 18px', fontWeight: 700 }}>
+                                    Cancel
+                                </button>
+                                <button type="submit" className="primary" disabled={isSubmitting} style={{ background: '#f59e0b', borderRadius: '10px', padding: '10px 20px', fontWeight: 800 }}>
+                                    {isSubmitting ? 'Saving...' : editingFrame ? 'Update Frame' : 'Create Entry Frame'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             )}
 
