@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminService } from '../services/api';
 import { toast } from 'react-hot-toast';
-import { Sparkles, Plus, Trash2, Edit, X, Check, Save, Image as ImageIcon, ShieldAlert, Calendar, Crown, Zap } from 'lucide-react';
+import { Sparkles, Plus, Trash2, Edit, X, Check, Save, Image as ImageIcon, ShieldAlert, Calendar, Crown, Zap, Volume2, ExternalLink } from 'lucide-react';
 import ConfirmationModal from '../components/ConfirmationModal';
 import MediaImage from '../components/MediaImage';
 import SvgaPlayer from '../components/SvgaPlayer';
@@ -172,6 +172,18 @@ const EntryFrames: React.FC = () => {
         }
     };
 
+    const openEntryPreview = (frame: any) => {
+        const previewUrl = frame.image || frame.imageUrl || frame.svgaUrl || '';
+        if (!previewUrl) {
+            toast.error('No animation or frame URL available');
+            return;
+        }
+        const soundParam = frame.soundUrl || frame.sound ? `&soundUrl=${encodeURIComponent(frame.soundUrl || frame.sound)}` : '';
+        const nameParam = `&name=${encodeURIComponent(frame.name || 'Entry Frame')}`;
+        const categoryParam = `&category=${encodeURIComponent(frame.category || 'VIP')}`;
+        window.open(`/gift-preview?url=${encodeURIComponent(previewUrl)}${nameParam}&type=entry${categoryParam}${soundParam}`, '_blank');
+    };
+
     return (
         <div className="dashboard-page users-page">
             {/* Header section */}
@@ -189,6 +201,24 @@ const EntryFrames: React.FC = () => {
                         <span>Add Entry Frame</span>
                     </button>
                 </div>
+            </div>
+
+            {/* Quick Tip Banner */}
+            <div style={{
+                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(217, 119, 6, 0.05))',
+                border: '1px solid rgba(245, 158, 11, 0.25)',
+                borderRadius: '12px',
+                padding: '12px 18px',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                color: '#b45309'
+            }}>
+                <Volume2 size={20} style={{ color: '#d97706', flexShrink: 0 }} />
+                <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>
+                    <strong>Verify with Sound:</strong> Click on any entry frame preview, frame name, or the <Volume2 size={14} style={{ display: 'inline', verticalAlign: 'middle' }} /> <strong>Preview</strong> button to open and verify the arrival effect in a new tab with sound active.
+                </span>
             </div>
 
             {/* Content list */}
@@ -230,20 +260,18 @@ const EntryFrames: React.FC = () => {
                                                 width: '64px', 
                                                 height: '64px', 
                                                 padding: '4px', 
-                                                border: '1px solid rgba(245, 158, 11, 0.3)', 
+                                                border: '1px solid rgba(245, 158, 11, 0.35)', 
                                                 borderRadius: '12px', 
-                                                background: 'rgba(245, 158, 11, 0.05)', 
+                                                background: 'rgba(245, 158, 11, 0.08)', 
                                                 display: 'flex', 
                                                 alignItems: 'center', 
                                                 justifyContent: 'center',
-                                                cursor: 'pointer' 
+                                                cursor: 'pointer',
+                                                position: 'relative',
+                                                transition: 'all 0.2s ease'
                                             }}
-                                            onClick={() => {
-                                                if (isSvgaFrame(frame.image)) {
-                                                    window.open('/gift-preview?url=' + encodeURIComponent(frame.image), '_blank');
-                                                }
-                                            }}
-                                            title="Click to preview animation"
+                                            onClick={() => openEntryPreview(frame)}
+                                            title="Click to open preview with sound in new tab"
                                         >
                                             {isSvgaFrame(frame.image) ? (
                                                 <SvgaPlayer 
@@ -263,13 +291,28 @@ const EntryFrames: React.FC = () => {
                                         </div>
                                     </td>
                                     <td>
-                                        <div style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '0.95rem' }}>
-                                            {frame.name}
+                                        <div 
+                                            onClick={() => openEntryPreview(frame)}
+                                            style={{ 
+                                                fontWeight: 800, 
+                                                color: 'var(--text-primary)', 
+                                                fontSize: '0.95rem',
+                                                cursor: 'pointer',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '6px'
+                                            }}
+                                            title="Click to preview with sound"
+                                        >
+                                            <span>{frame.name}</span>
+                                            <ExternalLink size={13} style={{ color: '#f59e0b', opacity: 0.7 }} />
                                         </div>
                                         {isSvgaFrame(frame.image) && (
-                                            <span style={{ fontSize: '0.7rem', color: '#f59e0b', fontWeight: 700 }}>
-                                                ✨ SVGA Dynamic Arrival
-                                            </span>
+                                            <div>
+                                                <span style={{ fontSize: '0.7rem', color: '#f59e0b', fontWeight: 700 }}>
+                                                    ✨ SVGA Dynamic Arrival
+                                                </span>
+                                            </div>
                                         )}
                                     </td>
                                     <td>
@@ -295,6 +338,14 @@ const EntryFrames: React.FC = () => {
                                     </td>
                                     <td>
                                         <div className="actions-wrapper" style={{ display: 'flex', gap: '8px' }}>
+                                            <button 
+                                                className="icon-btn" 
+                                                onClick={() => openEntryPreview(frame)} 
+                                                title="Preview with Sound in New Tab"
+                                                style={{ color: '#d97706', background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.3)' }}
+                                            >
+                                                <Volume2 size={16} />
+                                            </button>
                                             <button className="icon-btn" onClick={() => handleOpenEditModal(frame)} title="Edit Entry Frame">
                                                 <Edit size={16} />
                                             </button>
