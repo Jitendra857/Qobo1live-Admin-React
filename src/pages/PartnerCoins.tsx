@@ -927,36 +927,39 @@ const PartnerCoins: React.FC = () => {
 
       {/* ── 5. Simplified Coins Adjustment Modal ──────────────────────── */}
       {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content glass-panel slide-up" style={{ maxWidth: '480px', padding: '24px' }}>
+        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+          <div
+            className="modal-content glass-panel slide-up"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '440px',
+              width: '100%',
+              maxHeight: '85vh',
+              display: 'flex',
+              flexDirection: 'column',
+              padding: 0,
+              borderRadius: '12px',
+              overflow: 'hidden',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
+            }}
+          >
             {/* Modal Header */}
-            <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: '10px',
-                  background: modalAction === 'remove' ? 'rgba(239, 68, 68, 0.12)' : modalAction === 'set' ? 'rgba(99, 102, 241, 0.12)' : 'rgba(16, 185, 129, 0.12)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  {modalAction === 'remove' ? (
-                    <MinusCircle size={22} color="#ef4444" />
-                  ) : modalAction === 'set' ? (
-                    <Edit3 size={20} color="#6366f1" />
-                  ) : (
-                    <Coins size={22} color="#10b981" />
-                  )}
-                </div>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '1.18rem', fontWeight: 800 }}>
-                    {modalAction === 'remove' ? 'Deduct Coins' : modalAction === 'set' ? 'Set Exact Balance' : 'Add Partner Coins'}
-                  </h3>
-                  <p style={{ margin: 0, fontSize: '0.76rem', color: 'var(--text-secondary)' }}>
-                    {targetPartners.length === 1 ? `Withdrawable earning for ${targetPartners[0].name}` : `Applying to ${targetPartners.length} selected partners`}
-                  </p>
-                </div>
+            <div style={{
+              flexShrink: 0,
+              padding: '12px 18px',
+              borderBottom: '1px solid #e2e8f0',
+              background: '#f8fafc',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>
+                  {modalAction === 'remove' ? 'Deduct Partner Coins' : modalAction === 'set' ? 'Set Partner Balance' : 'Add Partner Coins'}
+                </h3>
+                <p style={{ margin: 0, fontSize: '0.72rem', color: '#64748b' }}>
+                  {targetPartners.length === 1 ? `Withdrawable earning for ${targetPartners[0].name}` : `Applying to ${targetPartners.length} selected partners`}
+                </p>
               </div>
               <button
                 type="button"
@@ -964,294 +967,197 @@ const PartnerCoins: React.FC = () => {
                 onClick={() => setIsModalOpen(false)}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleAdjustSubmit}>
-              {/* Partner Card */}
-              {targetPartners.length === 1 ? (
-                <div style={{
-                  background: 'var(--input-bg)',
-                  border: '1px solid var(--glass-border)',
-                  borderRadius: '12px',
-                  padding: '12px 14px',
-                  marginBottom: '16px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <img
-                      src={targetPartners[0].displayPicture || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}
-                      alt=""
-                      style={{ width: '40px', height: '40px', borderRadius: '10px', objectFit: 'cover' }}
-                    />
+            <form onSubmit={handleAdjustSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+              {/* Scrollable Modal Body */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {/* Compact Beneficiary Strip */}
+                {targetPartners.length === 1 ? (
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                    padding: '8px 12px'
+                  }}>
                     <div>
-                      <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--text-primary)' }}>
-                        {targetPartners[0].name}
-                      </div>
-                      <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>
-                        {targetPartners[0].partnerType === 'super_admin' ? 'Super Admin' : `Agency (${targetPartners[0].agencyCode || 'Direct'})`}
-                      </div>
+                      <strong style={{ fontSize: '0.88rem', color: '#0f172a' }}>{targetPartners[0].name}</strong>
+                      <span style={{ fontSize: '0.72rem', color: '#64748b', marginLeft: '6px' }}>
+                        ({targetPartners[0].partnerType === 'super_admin' ? 'Super Admin' : `Agency: ${targetPartners[0].agencyCode || 'Direct'}`})
+                      </span>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#16a34a' }}>
+                        {(targetPartners[0].coins || 0).toLocaleString()} Coins
+                      </span>
+                      <span style={{ fontSize: '0.7rem', color: '#64748b', marginLeft: '4px' }}>
+                        (≈ ${((targetPartners[0].coins || 0) / 10000).toFixed(2)})
+                      </span>
                     </div>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Current Earning</div>
-                    <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#16a34a' }}>
-                      {(targetPartners[0].coins || 0).toLocaleString()} Coins
-                    </div>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
-                      ≈ ${((targetPartners[0].coins || 0) / 10000).toFixed(2)} USD
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div style={{
-                  background: 'rgba(59, 130, 246, 0.08)',
-                  border: '1px solid rgba(59, 130, 246, 0.2)',
-                  borderRadius: '12px',
-                  padding: '12px 16px',
-                  marginBottom: '16px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
-                  <div>
-                    <strong style={{ fontSize: '0.95rem', color: '#3b82f6' }}>
+                ) : (
+                  <div style={{
+                    background: 'rgba(59, 130, 246, 0.08)',
+                    border: '1px solid rgba(59, 130, 246, 0.2)',
+                    borderRadius: '8px',
+                    padding: '8px 12px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}>
+                    <strong style={{ fontSize: '0.88rem', color: '#3b82f6' }}>
                       {targetPartners.length} Partners Selected
                     </strong>
-                    <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>
-                      Coins will be credited to each partner's withdrawable earning
+                    <span style={{ fontSize: '0.7rem', color: '#64748b' }}>
+                      Bulk Update
+                    </span>
+                  </div>
+                )}
+
+                {/* Payout Cycle (Only for Add Coins) */}
+                {modalAction === 'add' && (
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#475569', marginBottom: '5px' }}>
+                      Payout Cycle:
+                    </label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+                      {(['weekly', 'monthly', 'yearly'] as PeriodType[]).map((p) => (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => setModalPeriod(p)}
+                          style={{
+                            padding: '6px',
+                            borderRadius: '6px',
+                            border: modalPeriod === p ? '2px solid #10b981' : '1px solid #cbd5e1',
+                            background: modalPeriod === p ? 'rgba(16, 185, 129, 0.12)' : '#ffffff',
+                            color: modalPeriod === p ? '#059669' : '#64748b',
+                            fontWeight: 700,
+                            fontSize: '0.78rem',
+                            cursor: 'pointer',
+                            textTransform: 'capitalize'
+                          }}
+                        >
+                          {p}
+                        </button>
+                      ))}
                     </div>
                   </div>
-                  <span style={{
-                    background: '#3b82f6',
-                    color: '#fff',
-                    padding: '3px 8px',
-                    borderRadius: '6px',
-                    fontSize: '0.72rem',
-                    fontWeight: 800
-                  }}>
-                    BULK
-                  </span>
-                </div>
-              )}
+                )}
 
-              {/* Simple Action Tabs */}
-              <div style={{
-                display: 'flex',
-                background: 'var(--input-bg)',
-                borderRadius: '10px',
-                padding: '4px',
-                marginBottom: '16px',
-                gap: '4px'
-              }}>
-                <button
-                  type="button"
-                  onClick={() => setModalAction('add')}
-                  style={{
-                    flex: 1,
-                    padding: '8px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    background: modalAction === 'add' ? '#10b981' : 'transparent',
-                    color: modalAction === 'add' ? '#fff' : 'var(--text-secondary)',
-                    fontWeight: 800,
-                    fontSize: '0.82rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '5px'
-                  }}
-                >
-                  <PlusCircle size={15} /> Add
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setModalAction('remove')}
-                  style={{
-                    flex: 1,
-                    padding: '8px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    background: modalAction === 'remove' ? '#ef4444' : 'transparent',
-                    color: modalAction === 'remove' ? '#fff' : 'var(--text-secondary)',
-                    fontWeight: 800,
-                    fontSize: '0.82rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '5px'
-                  }}
-                >
-                  <MinusCircle size={15} /> Deduct
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setModalAction('set')}
-                  style={{
-                    flex: 1,
-                    padding: '8px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    background: modalAction === 'set' ? '#6366f1' : 'transparent',
-                    color: modalAction === 'set' ? '#fff' : 'var(--text-secondary)',
-                    fontWeight: 800,
-                    fontSize: '0.82rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '5px'
-                  }}
-                >
-                  <Edit3 size={15} /> Set Balance
-                </button>
-              </div>
-
-              {/* Cycle selection only relevant for Add */}
-              {modalAction === 'add' && (
-                <div style={{ marginBottom: '14px' }}>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '6px' }}>
-                    Payout Cycle:
+                {/* Coin Amount Input */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#475569', marginBottom: '5px' }}>
+                    {modalAction === 'set' ? 'New Exact Balance:' : modalAction === 'remove' ? 'Coins to Deduct:' : 'Coins to Add:'}
                   </label>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
-                    {(['weekly', 'monthly', 'yearly'] as PeriodType[]).map((p) => (
-                      <button
-                        key={p}
-                        type="button"
-                        onClick={() => setModalPeriod(p)}
-                        style={{
-                          padding: '8px',
-                          borderRadius: '8px',
-                          border: modalPeriod === p ? '2px solid #10b981' : '1px solid var(--glass-border)',
-                          background: modalPeriod === p ? 'rgba(16, 185, 129, 0.12)' : 'var(--bg-surface)',
-                          color: modalPeriod === p ? '#059669' : 'var(--text-secondary)',
-                          fontWeight: 800,
-                          fontSize: '0.82rem',
-                          cursor: 'pointer',
-                          textTransform: 'capitalize'
-                        }}
-                      >
-                        {p}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Coin Amount Input */}
-              <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '6px' }}>
-                  {modalAction === 'set' ? 'New Exact Balance:' : modalAction === 'remove' ? 'Coins to Deduct:' : 'Coins to Add:'}
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <Coins size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: modalAction === 'remove' ? '#ef4444' : '#10b981' }} />
                   <input
                     type="number"
                     min="0"
-                    placeholder="Enter coins (e.g. 10000)"
+                    placeholder="Enter coin amount (e.g. 10000)"
                     value={modalAmount}
                     onChange={(e) => setModalAmount(e.target.value)}
                     required
                     style={{
                       width: '100%',
-                      padding: '10px 14px 10px 38px',
-                      borderRadius: '10px',
-                      border: '1px solid var(--glass-border)',
-                      background: 'var(--input-bg)',
-                      color: 'var(--text-primary)',
-                      fontSize: '1rem',
-                      fontWeight: 800,
+                      padding: '9px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid #cbd5e1',
+                      background: '#ffffff',
+                      color: '#0f172a',
+                      fontSize: '0.95rem',
+                      fontWeight: 700,
                       outline: 'none',
                       boxSizing: 'border-box'
                     }}
                   />
+
+                  {/* Quick Preset Buttons (Single Line) */}
+                  {modalAction !== 'set' && (
+                    <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
+                      {[10000, 50000, 100000].map((amt) => (
+                        <button
+                          key={amt}
+                          type="button"
+                          onClick={() => setModalAmount(String(amt))}
+                          style={{
+                            flex: 1,
+                            padding: '4px 6px',
+                            borderRadius: '6px',
+                            border: '1px solid #e2e8f0',
+                            background: '#f8fafc',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            color: '#475569',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          +{amt.toLocaleString()} (${amt / 10000})
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Clean text calculation */}
+                  {modalAmount && Number(modalAmount) > 0 && (
+                    <div style={{
+                      marginTop: '6px',
+                      fontSize: '0.76rem',
+                      fontWeight: 700,
+                      color: modalAction === 'remove' ? '#dc2626' : '#16a34a'
+                    }}>
+                      {modalAction === 'remove' ? '− ' : '+ '}${(Number(modalAmount) / 10000).toFixed(2)} USD (10,000 Coins = $1.00 USD)
+                    </div>
+                  )}
                 </div>
 
-                {/* Quick Presets */}
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '8px' }}>
-                  {[10000, 50000, 100000, 500000, 1000000].map((amt) => (
-                    <button
-                      key={amt}
-                      type="button"
-                      onClick={() => setModalAmount(String(amt))}
-                      style={{
-                        padding: '4px 8px',
-                        borderRadius: '6px',
-                        border: '1px solid var(--glass-border)',
-                        background: 'var(--bg-surface)',
-                        fontSize: '0.74rem',
-                        fontWeight: 700,
-                        color: 'var(--text-secondary)',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {modalAction === 'set' ? '' : '+'}{amt.toLocaleString()} (${amt / 10000})
-                    </button>
-                  ))}
+                {/* Reason / Notes */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                    Note / Reason (Optional):
+                  </label>
+                  <input
+                    type="text"
+                    placeholder={modalAction === 'remove' ? 'Reason for deduction' : `e.g. ${modalPeriod} bonus`}
+                    value={modalReason}
+                    onChange={(e) => setModalReason(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid #cbd5e1',
+                      background: '#ffffff',
+                      color: '#0f172a',
+                      fontSize: '0.82rem',
+                      boxSizing: 'border-box',
+                      outline: 'none'
+                    }}
+                  />
                 </div>
               </div>
 
-              {/* Conversion Preview Box */}
-              {modalAmount && Number(modalAmount) > 0 && (
-                <div style={{
-                  background: modalAction === 'remove' ? 'rgba(239, 68, 68, 0.08)' : 'rgba(16, 185, 129, 0.08)',
-                  border: modalAction === 'remove' ? '1px solid rgba(239, 68, 68, 0.2)' : '1px solid rgba(16, 185, 129, 0.2)',
-                  borderRadius: '10px',
-                  padding: '10px 14px',
-                  marginBottom: '14px',
+              {/* Fixed Pinned Modal Footer with Always-Visible Buttons */}
+              <div
+                style={{
                   display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
-                  <div>
-                    <span style={{ color: modalAction === 'remove' ? '#dc2626' : '#16a34a', fontWeight: 800, fontSize: '0.82rem', display: 'block' }}>
-                      {modalAction === 'remove' ? 'Deduction Value:' : modalAction === 'set' ? 'Total USD Value:' : 'Withdrawable USD Added:'}
-                    </span>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
-                      Official rate: 10,000 Coins = $1.00 USD
-                    </span>
-                  </div>
-                  <strong style={{ color: modalAction === 'remove' ? '#dc2626' : '#15803d', fontSize: '1.05rem', fontWeight: 900 }}>
-                    ${(Number(modalAmount) / 10000).toFixed(2)} USD
-                  </strong>
-                </div>
-              )}
-
-              {/* Reason / Notes */}
-              <div style={{ marginBottom: '18px' }}>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '5px' }}>
-                  Note / Reason (Optional):
-                </label>
-                <input
-                  type="text"
-                  placeholder={modalAction === 'remove' ? 'Reason for deduction' : `e.g. ${modalPeriod} agency bonus`}
-                  value={modalReason}
-                  onChange={(e) => setModalReason(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '9px 12px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--glass-border)',
-                    background: 'var(--input-bg)',
-                    color: 'var(--text-primary)',
-                    fontSize: '0.85rem',
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-
-              {/* Action Buttons */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 18px',
+                  borderTop: '1px solid #e2e8f0',
+                  background: '#f8fafc',
+                  flexShrink: 0
+                }}
+              >
                 <button
                   type="button"
                   className="secondary"
                   onClick={() => setIsModalOpen(false)}
-                  style={{ borderRadius: '8px', padding: '9px 16px', fontWeight: 700 }}
+                  style={{ borderRadius: '6px', padding: '7px 16px', fontWeight: 600, fontSize: '0.82rem' }}
                 >
                   Cancel
                 </button>
@@ -1260,22 +1166,23 @@ const PartnerCoins: React.FC = () => {
                   type="submit"
                   disabled={submitting || !modalAmount}
                   style={{
-                    padding: '9px 22px',
-                    borderRadius: '8px',
+                    padding: '7px 20px',
+                    borderRadius: '6px',
                     border: 'none',
                     background: modalAction === 'remove' ? '#ef4444' : modalAction === 'set' ? '#6366f1' : '#10b981',
-                    color: '#fff',
+                    color: '#ffffff',
                     cursor: submitting || !modalAmount ? 'not-allowed' : 'pointer',
-                    fontWeight: 800,
-                    fontSize: '0.88rem'
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                   }}
                 >
                   {submitting
-                    ? 'Processing...'
+                    ? 'Saving...'
                     : modalAction === 'remove'
                     ? 'Deduct Coins'
                     : modalAction === 'set'
-                    ? 'Update Balance'
+                    ? 'Set Balance'
                     : 'Add Coins'}
                 </button>
               </div>
