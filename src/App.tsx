@@ -43,6 +43,7 @@ import RegisterAgency from './pages/RegisterAgency';
 import RegisterHost from './pages/RegisterHost';
 import SuperAdminRequests from './pages/SuperAdminRequests';
 import AvatarFrames from './pages/AvatarFrames';
+import PartnerCoins from './pages/PartnerCoins';
 import EntryFrames from './pages/EntryFrames';
 import ProfileBackgrounds from './pages/ProfileBackgrounds';
 import RoomBackgrounds from './pages/RoomBackgrounds';
@@ -169,6 +170,8 @@ function AppContent() {
                   <Route path="/super-admin-requests" element={<SuperAdminRequests />} />
                   <Route path="/coin-seller-forms" element={<SellerManager />} />
                   <Route path="/agents" element={<AgencyHub />} />
+                  <Route path="/partner-coins" element={<PartnerCoins />} />
+                  <Route path="/agency-coins" element={<PartnerCoins />} />
                   <Route path="/host-registry" element={<HostRegistry />} />
                   <Route path="/performance-tracking" element={<PerformanceTracking />} />
                   <Route path="/pk-battles" element={<PKBattleManager />} />

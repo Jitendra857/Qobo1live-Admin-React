@@ -68,6 +68,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
       title: 'Agencies & Hosts', icon: <UserCheck size={17} />, iconClass: 'icon-cyan',
       subItems: [
         { title: 'Agencies', path: '/agents' },
+        { title: 'Partner Coins', path: '/partner-coins' },
         { title: 'Hosts',    path: '/host-registry' },
         { title: 'Performance Tracker', path: '/performance-tracking' },
       ],
@@ -96,6 +97,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
       title: 'Earnings & Payouts', icon: <Wallet size={17} />, iconClass: 'icon-green',
       subItems: [
         { title: 'Coins Setup', path: '/coins-setup' },
+        { title: 'Partner Coins', path: '/partner-coins' },
         { title: 'User Balances', path: '/economy' },
         { title: 'Withdraw Requests', path: '/withdrawals' },
         { title: 'Payment History', path: '/transactions' },

@@ -162,6 +162,32 @@ export const adminService = {
 
   assignCoins: (data: { user_id: string; amount: number; type?: 'coins' | 'diamonds'; action?: 'add' | 'remove' | 'set' }) => 
     api.post('/admin/assign-coins', data),
+
+  // Partner Coins (Agency & Super Admin Allocation & History)
+  getPartnerCoins: (type?: string, search?: string) => {
+    const params = new URLSearchParams();
+    if (type && type !== 'all') params.append('type', type);
+    if (search && search.trim()) params.append('search', search.trim());
+    const qs = params.toString();
+    return api.get(`/admin/partner-coins/list${qs ? `?${qs}` : ''}`);
+  },
+  adjustPartnerCoins: (data: {
+    userIds: string[];
+    amount: number;
+    action: 'add' | 'remove' | 'set';
+    period?: 'weekly' | 'monthly' | 'yearly' | 'custom';
+    reason?: string;
+  }) => api.post('/admin/partner-coins/adjust', data),
+  getPartnerCoinsHistory: (params?: { userId?: string; period?: string; type?: string; page?: number; limit?: number }) => {
+    const sp = new URLSearchParams();
+    if (params?.userId) sp.append('userId', params.userId);
+    if (params?.period && params.period !== 'all') sp.append('period', params.period);
+    if (params?.type && params.type !== 'all') sp.append('type', params.type);
+    if (params?.page) sp.append('page', String(params.page));
+    if (params?.limit) sp.append('limit', String(params.limit));
+    const qs = sp.toString();
+    return api.get(`/admin/partner-coins/history${qs ? `?${qs}` : ''}`);
+  },
   
   approveHost: (data: { application_id: string; status: string; feedback?: string }) => 
     api.post('/admin/host-approve', data),
