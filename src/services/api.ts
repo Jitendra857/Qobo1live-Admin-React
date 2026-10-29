@@ -75,7 +75,7 @@ export const adminService = {
   manageCategory: (action: string, data: any, id?: string) => 
     api.post(`/admin/category-action?action=${action}${id ? `&id=${id}` : ''}`, data),
   getAgencies: (superAdmin?: string) => api.get(`/admin/agency-list${superAdmin && superAdmin !== 'all' ? `?superAdmin=${encodeURIComponent(superAdmin)}` : ''}`),
-  getWithdrawals: () => api.get('/admin/withdrawals'),
+  getWithdrawals: (params?: { status?: string; search?: string }) => api.get('/admin/withdrawals', { params }),
   getTransactions: (page?: number, limit?: number, type?: string, search?: string) => {
     const params = new URLSearchParams();
     if (page) params.append('page', String(page));
@@ -85,7 +85,7 @@ export const adminService = {
     const qs = params.toString();
     return api.get(`/admin/transactions${qs ? `?${qs}` : ''}`);
   },
-  processWithdrawal: (data: { id: string; status: string }) => 
+  processWithdrawal: (data: { id: string; status: string; adminNote?: string; reason?: string }) => 
     api.post('/admin/withdrawal-process', data),
   getAdmins: () => api.get('/admin/admins'),
   manageAdmin: (action: string, data: any, id?: string) => 
