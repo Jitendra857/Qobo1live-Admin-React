@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { adminService } from '../services/api';
 import toast from 'react-hot-toast';
 import {
   Coins, Users, ShieldCheck, Building2, Search, RefreshCw,
   PlusCircle, MinusCircle, Edit3, History, CheckSquare, Square,
   Calendar, DollarSign, Filter, X, ArrowUpRight, ArrowDownRight,
-  Sliders, AlertCircle, FileText
+  Sliders, AlertCircle, FileText, Check, LayoutGrid, List,
+  ExternalLink, Sparkles, TrendingUp, Clock, UserCheck
 } from 'lucide-react';
 import '../styles/UserManagement.css';
 import '../styles/Modal.css';
@@ -62,6 +63,7 @@ const PartnerCoins: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'agency' | 'super_admin'>('all');
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
 
   // Multi-select state
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
@@ -81,14 +83,13 @@ const PartnerCoins: React.FC = () => {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyFilterPeriod, setHistoryFilterPeriod] = useState<string>('all');
   const [historyUserId, setHistoryUserId] = useState<string | undefined>(undefined);
-  const [historyUserTitle, setHistoryUserTitle] = useState<string>('All Partners');
+  const [historyUserTitle, setHistoryUserTitle] = useState<string>('All Partner Transactions');
 
   const fetchPartners = async () => {
     try {
       setLoading(true);
       const res = await adminService.getPartnerCoins(typeFilter, searchTerm);
       setPartners(res.data.data || []);
-      // Clear selections if filtered out
       setSelectedUserIds([]);
     } catch (err: any) {
       console.error(err);
@@ -135,7 +136,7 @@ const PartnerCoins: React.FC = () => {
   // Open Modal for Bulk Selected Partners
   const handleOpenBulkModal = (action: ActionType = 'add') => {
     if (selectedUserIds.length === 0) {
-      toast.error('Please select at least one partner using checkboxes');
+      toast.error('Please select at least one partner using the checkboxes');
       return;
     }
     const selected = partners.filter(p => selectedUserIds.includes(p.userId));
@@ -147,7 +148,7 @@ const PartnerCoins: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  // Submit Coin Adjustment (Single or Bulk)
+  // Submit Coin Adjustment
   const handleAdjustSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const amountNum = Number(modalAmount);
@@ -173,8 +174,8 @@ const PartnerCoins: React.FC = () => {
       });
 
       const count = res.data?.data?.updatedCount || userIds.length;
-      const actionLabel = modalAction === 'add' ? 'added to' : modalAction === 'remove' ? 'deducted from' : 'set for';
-      toast.success(`Successfully ${actionLabel} ${count} partner(s)!`);
+      const actionLabel = modalAction === 'add' ? 'credited to' : modalAction === 'remove' ? 'deducted from' : 'updated for';
+      toast.success(`Coins successfully ${actionLabel} ${count} partner(s)!`);
 
       setIsModalOpen(false);
       fetchPartners();
@@ -205,654 +206,794 @@ const PartnerCoins: React.FC = () => {
 
   const handleOpenHistory = (userId?: string, userName?: string) => {
     setHistoryUserId(userId);
-    setHistoryUserTitle(userName ? `History: ${userName}` : 'All Partners History');
+    setHistoryUserTitle(userName ? `History: ${userName}` : 'All Partner Transactions');
     setHistoryFilterPeriod('all');
     setIsHistoryOpen(true);
     fetchHistory(userId, 'all');
   };
 
-  // Statistics calculation
+  // Stats summary
   const totalAgencies = partners.filter(p => p.partnerType === 'agency').length;
   const totalSuperAdmins = partners.filter(p => p.partnerType === 'super_admin').length;
   const totalCoinsInPool = partners.reduce((sum, p) => sum + (p.coins || 0), 0);
+  const totalUsdValue = (totalCoinsInPool / 10000).toFixed(2);
 
   return (
-    <div className="user-management" style={{ padding: '24px' }}>
-      {/* Page Header */}
-      <div className="header-actions" style={{ flexWrap: 'wrap', gap: '16px' }}>
+    <div className="user-management fade-in">
+      {/* ── Scoped Premium Styling matching Qobo1live Admin System ─────────── */}
+      <style>{`
+        .partner-stats-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 20px;
+          margin-bottom: 28px;
+        }
+        .partner-stat-card {
+          background: var(--bg-surface) !important;
+          border: 1px solid var(--glass-border) !important;
+          border-radius: 20px;
+          padding: 24px 20px;
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          box-shadow: var(--card-shadow) !important;
+          transition: all 0.3s ease;
+          position: relative;
+          overflow: hidden;
+        }
+        .partner-stat-card::before {
+          content: '';
+          position: absolute;
+          top: 0; left: 0; right: 0;
+          height: 3px;
+        }
+        .partner-stat-card.blue::before   { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+        .partner-stat-card.cyan::before   { background: linear-gradient(90deg, #06b6d4, #22d3ee); }
+        .partner-stat-card.purple::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+        .partner-stat-card.amber::before  { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .partner-stat-card:hover {
+          transform: translateY(-4px);
+          border-color: var(--accent-primary) !important;
+          box-shadow: var(--card-shadow-hover) !important;
+        }
+
+        .stat-icon-box {
+          width: 52px; height: 52px;
+          border-radius: 16px;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+        .stat-icon-box.blue   { background: rgba(59,130,246,0.12);  color: #3b82f6; }
+        .stat-icon-box.cyan   { background: rgba(6,182,212,0.12);   color: #06b6d4; }
+        .stat-icon-box.purple { background: rgba(139,92,246,0.12);  color: #8b5cf6; }
+        .stat-icon-box.amber  { background: rgba(245,158,11,0.12);  color: #f59e0b; }
+        .stat-num {
+          font-size: 1.85rem; font-weight: 900;
+          color: var(--text-primary) !important;
+          line-height: 1; letter-spacing: -0.03em;
+        }
+        .stat-lbl {
+          font-size: 0.72rem; font-weight: 800;
+          color: var(--text-secondary) !important;
+          text-transform: uppercase; letter-spacing: 0.08em;
+          margin-top: 5px;
+        }
+
+        .partner-toolbar {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 22px;
+          flex-wrap: wrap;
+        }
+        .partner-search {
+          flex: 1;
+          min-width: 240px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          background: var(--input-bg) !important;
+          border: 1px solid var(--glass-border) !important;
+          border-radius: 14px;
+          padding: 0 16px;
+          height: 46px;
+        }
+        .partner-search input {
+          background: transparent; border: none; outline: none;
+          color: var(--text-primary) !important;
+          font-size: 0.9rem; font-weight: 600; width: 100%;
+        }
+        .partner-search input::placeholder { color: var(--text-secondary) !important; }
+
+        .filter-pill {
+          padding: 8px 16px;
+          border-radius: 12px;
+          font-size: 0.82rem;
+          font-weight: 800;
+          cursor: pointer;
+          border: 1px solid var(--glass-border);
+          background: var(--bg-surface);
+          color: var(--text-secondary);
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          transition: all 0.2s ease;
+        }
+        .filter-pill.active {
+          background: var(--accent-primary) !important;
+          color: #fff !important;
+          border-color: var(--accent-primary) !important;
+          box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+        }
+
+        /* Floating Modern Table Style */
+        .premium-partner-table {
+          width: 100% !important;
+          border-collapse: separate !important;
+          border-spacing: 0 10px !important;
+        }
+        .premium-partner-table th {
+          padding: 14px 18px !important;
+          font-size: 0.72rem !important; font-weight: 800 !important;
+          text-transform: uppercase !important; letter-spacing: 0.1em !important;
+          color: var(--text-secondary) !important; border: none !important;
+        }
+        .premium-partner-table td {
+          padding: 16px 18px !important;
+          background: var(--bg-surface) !important;
+          border-top: 1px solid var(--glass-border) !important;
+          border-bottom: 1px solid var(--glass-border) !important;
+          color: var(--text-primary) !important;
+          vertical-align: middle !important;
+          height: 72px !important;
+        }
+        .premium-partner-table td:first-child {
+          border-left: 1px solid var(--glass-border) !important;
+          border-radius: 16px 0 0 16px !important;
+        }
+        .premium-partner-table td:last-child {
+          border-right: 1px solid var(--glass-border) !important;
+          border-radius: 0 16px 16px 0 !important;
+        }
+        .premium-partner-table tbody tr {
+          box-shadow: var(--card-shadow) !important;
+          transition: all 0.25s ease !important;
+        }
+        .premium-partner-table tbody tr:hover {
+          transform: translateY(-2px) !important;
+          box-shadow: var(--card-shadow-hover) !important;
+        }
+        .premium-partner-table tbody tr:hover td {
+          border-color: var(--accent-primary) !important;
+        }
+        .premium-partner-table tbody tr.selected td {
+          background: rgba(59, 130, 246, 0.05) !important;
+          border-color: #3b82f6 !important;
+        }
+
+        .badge-agency-code {
+          font-family: monospace;
+          font-size: 0.8rem;
+          font-weight: 800;
+          color: #0284c7 !important;
+          background: rgba(2, 132, 199, 0.1) !important;
+          padding: 4px 10px;
+          border-radius: 8px;
+          border: 1px solid rgba(2, 132, 199, 0.2) !important;
+          display: inline-block;
+        }
+        .badge-coins-val {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          border-radius: 10px;
+          font-weight: 800;
+          font-size: 0.95rem;
+          background: rgba(245, 158, 11, 0.12) !important;
+          color: #d97706 !important;
+          border: 1px solid rgba(245, 158, 11, 0.25) !important;
+        }
+        .role-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 0.72rem;
+          font-weight: 800;
+          padding: 5px 12px;
+          border-radius: 20px;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+        .role-pill.super-admin {
+          background: rgba(139, 92, 246, 0.12) !important;
+          color: #7c3aed !important;
+          border: 1px solid rgba(139, 92, 246, 0.25) !important;
+        }
+        .role-pill.agency {
+          background: rgba(6, 182, 212, 0.12) !important;
+          color: #0891b2 !important;
+          border: 1px solid rgba(6, 182, 212, 0.25) !important;
+        }
+
+        .action-chip-btn {
+          padding: 6px 10px;
+          border-radius: 8px;
+          font-size: 0.76rem;
+          font-weight: 700;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          transition: all 0.2s ease;
+          border: none;
+        }
+        .action-chip-btn.add {
+          background: rgba(16, 185, 129, 0.12) !important;
+          color: #059669 !important;
+          border: 1px solid rgba(16, 185, 129, 0.25) !important;
+        }
+        .action-chip-btn.add:hover {
+          background: #10b981 !important;
+          color: #fff !important;
+        }
+        .action-chip-btn.deduct {
+          background: rgba(239, 68, 68, 0.1) !important;
+          color: #dc2626 !important;
+          border: 1px solid rgba(239, 68, 68, 0.2) !important;
+        }
+        .action-chip-btn.deduct:hover {
+          background: #ef4444 !important;
+          color: #fff !important;
+        }
+        .action-chip-btn.edit {
+          background: var(--input-bg) !important;
+          color: var(--text-primary) !important;
+          border: 1px solid var(--glass-border) !important;
+        }
+        .action-chip-btn.edit:hover {
+          border-color: var(--accent-primary) !important;
+          color: var(--accent-primary) !important;
+        }
+        .action-chip-btn.history {
+          background: rgba(99, 102, 241, 0.1) !important;
+          color: #6366f1 !important;
+          border: 1px solid rgba(99, 102, 241, 0.2) !important;
+        }
+        .action-chip-btn.history:hover {
+          background: #6366f1 !important;
+          color: #fff !important;
+        }
+      `}</style>
+
+      {/* ── 1. Page Header ────────────────────────────────────────────────── */}
+      <div className="header-actions" style={{ marginBottom: '28px' }}>
         <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+            <span style={{
+              background: 'rgba(245, 158, 11, 0.12)',
+              color: '#d97706',
+              padding: '4px 10px',
+              borderRadius: '20px',
+              fontSize: '0.75rem',
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em'
+            }}>
+              Community & Users
+            </span>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>•</span>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 600 }}>Incentives & Payouts</span>
+          </div>
+
           <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Coins size={32} color="#f59e0b" />
             Partner Coins Management
           </h1>
-          <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '0.95rem' }}>
-            Allocate, adjust, and track <strong>My Coins</strong> earnings for Agencies & Super Admins. Withdrawable in mobile app at <strong>10,000 Coins = $1.00</strong>.
+          <p style={{ color: 'var(--text-secondary)', fontWeight: 600, marginTop: '4px', fontSize: '0.92rem' }}>
+            Award recruitment incentives in <strong>My Coins</strong> to Agencies & Super Admins (Withdrawable at <strong>10,000 Coins = $1.00 USD</strong>).
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
           <button
             type="button"
-            className="secondary"
+            className="secondary flex items-center gap-2"
             onClick={() => handleOpenHistory()}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '10px 16px',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              background: '#f8fafc',
-              border: '1px solid #cbd5e1',
-              fontWeight: 600
-            }}
+            style={{ borderRadius: '12px', padding: '10px 18px', fontWeight: 700 }}
           >
-            <History size={16} color="#6366f1" />
-            Full History
+            <History size={16} /> Audit History
           </button>
 
           <button
             type="button"
-            className="primary"
+            className="primary flex items-center gap-2"
             disabled={selectedUserIds.length === 0}
             onClick={() => handleOpenBulkModal('add')}
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
+              borderRadius: '12px',
               padding: '10px 20px',
-              borderRadius: '8px',
-              background: selectedUserIds.length > 0 ? '#10b981' : '#94a3b8',
-              cursor: selectedUserIds.length > 0 ? 'pointer' : 'not-allowed',
-              fontWeight: 700
+              fontWeight: 800,
+              background: selectedUserIds.length > 0 ? 'linear-gradient(135deg, #10b981, #059669)' : undefined,
+              opacity: selectedUserIds.length > 0 ? 1 : 0.6,
+              cursor: selectedUserIds.length > 0 ? 'pointer' : 'not-allowed'
             }}
           >
-            <PlusCircle size={18} />
+            <PlusCircle size={17} />
             Bulk Add Coins {selectedUserIds.length > 0 && `(${selectedUserIds.length})`}
           </button>
         </div>
       </div>
 
-      {/* Top Stat Cards */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-        gap: '16px',
-        marginBottom: '24px'
-      }}>
-        <div className="glass-container" style={{ padding: '16px 20px', borderRadius: '12px', borderLeft: '4px solid #3b82f6' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>Total Partners</span>
-            <Users size={20} color="#3b82f6" />
+      {/* ── 2. Top Statistics Cards Grid ─────────────────────────────────── */}
+      <div className="partner-stats-grid">
+        <div className="partner-stat-card blue">
+          <div className="stat-icon-box blue"><Users size={24} /></div>
+          <div>
+            <div className="stat-num">{partners.length}</div>
+            <div className="stat-lbl">Total Partners</div>
           </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, marginTop: '8px', color: '#0f172a' }}>
-            {partners.length}
-          </div>
-          <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Agencies + Super Admins</span>
         </div>
 
-        <div className="glass-container" style={{ padding: '16px 20px', borderRadius: '12px', borderLeft: '4px solid #06b6d4' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>Agencies</span>
-            <Building2 size={20} color="#06b6d4" />
+        <div className="partner-stat-card cyan">
+          <div className="stat-icon-box cyan"><Building2 size={24} /></div>
+          <div>
+            <div className="stat-num">{totalAgencies}</div>
+            <div className="stat-lbl">Active Agencies</div>
           </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, marginTop: '8px', color: '#0f172a' }}>
-            {totalAgencies}
-          </div>
-          <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Registered agencies</span>
         </div>
 
-        <div className="glass-container" style={{ padding: '16px 20px', borderRadius: '12px', borderLeft: '4px solid #8b5cf6' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>Super Admins</span>
-            <ShieldCheck size={20} color="#8b5cf6" />
+        <div className="partner-stat-card purple">
+          <div className="stat-icon-box purple"><ShieldCheck size={24} /></div>
+          <div>
+            <div className="stat-num">{totalSuperAdmins}</div>
+            <div className="stat-lbl">Super Admins</div>
           </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, marginTop: '8px', color: '#0f172a' }}>
-            {totalSuperAdmins}
-          </div>
-          <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Super admin partners</span>
         </div>
 
-        <div className="glass-container" style={{ padding: '16px 20px', borderRadius: '12px', borderLeft: '4px solid #f59e0b' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>Total My Coins Balance</span>
-            <Coins size={20} color="#f59e0b" />
+        <div className="partner-stat-card amber">
+          <div className="stat-icon-box amber"><Coins size={24} /></div>
+          <div>
+            <div className="stat-num" style={{ color: '#d97706' }}>{totalCoinsInPool.toLocaleString()}</div>
+            <div className="stat-lbl" style={{ color: '#16a34a' }}>
+              ≈ ${totalUsdValue} USD Pool
+            </div>
           </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, marginTop: '8px', color: '#b45309' }}>
-            {totalCoinsInPool.toLocaleString()}
-          </div>
-          <span style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 600 }}>
-            ≈ ${(totalCoinsInPool / 10000).toFixed(2)} USD Withdrawable
-          </span>
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="glass-container" style={{
-        padding: '16px',
-        borderRadius: '12px',
-        marginBottom: '20px',
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '14px',
-        alignItems: 'center',
-        justifyContent: 'space-between'
-      }}>
-        {/* Type Filter Buttons */}
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b', marginRight: '4px' }}>
-            Filter:
-          </span>
+      {/* ── 3. Filter & Search Toolbar ───────────────────────────────────── */}
+      <div className="partner-toolbar">
+        {/* Role Filter Tabs */}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
           <button
             type="button"
+            className={`filter-pill ${typeFilter === 'all' ? 'active' : ''}`}
             onClick={() => setTypeFilter('all')}
-            style={{
-              padding: '8px 14px',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              background: typeFilter === 'all' ? '#1e293b' : '#f1f5f9',
-              color: typeFilter === 'all' ? '#fff' : '#475569'
-            }}
           >
             All Partners ({partners.length})
           </button>
 
           <button
             type="button"
+            className={`filter-pill ${typeFilter === 'agency' ? 'active' : ''}`}
             onClick={() => setTypeFilter('agency')}
-            style={{
-              padding: '8px 14px',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: typeFilter === 'agency' ? '#0284c7' : '#f1f5f9',
-              color: typeFilter === 'agency' ? '#fff' : '#475569'
-            }}
           >
             <Building2 size={15} />
-            Agencies Only
+            Agencies Only ({totalAgencies})
           </button>
 
           <button
             type="button"
+            className={`filter-pill ${typeFilter === 'super_admin' ? 'active' : ''}`}
             onClick={() => setTypeFilter('super_admin')}
-            style={{
-              padding: '8px 14px',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: typeFilter === 'super_admin' ? '#7c3aed' : '#f1f5f9',
-              color: typeFilter === 'super_admin' ? '#fff' : '#475569'
-            }}
           >
             <ShieldCheck size={15} />
-            Super Admins Only
+            Super Admins Only ({totalSuperAdmins})
           </button>
         </div>
 
-        {/* Search Input & Bulk Action Quick Dropdown */}
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <form onSubmit={handleSearchSubmit} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div style={{ position: 'relative' }}>
-              <Search size={16} style={{ position: 'absolute', left: '10px', top: '10px', color: '#94a3b8' }} />
-              <input
-                type="text"
-                placeholder="Search name, code, email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{
-                  padding: '8px 12px 8px 34px',
-                  borderRadius: '8px',
-                  border: '1px solid #cbd5e1',
-                  fontSize: '0.9rem',
-                  width: '240px',
-                  outline: 'none'
-                }}
-              />
-            </div>
-            <button
-              type="submit"
-              style={{
-                padding: '8px 14px',
-                borderRadius: '8px',
-                border: 'none',
-                background: '#3b82f6',
-                color: '#fff',
-                cursor: 'pointer',
-                fontWeight: 600,
-                fontSize: '0.85rem'
-              }}
-            >
-              Search
-            </button>
+        {/* Search Bar & Actions */}
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flex: 1, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+          <form onSubmit={handleSearchSubmit} className="partner-search">
+            <Search size={18} color="var(--text-secondary)" />
+            <input
+              type="text"
+              placeholder="Search by name, code, email, ID..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => { setSearchTerm(''); fetchPartners(); }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}
+              >
+                <X size={16} />
+              </button>
+            )}
           </form>
 
           <button
             type="button"
+            className="secondary"
             onClick={fetchPartners}
             title="Refresh list"
-            style={{
-              padding: '8px 12px',
-              borderRadius: '8px',
-              border: '1px solid #cbd5e1',
-              background: '#fff',
-              cursor: 'pointer'
-            }}
+            style={{ borderRadius: '12px', height: '46px', padding: '0 16px' }}
           >
-            <RefreshCw size={16} color="#64748b" />
+            <RefreshCw size={16} />
           </button>
 
-          {/* Bulk Operations Dropdown */}
+          {/* Bulk Operations Pill when selected */}
           {selectedUserIds.length > 0 && (
             <div style={{ display: 'flex', gap: '6px' }}>
               <button
                 type="button"
                 onClick={() => handleOpenBulkModal('add')}
                 style={{
-                  padding: '8px 12px',
-                  borderRadius: '8px',
+                  height: '46px',
+                  padding: '0 16px',
+                  borderRadius: '12px',
                   border: 'none',
                   background: '#10b981',
                   color: '#fff',
                   cursor: 'pointer',
-                  fontSize: '0.8rem',
-                  fontWeight: 600
+                  fontSize: '0.82rem',
+                  fontWeight: 800,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
                 }}
               >
-                + Add Bulk
+                <PlusCircle size={15} /> Add ({selectedUserIds.length})
               </button>
+
               <button
                 type="button"
                 onClick={() => handleOpenBulkModal('remove')}
                 style={{
-                  padding: '8px 12px',
-                  borderRadius: '8px',
+                  height: '46px',
+                  padding: '0 16px',
+                  borderRadius: '12px',
                   border: 'none',
                   background: '#ef4444',
                   color: '#fff',
                   cursor: 'pointer',
-                  fontSize: '0.8rem',
-                  fontWeight: 600
+                  fontSize: '0.82rem',
+                  fontWeight: 800,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
                 }}
               >
-                - Deduct Bulk
+                <MinusCircle size={15} /> Deduct
               </button>
+
               <button
                 type="button"
                 onClick={() => handleOpenBulkModal('set')}
                 style={{
-                  padding: '8px 12px',
-                  borderRadius: '8px',
+                  height: '46px',
+                  padding: '0 16px',
+                  borderRadius: '12px',
                   border: 'none',
                   background: '#6366f1',
                   color: '#fff',
                   cursor: 'pointer',
-                  fontSize: '0.8rem',
-                  fontWeight: 600
+                  fontSize: '0.82rem',
+                  fontWeight: 800,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
                 }}
               >
-                = Set Exact
+                <Edit3 size={15} /> Set Balance
               </button>
             </div>
           )}
         </div>
       </div>
 
-      {/* Partners List Table */}
-      <div className="glass-container" style={{ borderRadius: '12px', overflow: 'hidden' }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-            <thead>
-              <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569', fontSize: '0.85rem' }}>
-                <th style={{ padding: '14px 16px', width: '40px' }}>
-                  <button
-                    type="button"
-                    onClick={handleSelectAll}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                    title={selectedUserIds.length === partners.length ? 'Deselect All' : 'Select All'}
-                  >
-                    {selectedUserIds.length > 0 && selectedUserIds.length === partners.length ? (
-                      <CheckSquare size={18} color="#3b82f6" />
-                    ) : (
-                      <Square size={18} color="#94a3b8" />
-                    )}
-                  </button>
-                </th>
-                <th style={{ padding: '14px 16px' }}>Partner & Profile</th>
-                <th style={{ padding: '14px 16px' }}>Type</th>
-                <th style={{ padding: '14px 16px' }}>Agency Code</th>
-                <th style={{ padding: '14px 16px' }}>Contact</th>
-                <th style={{ padding: '14px 16px' }}>My Coins (Earning)</th>
-                <th style={{ padding: '14px 16px' }}>USD Value ($1/10k)</th>
-                <th style={{ padding: '14px 16px' }}>Last Incentive</th>
-                <th style={{ padding: '14px 16px', textAlign: 'center' }}>Actions</th>
+      {/* ── 4. Main Partners Table ───────────────────────────────────────── */}
+      <div style={{ overflowX: 'auto' }}>
+        <table className="premium-partner-table">
+          <thead>
+            <tr>
+              <th style={{ width: '48px', textAlign: 'center' }}>
+                <button
+                  type="button"
+                  onClick={handleSelectAll}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  title={selectedUserIds.length === partners.length ? 'Deselect All' : 'Select All'}
+                >
+                  {selectedUserIds.length > 0 && selectedUserIds.length === partners.length ? (
+                    <CheckSquare size={19} color="#3b82f6" />
+                  ) : (
+                    <Square size={19} color="var(--text-secondary)" />
+                  )}
+                </button>
+              </th>
+              <th>Partner Identity</th>
+              <th>Role Type</th>
+              <th>Agency Code</th>
+              <th>Contact Details</th>
+              <th>Current My Coins (Earning)</th>
+              <th>USD Value ($1/10k)</th>
+              <th>Recent Incentive</th>
+              <th style={{ textAlign: 'center' }}>Quick Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={9} style={{ textAlign: 'center', padding: '50px 20px', color: 'var(--text-secondary)' }}>
+                  <RefreshCw size={28} className="spin" style={{ margin: '0 auto 12px', display: 'block' }} />
+                  Fetching verified partners and wallet records...
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={9} style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
-                    <RefreshCw size={24} className="spin" style={{ margin: '0 auto 10px', display: 'block' }} />
-                    Loading partners data...
-                  </td>
-                </tr>
-              ) : partners.length === 0 ? (
-                <tr>
-                  <td colSpan={9} style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>
-                    No agency or super admin partners found matching the filters.
-                  </td>
-                </tr>
-              ) : (
-                partners.map((partner) => {
-                  const isSelected = selectedUserIds.includes(partner.userId);
-                  const usdValue = ((partner.coins || 0) / 10000).toFixed(2);
+            ) : partners.length === 0 ? (
+              <tr>
+                <td colSpan={9} style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-secondary)' }}>
+                  <Users size={36} style={{ margin: '0 auto 12px', opacity: 0.4, display: 'block' }} />
+                  No partners found matching the selected filter or search criteria.
+                </td>
+              </tr>
+            ) : (
+              partners.map((partner) => {
+                const isSelected = selectedUserIds.includes(partner.userId);
+                const usdValue = ((partner.coins || 0) / 10000).toFixed(2);
 
-                  return (
-                    <tr
-                      key={partner.userId}
-                      style={{
-                        borderBottom: '1px solid #f1f5f9',
-                        background: isSelected ? '#eff6ff' : 'transparent',
-                        transition: 'background 0.15s'
-                      }}
-                    >
-                      {/* Checkbox */}
-                      <td style={{ padding: '14px 16px' }}>
-                        <button
-                          type="button"
-                          onClick={() => handleToggleSelect(partner.userId)}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                        >
-                          {isSelected ? (
-                            <CheckSquare size={18} color="#3b82f6" />
-                          ) : (
-                            <Square size={18} color="#cbd5e1" />
-                          )}
-                        </button>
-                      </td>
+                return (
+                  <tr key={partner.userId} className={isSelected ? 'selected' : ''}>
+                    {/* Checkbox */}
+                    <td style={{ textAlign: 'center' }}>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleSelect(partner.userId)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                      >
+                        {isSelected ? (
+                          <CheckSquare size={19} color="#3b82f6" />
+                        ) : (
+                          <Square size={19} color="var(--glass-border)" />
+                        )}
+                      </button>
+                    </td>
 
-                      {/* Partner Name & Avatar */}
-                      <td style={{ padding: '14px 16px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    {/* Partner Avatar + Identity */}
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ position: 'relative' }}>
                           <img
                             src={partner.displayPicture || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}
                             alt=""
-                            style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', background: '#e2e8f0' }}
+                            style={{
+                              width: '42px',
+                              height: '42px',
+                              borderRadius: '14px',
+                              objectFit: 'cover',
+                              border: '2px solid var(--glass-border)'
+                            }}
                           />
-                          <div>
-                            <div style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.92rem' }}>
-                              {partner.name}
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-primary)' }}>
+                            {partner.name}
+                          </div>
+                          {partner.agencyName && partner.agencyName !== partner.name && (
+                            <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                              {partner.agencyName}
                             </div>
-                            {partner.agencyName && partner.agencyName !== partner.name && (
-                              <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                                Agency: {partner.agencyName}
-                              </div>
-                            )}
-                            <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
-                              ID: {partner.userId}
-                            </div>
+                          )}
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
+                            ID: {partner.userId}
                           </div>
                         </div>
-                      </td>
+                      </div>
+                    </td>
 
-                      {/* Partner Type Badge */}
-                      <td style={{ padding: '14px 16px' }}>
-                        {partner.partnerType === 'super_admin' ? (
+                    {/* Role Pill */}
+                    <td>
+                      {partner.partnerType === 'super_admin' ? (
+                        <span className="role-pill super-admin">
+                          <ShieldCheck size={13} /> Super Admin
+                        </span>
+                      ) : (
+                        <span className="role-pill agency">
+                          <Building2 size={13} /> Agency Owner
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Agency Code */}
+                    <td>
+                      {partner.agencyCode ? (
+                        <span className="badge-agency-code">{partner.agencyCode}</span>
+                      ) : (
+                        <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>—</span>
+                      )}
+                    </td>
+
+                    {/* Contact Info */}
+                    <td>
+                      <div style={{ fontSize: '0.84rem', fontWeight: 600 }}>{partner.email || 'No email'}</div>
+                      <div style={{ fontSize: '0.76rem', color: 'var(--text-secondary)' }}>{partner.phone || 'No phone'}</div>
+                    </td>
+
+                    {/* Current My Coins Balance */}
+                    <td>
+                      <div className="badge-coins-val">
+                        <Coins size={16} color="#d97706" />
+                        {(partner.coins || 0).toLocaleString()}
+                      </div>
+                    </td>
+
+                    {/* Withdrawable USD */}
+                    <td>
+                      <div style={{ fontWeight: 800, color: '#16a34a', fontSize: '0.92rem' }}>
+                        ${usdValue} <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)' }}>USD</span>
+                      </div>
+                    </td>
+
+                    {/* Last Incentive Info */}
+                    <td>
+                      {partner.lastAdjustment ? (
+                        <div>
                           <span style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            background: '#ede9fe',
-                            color: '#6d28d9',
-                            padding: '4px 10px',
-                            borderRadius: '20px',
-                            fontSize: '0.75rem',
-                            fontWeight: 700
+                            display: 'inline-block',
+                            background: 'var(--input-bg)',
+                            border: '1px solid var(--glass-border)',
+                            padding: '2px 8px',
+                            borderRadius: '6px',
+                            fontSize: '0.7rem',
+                            fontWeight: 800,
+                            textTransform: 'uppercase',
+                            color: 'var(--text-secondary)',
+                            marginBottom: '3px'
                           }}>
-                            <ShieldCheck size={13} />
-                            SUPER ADMIN
+                            {partner.lastAdjustment.period}
                           </span>
-                        ) : (
-                          <span style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            background: '#e0f2fe',
-                            color: '#0369a1',
-                            padding: '4px 10px',
-                            borderRadius: '20px',
-                            fontSize: '0.75rem',
-                            fontWeight: 700
+                          <div style={{
+                            fontWeight: 800,
+                            fontSize: '0.82rem',
+                            color: partner.lastAdjustment.type === 'PARTNER_COIN_DEDUCT' ? '#ef4444' : '#10b981'
                           }}>
-                            <Building2 size={13} />
-                            AGENCY
-                          </span>
-                        )}
-                      </td>
-
-                      {/* Agency Code */}
-                      <td style={{ padding: '14px 16px', fontWeight: 600, color: '#334155', fontSize: '0.85rem' }}>
-                        {partner.agencyCode ? (
-                          <span style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '3px 8px', borderRadius: '6px' }}>
-                            {partner.agencyCode}
-                          </span>
-                        ) : (
-                          <span style={{ color: '#cbd5e1' }}>—</span>
-                        )}
-                      </td>
-
-                      {/* Contact */}
-                      <td style={{ padding: '14px 16px', fontSize: '0.82rem', color: '#475569' }}>
-                        <div>{partner.email || 'No email'}</div>
-                        <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>{partner.phone || 'No phone'}</div>
-                      </td>
-
-                      {/* Current Coins (Earning) */}
-                      <td style={{ padding: '14px 16px' }}>
-                        <div style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          background: '#fef3c7',
-                          color: '#92400e',
-                          padding: '6px 12px',
-                          borderRadius: '8px',
-                          fontWeight: 800,
-                          fontSize: '0.95rem'
-                        }}>
-                          <Coins size={16} color="#d97706" />
-                          {(partner.coins || 0).toLocaleString()}
-                        </div>
-                      </td>
-
-                      {/* USD Equivalent */}
-                      <td style={{ padding: '14px 16px', fontWeight: 700, color: '#10b981', fontSize: '0.9rem' }}>
-                        ${usdValue}
-                      </td>
-
-                      {/* Last Incentive Info */}
-                      <td style={{ padding: '14px 16px', fontSize: '0.8rem', color: '#64748b' }}>
-                        {partner.lastAdjustment ? (
-                          <div>
-                            <span style={{
-                              display: 'inline-block',
-                              background: '#f1f5f9',
-                              padding: '2px 6px',
-                              borderRadius: '4px',
-                              fontSize: '0.7rem',
-                              fontWeight: 700,
-                              textTransform: 'uppercase',
-                              color: '#475569',
-                              marginBottom: '2px'
-                            }}>
-                              {partner.lastAdjustment.period}
-                            </span>
-                            <div style={{ fontWeight: 600, color: partner.lastAdjustment.type === 'PARTNER_COIN_DEDUCT' ? '#ef4444' : '#10b981' }}>
-                              {partner.lastAdjustment.type === 'PARTNER_COIN_DEDUCT' ? '-' : '+'}
-                              {partner.lastAdjustment.amount.toLocaleString()} coins
-                            </div>
-                            <div style={{ color: '#94a3b8', fontSize: '0.7rem' }}>
-                              {new Date(partner.lastAdjustment.createdAt).toLocaleDateString()}
-                            </div>
+                            {partner.lastAdjustment.type === 'PARTNER_COIN_DEDUCT' ? '-' : '+'}
+                            {partner.lastAdjustment.amount.toLocaleString()} coins
                           </div>
-                        ) : (
-                          <span style={{ color: '#cbd5e1' }}>No adjustments</span>
-                        )}
-                      </td>
-
-                      {/* Actions */}
-                      <td style={{ padding: '14px 16px', textAlign: 'center' }}>
-                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
-                          <button
-                            type="button"
-                            title="Add Coins (+)"
-                            onClick={() => handleOpenSingleModal(partner, 'add')}
-                            style={{
-                              background: '#ecfdf5',
-                              border: '1px solid #a7f3d0',
-                              color: '#059669',
-                              padding: '6px 10px',
-                              borderRadius: '6px',
-                              cursor: 'pointer',
-                              fontWeight: 700,
-                              fontSize: '0.75rem',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}
-                          >
-                            <PlusCircle size={14} /> Add
-                          </button>
-
-                          <button
-                            type="button"
-                            title="Deduct Coins (-)"
-                            onClick={() => handleOpenSingleModal(partner, 'remove')}
-                            style={{
-                              background: '#fef2f2',
-                              border: '1px solid #fecaca',
-                              color: '#dc2626',
-                              padding: '6px 10px',
-                              borderRadius: '6px',
-                              cursor: 'pointer',
-                              fontWeight: 700,
-                              fontSize: '0.75rem',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}
-                          >
-                            <MinusCircle size={14} /> Deduct
-                          </button>
-
-                          <button
-                            type="button"
-                            title="Set Balance / Edit"
-                            onClick={() => handleOpenSingleModal(partner, 'set')}
-                            style={{
-                              background: '#f8fafc',
-                              border: '1px solid #cbd5e1',
-                              color: '#475569',
-                              padding: '6px 8px',
-                              borderRadius: '6px',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            <Edit3 size={14} />
-                          </button>
-
-                          <button
-                            type="button"
-                            title="View History"
-                            onClick={() => handleOpenHistory(partner.userId, partner.name)}
-                            style={{
-                              background: '#f8fafc',
-                              border: '1px solid #cbd5e1',
-                              color: '#6366f1',
-                              padding: '6px 8px',
-                              borderRadius: '6px',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            <History size={14} />
-                          </button>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                            {new Date(partner.lastAdjustment.createdAt).toLocaleDateString()}
+                          </div>
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                      ) : (
+                        <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>None recorded</span>
+                      )}
+                    </td>
+
+                    {/* Quick Row Actions */}
+                    <td style={{ textAlign: 'center' }}>
+                      <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
+                        <button
+                          type="button"
+                          className="action-chip-btn add"
+                          onClick={() => handleOpenSingleModal(partner, 'add')}
+                          title="Add Coins to this partner"
+                        >
+                          <PlusCircle size={14} /> Add
+                        </button>
+
+                        <button
+                          type="button"
+                          className="action-chip-btn deduct"
+                          onClick={() => handleOpenSingleModal(partner, 'remove')}
+                          title="Deduct Coins from this partner"
+                        >
+                          <MinusCircle size={14} /> Deduct
+                        </button>
+
+                        <button
+                          type="button"
+                          className="action-chip-btn edit"
+                          onClick={() => handleOpenSingleModal(partner, 'set')}
+                          title="Set exact coin balance"
+                        >
+                          <Edit3 size={14} /> Set
+                        </button>
+
+                        <button
+                          type="button"
+                          className="action-chip-btn history"
+                          onClick={() => handleOpenHistory(partner.userId, partner.name)}
+                          title="View transaction history"
+                        >
+                          <History size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
       </div>
 
-      {/* ── Adjustment Modal (Single & Bulk) ───────────────────────── */}
+      {/* ── 5. Coins Adjustment Modal (Single & Bulk) ──────────────────────── */}
       {isModalOpen && (
         <div className="modal-overlay">
-          <div className="modal-content glass-panel" style={{ maxWidth: '520px', padding: '24px' }}>
-            <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <div className="modal-content glass-panel slide-up" style={{ maxWidth: '540px', padding: '26px' }}>
+            <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Coins size={24} color="#f59e0b" />
-                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700, color: '#0f172a' }}>
-                  {modalAction === 'add' ? 'Add My Coins' : modalAction === 'remove' ? 'Deduct My Coins' : 'Set Exact Balance'}
+                <Coins size={26} color="#f59e0b" />
+                <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800 }}>
+                  {modalAction === 'add' ? 'Award Partner Coins' : modalAction === 'remove' ? 'Deduct Partner Coins' : 'Update Balance Exactly'}
                 </h3>
               </div>
               <button
                 type="button"
+                className="close-btn"
                 onClick={() => setIsModalOpen(false)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}
               >
                 <X size={20} />
               </button>
             </div>
 
             <form onSubmit={handleAdjustSubmit}>
-              {/* Recipient summary banner */}
+              {/* Recipient summary card */}
               <div style={{
-                background: '#f8fafc',
-                border: '1px solid #e2e8f0',
-                borderRadius: '8px',
-                padding: '12px 16px',
+                background: 'var(--input-bg)',
+                border: '1px solid var(--glass-border)',
+                borderRadius: '12px',
+                padding: '14px 18px',
                 marginBottom: '18px'
               }}>
-                <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Target Recipient(s):</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Target Beneficiary:
+                </div>
                 {targetPartners.length === 1 ? (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-                    <strong style={{ fontSize: '1rem', color: '#0f172a' }}>{targetPartners[0].name}</strong>
-                    <span style={{ fontSize: '0.85rem', color: '#d97706', fontWeight: 700 }}>
-                      Current: {(targetPartners[0].coins || 0).toLocaleString()} Coins
-                    </span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
+                    <div>
+                      <strong style={{ fontSize: '1.05rem', color: 'var(--text-primary)' }}>{targetPartners[0].name}</strong>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                        {targetPartners[0].partnerType === 'super_admin' ? 'Super Admin' : `Agency (${targetPartners[0].agencyCode || 'Direct'})`}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block' }}>Current Balance</span>
+                      <strong style={{ fontSize: '1rem', color: '#d97706' }}>
+                        {(targetPartners[0].coins || 0).toLocaleString()} Coins
+                      </strong>
+                    </div>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-                    <strong style={{ fontSize: '1rem', color: '#3b82f6' }}>
-                      {targetPartners.length} Partners Selected
-                    </strong>
-                    <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                      (Bulk Allocation)
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
+                    <div>
+                      <strong style={{ fontSize: '1.05rem', color: '#3b82f6' }}>
+                        {targetPartners.length} Selected Partners
+                      </strong>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                        Bulk coin adjustment applies to all selected simultaneously
+                      </div>
+                    </div>
+                    <span style={{
+                      background: 'rgba(59, 130, 246, 0.1)',
+                      color: '#3b82f6',
+                      padding: '4px 10px',
+                      borderRadius: '8px',
+                      fontSize: '0.75rem',
+                      fontWeight: 800
+                    }}>
+                      BULK BATCH
                     </span>
                   </div>
                 )}
               </div>
 
-              {/* Action Type Toggle */}
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
-                  Action Type:
+              {/* Action Selection Tabs */}
+              <div style={{ marginBottom: '18px' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px' }}>
+                  Select Action:
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                   <button
@@ -860,20 +1001,20 @@ const PartnerCoins: React.FC = () => {
                     onClick={() => setModalAction('add')}
                     style={{
                       padding: '10px',
-                      borderRadius: '8px',
-                      border: modalAction === 'add' ? '2px solid #10b981' : '1px solid #cbd5e1',
-                      background: modalAction === 'add' ? '#ecfdf5' : '#fff',
-                      color: modalAction === 'add' ? '#047857' : '#475569',
-                      fontWeight: 700,
+                      borderRadius: '10px',
+                      border: modalAction === 'add' ? '2px solid #10b981' : '1px solid var(--glass-border)',
+                      background: modalAction === 'add' ? 'rgba(16, 185, 129, 0.12)' : 'var(--bg-surface)',
+                      color: modalAction === 'add' ? '#059669' : 'var(--text-secondary)',
+                      fontWeight: 800,
                       cursor: 'pointer',
                       fontSize: '0.85rem',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '4px'
+                      gap: '6px'
                     }}
                   >
-                    <PlusCircle size={15} /> Add (+)
+                    <PlusCircle size={16} /> Add (+)
                   </button>
 
                   <button
@@ -881,20 +1022,20 @@ const PartnerCoins: React.FC = () => {
                     onClick={() => setModalAction('remove')}
                     style={{
                       padding: '10px',
-                      borderRadius: '8px',
-                      border: modalAction === 'remove' ? '2px solid #ef4444' : '1px solid #cbd5e1',
-                      background: modalAction === 'remove' ? '#fef2f2' : '#fff',
-                      color: modalAction === 'remove' ? '#b91c1c' : '#475569',
-                      fontWeight: 700,
+                      borderRadius: '10px',
+                      border: modalAction === 'remove' ? '2px solid #ef4444' : '1px solid var(--glass-border)',
+                      background: modalAction === 'remove' ? 'rgba(239, 68, 68, 0.1)' : 'var(--bg-surface)',
+                      color: modalAction === 'remove' ? '#dc2626' : 'var(--text-secondary)',
+                      fontWeight: 800,
                       cursor: 'pointer',
                       fontSize: '0.85rem',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '4px'
+                      gap: '6px'
                     }}
                   >
-                    <MinusCircle size={15} /> Deduct (-)
+                    <MinusCircle size={16} /> Deduct (-)
                   </button>
 
                   <button
@@ -902,27 +1043,27 @@ const PartnerCoins: React.FC = () => {
                     onClick={() => setModalAction('set')}
                     style={{
                       padding: '10px',
-                      borderRadius: '8px',
-                      border: modalAction === 'set' ? '2px solid #6366f1' : '1px solid #cbd5e1',
-                      background: modalAction === 'set' ? '#eef2ff' : '#fff',
-                      color: modalAction === 'set' ? '#4338ca' : '#475569',
-                      fontWeight: 700,
+                      borderRadius: '10px',
+                      border: modalAction === 'set' ? '2px solid #6366f1' : '1px solid var(--glass-border)',
+                      background: modalAction === 'set' ? 'rgba(99, 102, 241, 0.12)' : 'var(--bg-surface)',
+                      color: modalAction === 'set' ? '#6366f1' : 'var(--text-secondary)',
+                      fontWeight: 800,
                       cursor: 'pointer',
                       fontSize: '0.85rem',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '4px'
+                      gap: '6px'
                     }}
                   >
-                    <Edit3 size={15} /> Set Exact (=)
+                    <Edit3 size={16} /> Set Exact (=)
                   </button>
                 </div>
               </div>
 
-              {/* Period / Incentive Tag Selection */}
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+              {/* Incentive Frequency / Period Selection */}
+              <div style={{ marginBottom: '18px' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px' }}>
                   Incentive Period / Frequency:
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
@@ -932,13 +1073,13 @@ const PartnerCoins: React.FC = () => {
                       type="button"
                       onClick={() => setModalPeriod(period)}
                       style={{
-                        padding: '8px',
-                        borderRadius: '6px',
-                        border: modalPeriod === period ? '2px solid #3b82f6' : '1px solid #cbd5e1',
-                        background: modalPeriod === period ? '#eff6ff' : '#fff',
-                        color: modalPeriod === period ? '#1d4ed8' : '#475569',
-                        fontWeight: 600,
-                        fontSize: '0.8rem',
+                        padding: '9px 6px',
+                        borderRadius: '8px',
+                        border: modalPeriod === period ? '2px solid var(--accent-primary)' : '1px solid var(--glass-border)',
+                        background: modalPeriod === period ? 'rgba(124, 58, 237, 0.1)' : 'var(--bg-surface)',
+                        color: modalPeriod === period ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                        fontWeight: 800,
+                        fontSize: '0.82rem',
                         cursor: 'pointer',
                         textTransform: 'capitalize'
                       }}
@@ -949,13 +1090,13 @@ const PartnerCoins: React.FC = () => {
                 </div>
               </div>
 
-              {/* Coin Amount Input */}
-              <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
-                  {modalAction === 'set' ? 'New Total Coins Balance:' : 'Coin Amount:'}
+              {/* Amount Input with Currency Preview */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px' }}>
+                  {modalAction === 'set' ? 'New Exact Coin Balance:' : 'Coin Amount:'}
                 </label>
                 <div style={{ position: 'relative' }}>
-                  <Coins size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#f59e0b' }} />
+                  <Coins size={19} style={{ position: 'absolute', left: '14px', top: '13px', color: '#f59e0b' }} />
                   <input
                     type="number"
                     min="0"
@@ -965,32 +1106,34 @@ const PartnerCoins: React.FC = () => {
                     required
                     style={{
                       width: '100%',
-                      padding: '10px 14px 10px 38px',
-                      borderRadius: '8px',
-                      border: '1px solid #cbd5e1',
-                      fontSize: '1rem',
-                      fontWeight: 700,
+                      padding: '12px 14px 12px 42px',
+                      borderRadius: '12px',
+                      border: '1px solid var(--glass-border)',
+                      background: 'var(--input-bg)',
+                      color: 'var(--text-primary)',
+                      fontSize: '1.05rem',
+                      fontWeight: 800,
                       outline: 'none',
                       boxSizing: 'border-box'
                     }}
                   />
                 </div>
 
-                {/* Quick Coin Shortcuts */}
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '8px' }}>
+                {/* Quick Shortcut Buttons */}
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '10px' }}>
                   {[10000, 50000, 100000, 500000, 1000000].map((amt) => (
                     <button
                       key={amt}
                       type="button"
                       onClick={() => setModalAmount(String(amt))}
                       style={{
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        border: '1px solid #e2e8f0',
-                        background: '#f8fafc',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        color: '#475569',
+                        padding: '5px 10px',
+                        borderRadius: '6px',
+                        border: '1px solid var(--glass-border)',
+                        background: 'var(--bg-surface)',
+                        fontSize: '0.76rem',
+                        fontWeight: 700,
+                        color: 'var(--text-secondary)',
                         cursor: 'pointer'
                       }}
                     >
@@ -1000,61 +1143,62 @@ const PartnerCoins: React.FC = () => {
                 </div>
               </div>
 
-              {/* USD Equivalent Calculation Banner */}
+              {/* Live Withdrawable USD Calculation Banner */}
               {modalAmount && Number(modalAmount) > 0 && (
                 <div style={{
-                  background: '#f0fdf4',
-                  border: '1px solid #bbf7d0',
-                  borderRadius: '8px',
-                  padding: '10px 14px',
-                  marginBottom: '14px',
+                  background: 'rgba(16, 185, 129, 0.1)',
+                  border: '1px solid rgba(16, 185, 129, 0.25)',
+                  borderRadius: '10px',
+                  padding: '12px 16px',
+                  marginBottom: '16px',
                   display: 'flex',
                   justifyContent: 'space-between',
-                  alignItems: 'center',
-                  fontSize: '0.85rem'
+                  alignItems: 'center'
                 }}>
-                  <span style={{ color: '#166534', fontWeight: 600 }}>USD Withdrawable Value (10,000 = $1):</span>
-                  <strong style={{ color: '#15803d', fontSize: '1rem' }}>
+                  <div>
+                    <span style={{ color: '#16a34a', fontWeight: 800, fontSize: '0.85rem', display: 'block' }}>
+                      Withdrawable USD Equivalent:
+                    </span>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+                      Official rate: 10,000 Coins = $1.00 USD
+                    </span>
+                  </div>
+                  <strong style={{ color: '#15803d', fontSize: '1.15rem', fontWeight: 900 }}>
                     ${(Number(modalAmount) / 10000).toFixed(2)} USD
                   </strong>
                 </div>
               )}
 
               {/* Reason / Notes */}
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
-                  Reason / Notes (Optional):
+              <div style={{ marginBottom: '22px' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '6px' }}>
+                  Audit Notes / Reason (Optional):
                 </label>
                 <input
                   type="text"
-                  placeholder={`e.g. ${modalPeriod.toUpperCase()} recruitment incentive bonus`}
+                  placeholder={`e.g. ${modalPeriod.toUpperCase()} recruitment incentive payout`}
                   value={modalReason}
                   onChange={(e) => setModalReason(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    border: '1px solid #cbd5e1',
-                    fontSize: '0.85rem',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    border: '1px solid var(--glass-border)',
+                    background: 'var(--input-bg)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.88rem',
                     boxSizing: 'border-box'
                   }}
                 />
               </div>
 
-              {/* Modal Action Buttons */}
+              {/* Modal Buttons */}
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                 <button
                   type="button"
+                  className="secondary"
                   onClick={() => setIsModalOpen(false)}
-                  style={{
-                    padding: '10px 16px',
-                    borderRadius: '8px',
-                    border: '1px solid #cbd5e1',
-                    background: '#fff',
-                    color: '#64748b',
-                    cursor: 'pointer',
-                    fontWeight: 600
-                  }}
+                  style={{ borderRadius: '10px', padding: '10px 18px', fontWeight: 700 }}
                 >
                   Cancel
                 </button>
@@ -1064,16 +1208,17 @@ const PartnerCoins: React.FC = () => {
                   disabled={submitting || !modalAmount}
                   style={{
                     padding: '10px 24px',
-                    borderRadius: '8px',
+                    borderRadius: '10px',
                     border: 'none',
                     background: modalAction === 'remove' ? '#ef4444' : modalAction === 'set' ? '#6366f1' : '#10b981',
                     color: '#fff',
                     cursor: submitting || !modalAmount ? 'not-allowed' : 'pointer',
-                    fontWeight: 700,
-                    fontSize: '0.9rem'
+                    fontWeight: 800,
+                    fontSize: '0.92rem',
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.1)'
                   }}
                 >
-                  {submitting ? 'Applying...' : `Confirm & Apply Coins`}
+                  {submitting ? 'Applying Coins...' : 'Confirm & Apply'}
                 </button>
               </div>
             </form>
@@ -1081,29 +1226,30 @@ const PartnerCoins: React.FC = () => {
         </div>
       )}
 
-      {/* ── Transaction History Modal ────────────────────────────── */}
+      {/* ── 6. Full Transaction History Modal ──────────────────────────────── */}
       {isHistoryOpen && (
         <div className="modal-overlay">
-          <div className="modal-content glass-panel" style={{ maxWidth: '850px', padding: '24px', maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}>
-            <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <div className="modal-content glass-panel slide-up" style={{ maxWidth: '900px', padding: '26px', maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}>
+            <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <History size={22} color="#6366f1" />
-                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700, color: '#0f172a' }}>
+                <History size={24} color="#6366f1" />
+                <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800 }}>
                   {historyUserTitle}
                 </h3>
               </div>
               <button
                 type="button"
+                className="close-btn"
                 onClick={() => setIsHistoryOpen(false)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}
               >
                 <X size={20} />
               </button>
             </div>
 
-            {/* Filter by Period inside History */}
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b' }}>Filter Period:</span>
+            {/* Filter by Period Tabs */}
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-secondary)' }}>Filter Period:</span>
               {['all', 'weekly', 'monthly', 'yearly', 'custom'].map((p) => (
                 <button
                   key={p}
@@ -1113,13 +1259,13 @@ const PartnerCoins: React.FC = () => {
                     fetchHistory(historyUserId, p);
                   }}
                   style={{
-                    padding: '4px 10px',
-                    borderRadius: '6px',
+                    padding: '5px 12px',
+                    borderRadius: '8px',
                     border: 'none',
-                    background: historyFilterPeriod === p ? '#3b82f6' : '#f1f5f9',
-                    color: historyFilterPeriod === p ? '#fff' : '#475569',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
+                    background: historyFilterPeriod === p ? 'var(--accent-primary)' : 'var(--input-bg)',
+                    color: historyFilterPeriod === p ? '#fff' : 'var(--text-secondary)',
+                    fontSize: '0.78rem',
+                    fontWeight: 800,
                     cursor: 'pointer',
                     textTransform: 'capitalize'
                   }}
@@ -1131,75 +1277,69 @@ const PartnerCoins: React.FC = () => {
 
             {/* History Table */}
             <div style={{ overflowY: 'auto', flex: 1 }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.82rem' }}>
+              <table className="premium-partner-table" style={{ fontSize: '0.84rem' }}>
                 <thead>
-                  <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
-                    <th style={{ padding: '10px 12px' }}>Date</th>
-                    <th style={{ padding: '10px 12px' }}>Partner</th>
-                    <th style={{ padding: '10px 12px' }}>Role</th>
-                    <th style={{ padding: '10px 12px' }}>Period</th>
-                    <th style={{ padding: '10px 12px' }}>Coins Change</th>
-                    <th style={{ padding: '10px 12px' }}>Balance (Before → After)</th>
-                    <th style={{ padding: '10px 12px' }}>Reason / Admin</th>
+                  <tr>
+                    <th>Date & Time</th>
+                    <th>Partner</th>
+                    <th>Role</th>
+                    <th>Period</th>
+                    <th>Adjustment</th>
+                    <th>Balance (Before → After)</th>
+                    <th>Reason / Admin</th>
                   </tr>
                 </thead>
                 <tbody>
                   {historyLoading ? (
                     <tr>
-                      <td colSpan={7} style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>
-                        Loading transaction history...
+                      <td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                        <RefreshCw size={24} className="spin" style={{ margin: '0 auto 8px', display: 'block' }} />
+                        Loading history audit logs...
                       </td>
                     </tr>
                   ) : historyItems.length === 0 ? (
                     <tr>
-                      <td colSpan={7} style={{ padding: '30px', textAlign: 'center', color: '#94a3b8' }}>
-                        No coin adjustment history recorded yet.
+                      <td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                        No coin adjustments found for the selected period.
                       </td>
                     </tr>
                   ) : (
                     historyItems.map((item) => (
-                      <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                        <td style={{ padding: '10px 12px', color: '#64748b', fontSize: '0.75rem' }}>
+                      <tr key={item.id}>
+                        <td style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>
                           {new Date(item.createdAt).toLocaleString()}
                         </td>
 
-                        <td style={{ padding: '10px 12px', fontWeight: 600, color: '#0f172a' }}>
-                          {item.userName}
+                        <td>
+                          <strong style={{ color: 'var(--text-primary)' }}>{item.userName}</strong>
                           {item.agencyCode && (
-                            <span style={{ fontSize: '0.7rem', color: '#64748b', display: 'block' }}>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', display: 'block', fontFamily: 'monospace' }}>
                               Code: {item.agencyCode}
                             </span>
                           )}
                         </td>
 
-                        <td style={{ padding: '10px 12px' }}>
-                          <span style={{
-                            padding: '2px 6px',
-                            borderRadius: '4px',
-                            fontSize: '0.7rem',
-                            fontWeight: 700,
-                            background: item.userRole === 'super_admin' ? '#ede9fe' : '#e0f2fe',
-                            color: item.userRole === 'super_admin' ? '#6d28d9' : '#0369a1'
-                          }}>
-                            {item.userRole === 'super_admin' ? 'SUPER ADMIN' : 'AGENCY'}
+                        <td>
+                          <span className={`role-pill ${item.userRole === 'super_admin' ? 'super-admin' : 'agency'}`}>
+                            {item.userRole === 'super_admin' ? 'Super Admin' : 'Agency'}
                           </span>
                         </td>
 
-                        <td style={{ padding: '10px 12px' }}>
+                        <td>
                           <span style={{
-                            padding: '2px 6px',
-                            borderRadius: '4px',
-                            fontSize: '0.7rem',
-                            fontWeight: 600,
-                            background: '#f8fafc',
-                            border: '1px solid #e2e8f0',
+                            padding: '3px 8px',
+                            borderRadius: '6px',
+                            fontSize: '0.72rem',
+                            fontWeight: 800,
+                            background: 'var(--input-bg)',
+                            border: '1px solid var(--glass-border)',
                             textTransform: 'uppercase'
                           }}>
                             {item.period}
                           </span>
                         </td>
 
-                        <td style={{ padding: '10px 12px', fontWeight: 800 }}>
+                        <td style={{ fontWeight: 900 }}>
                           {item.action === 'remove' ? (
                             <span style={{ color: '#ef4444' }}>-{item.amount.toLocaleString()}</span>
                           ) : item.action === 'set' ? (
@@ -1209,13 +1349,13 @@ const PartnerCoins: React.FC = () => {
                           )}
                         </td>
 
-                        <td style={{ padding: '10px 12px', color: '#475569' }}>
-                          {item.previousBalance.toLocaleString()} → <strong>{item.newBalance.toLocaleString()}</strong>
+                        <td style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>
+                          {item.previousBalance.toLocaleString()} → <strong style={{ color: 'var(--text-primary)' }}>{item.newBalance.toLocaleString()}</strong>
                         </td>
 
-                        <td style={{ padding: '10px 12px', color: '#64748b', fontSize: '0.75rem' }}>
-                          <div>{item.reason || '—'}</div>
-                          <div style={{ color: '#94a3b8', fontSize: '0.7rem' }}>By: {item.adminEmail}</div>
+                        <td style={{ fontSize: '0.78rem' }}>
+                          <div style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{item.reason || 'Manual Adjustment'}</div>
+                          <div style={{ color: 'var(--text-secondary)', fontSize: '0.72rem' }}>By: {item.adminEmail}</div>
                         </td>
                       </tr>
                     ))
