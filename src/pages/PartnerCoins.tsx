@@ -331,43 +331,57 @@ const PartnerCoins: React.FC = () => {
         .premium-partner-table {
           width: 100% !important;
           border-collapse: separate !important;
-          border-spacing: 0 10px !important;
+          border-spacing: 0 8px !important;
         }
         .premium-partner-table th {
-          padding: 14px 18px !important;
-          font-size: 0.72rem !important; font-weight: 800 !important;
-          text-transform: uppercase !important; letter-spacing: 0.1em !important;
+          padding: 10px 12px !important;
+          font-size: 0.7rem !important; font-weight: 800 !important;
+          text-transform: uppercase !important; letter-spacing: 0.05em !important;
           color: var(--text-secondary) !important; border: none !important;
+          white-space: nowrap !important;
         }
         .premium-partner-table td {
-          padding: 16px 18px !important;
+          padding: 10px 12px !important;
           background: var(--bg-surface) !important;
           border-top: 1px solid var(--glass-border) !important;
           border-bottom: 1px solid var(--glass-border) !important;
           color: var(--text-primary) !important;
           vertical-align: middle !important;
-          height: 72px !important;
         }
         .premium-partner-table td:first-child {
           border-left: 1px solid var(--glass-border) !important;
-          border-radius: 16px 0 0 16px !important;
+          border-radius: 12px 0 0 12px !important;
         }
         .premium-partner-table td:last-child {
           border-right: 1px solid var(--glass-border) !important;
-          border-radius: 0 16px 16px 0 !important;
+          border-radius: 0 12px 12px 0 !important;
+        }
+        .sticky-actions-col {
+          position: sticky !important;
+          right: 0 !important;
+          background: var(--bg-surface) !important;
+          z-index: 2 !important;
+          white-space: nowrap !important;
+          box-shadow: -4px 0 8px rgba(0, 0, 0, 0.04) !important;
+        }
+        .premium-partner-table th.sticky-actions-col {
+          background: var(--bg-surface) !important;
         }
         .premium-partner-table tbody tr {
           box-shadow: var(--card-shadow) !important;
           transition: all 0.25s ease !important;
         }
         .premium-partner-table tbody tr:hover {
-          transform: translateY(-2px) !important;
+          transform: translateY(-1px) !important;
           box-shadow: var(--card-shadow-hover) !important;
         }
         .premium-partner-table tbody tr:hover td {
           border-color: var(--accent-primary) !important;
         }
         .premium-partner-table tbody tr.selected td {
+          background: rgba(59, 130, 246, 0.05) !important;
+          border-color: #3b82f6 !important;
+        }
           background: rgba(59, 130, 246, 0.05) !important;
           border-color: #3b82f6 !important;
         }
@@ -700,7 +714,7 @@ const PartnerCoins: React.FC = () => {
         <table className="premium-partner-table">
           <thead>
             <tr>
-              <th style={{ width: '48px', textAlign: 'center' }}>
+              <th style={{ width: '40px', textAlign: 'center' }}>
                 <button
                   type="button"
                   onClick={handleSelectAll}
@@ -715,26 +729,24 @@ const PartnerCoins: React.FC = () => {
                 </button>
               </th>
               <th>Partner Identity</th>
-              <th>Role Type</th>
-              <th>Agency Code</th>
+              <th>Role & Code</th>
               <th>Contact Details</th>
-              <th>Current My Coins (Earning)</th>
-              <th>USD Value ($1/10k)</th>
+              <th>My Coins (Earnings)</th>
               <th>Recent Incentive</th>
-              <th style={{ textAlign: 'center' }}>Quick Actions</th>
+              <th className="sticky-actions-col" style={{ textAlign: 'center', minWidth: '220px' }}>Quick Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={9} style={{ textAlign: 'center', padding: '50px 20px', color: 'var(--text-secondary)' }}>
+                <td colSpan={7} style={{ textAlign: 'center', padding: '50px 20px', color: 'var(--text-secondary)' }}>
                   <RefreshCw size={28} className="spin" style={{ margin: '0 auto 12px', display: 'block' }} />
                   Fetching verified partners and wallet records...
                 </td>
               </tr>
             ) : partners.length === 0 ? (
               <tr>
-                <td colSpan={9} style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-secondary)' }}>
+                <td colSpan={7} style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-secondary)' }}>
                   <Users size={36} style={{ margin: '0 auto 12px', opacity: 0.4, display: 'block' }} />
                   No partners found matching the selected filter or search criteria.
                 </td>
@@ -747,7 +759,7 @@ const PartnerCoins: React.FC = () => {
                 return (
                   <tr key={partner.userId} className={isSelected ? 'selected' : ''}>
                     {/* Checkbox */}
-                    <td style={{ textAlign: 'center' }}>
+                    <td style={{ textAlign: 'center', width: '40px' }}>
                       <button
                         type="button"
                         onClick={() => handleToggleSelect(partner.userId)}
@@ -763,82 +775,77 @@ const PartnerCoins: React.FC = () => {
 
                     {/* Partner Avatar + Identity */}
                     <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ position: 'relative' }}>
-                          <img
-                            src={partner.displayPicture || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}
-                            alt=""
-                            style={{
-                              width: '42px',
-                              height: '42px',
-                              borderRadius: '14px',
-                              objectFit: 'cover',
-                              border: '2px solid var(--glass-border)'
-                            }}
-                          />
-                        </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <img
+                          src={partner.displayPicture || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}
+                          alt=""
+                          style={{
+                            width: '38px',
+                            height: '38px',
+                            borderRadius: '10px',
+                            objectFit: 'cover',
+                            border: '1px solid var(--glass-border)'
+                          }}
+                        />
                         <div>
-                          <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-primary)' }}>
+                          <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--text-primary)' }}>
                             {partner.name}
                           </div>
                           {partner.agencyName && partner.agencyName !== partner.name && (
-                            <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                            <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
                               {partner.agencyName}
                             </div>
                           )}
-                          <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
                             ID: {partner.userId}
                           </div>
                         </div>
                       </div>
                     </td>
 
-                    {/* Role Pill */}
+                    {/* Role & Agency Code */}
                     <td>
-                      {partner.partnerType === 'super_admin' ? (
-                        <span className="role-pill super-admin">
-                          <ShieldCheck size={13} /> Super Admin
-                        </span>
-                      ) : (
-                        <span className="role-pill agency">
-                          <Building2 size={13} /> Agency Owner
-                        </span>
-                      )}
-                    </td>
-
-                    {/* Agency Code */}
-                    <td>
-                      {partner.agencyCode ? (
-                        <span className="badge-agency-code">{partner.agencyCode}</span>
-                      ) : (
-                        <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>—</span>
+                      <div>
+                        {partner.partnerType === 'super_admin' ? (
+                          <span className="role-pill super-admin">
+                            <ShieldCheck size={12} /> Super Admin
+                          </span>
+                        ) : (
+                          <span className="role-pill agency">
+                            <Building2 size={12} /> Agency
+                          </span>
+                        )}
+                      </div>
+                      {partner.agencyCode && (
+                        <div style={{ marginTop: '4px' }}>
+                          <span className="badge-agency-code" style={{ fontSize: '0.72rem', padding: '2px 8px' }}>
+                            {partner.agencyCode}
+                          </span>
+                        </div>
                       )}
                     </td>
 
                     {/* Contact Info */}
                     <td>
-                      <div style={{ fontSize: '0.84rem', fontWeight: 600 }}>{partner.email || 'No email'}</div>
-                      <div style={{ fontSize: '0.76rem', color: 'var(--text-secondary)' }}>{partner.phone || 'No phone'}</div>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 600, maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {partner.email || 'No email'}
+                      </div>
+                      {partner.phone && !partner.phone.startsWith('social_') && (
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>{partner.phone}</div>
+                      )}
                     </td>
 
-                    {/* Current My Coins Balance (Earning) */}
+                    {/* Current My Coins Balance + USD Equivalent Combined */}
                     <td>
-                      <div className="badge-coins-val" style={{ color: '#16a34a' }}>
-                        <Coins size={16} color="#16a34a" />
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontWeight: 800, fontSize: '0.92rem', color: '#16a34a' }}>
+                        <Coins size={15} color="#16a34a" />
                         {(partner.coins || 0).toLocaleString()} Coins
                       </div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '2px', fontWeight: 600 }}>
+                      <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#15803d', marginTop: '1px' }}>
+                        ≈ ${usdValue} USD
+                      </div>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
                         Purchased: {(partner.purchasedDiamonds ?? partner.diamonds ?? 0).toLocaleString()} 💎
-                      </div>
-                    </td>
-
-                    {/* Withdrawable USD */}
-                    <td>
-                      <div style={{ fontWeight: 800, color: '#16a34a', fontSize: '0.95rem' }}>
-                        ${usdValue} <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)' }}>USD</span>
-                      </div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
-                        Withdrawable in App
                       </div>
                     </td>
 
@@ -850,43 +857,43 @@ const PartnerCoins: React.FC = () => {
                             display: 'inline-block',
                             background: 'var(--input-bg)',
                             border: '1px solid var(--glass-border)',
-                            padding: '2px 8px',
-                            borderRadius: '6px',
-                            fontSize: '0.7rem',
+                            padding: '2px 6px',
+                            borderRadius: '5px',
+                            fontSize: '0.68rem',
                             fontWeight: 800,
                             textTransform: 'uppercase',
                             color: 'var(--text-secondary)',
-                            marginBottom: '3px'
+                            marginBottom: '2px'
                           }}>
                             {partner.lastAdjustment.period}
                           </span>
                           <div style={{
                             fontWeight: 800,
-                            fontSize: '0.82rem',
+                            fontSize: '0.78rem',
                             color: partner.lastAdjustment.type === 'PARTNER_COIN_DEDUCT' ? '#ef4444' : '#10b981'
                           }}>
                             {partner.lastAdjustment.type === 'PARTNER_COIN_DEDUCT' ? '-' : '+'}
                             {partner.lastAdjustment.amount.toLocaleString()} coins
                           </div>
-                          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>
                             {new Date(partner.lastAdjustment.createdAt).toLocaleDateString()}
                           </div>
                         </div>
                       ) : (
-                        <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>None recorded</span>
+                        <span style={{ color: 'var(--text-secondary)', fontSize: '0.76rem' }}>None recorded</span>
                       )}
                     </td>
 
-                    {/* Quick Row Actions */}
-                    <td style={{ textAlign: 'center' }}>
-                      <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
+                    {/* Sticky Quick Row Actions */}
+                    <td className="sticky-actions-col" style={{ textAlign: 'center' }}>
+                      <div style={{ display: 'inline-flex', gap: '5px', alignItems: 'center' }}>
                         <button
                           type="button"
                           className="action-chip-btn add"
                           onClick={() => handleOpenSingleModal(partner, 'add')}
                           title="Add Coins to this partner"
                         >
-                          <PlusCircle size={14} /> Add
+                          <PlusCircle size={13} /> Add
                         </button>
 
                         <button
@@ -895,7 +902,7 @@ const PartnerCoins: React.FC = () => {
                           onClick={() => handleOpenSingleModal(partner, 'remove')}
                           title="Deduct Coins from this partner"
                         >
-                          <MinusCircle size={14} /> Deduct
+                          <MinusCircle size={13} /> Deduct
                         </button>
 
                         <button
@@ -904,7 +911,7 @@ const PartnerCoins: React.FC = () => {
                           onClick={() => handleOpenSingleModal(partner, 'set')}
                           title="Set exact coin balance"
                         >
-                          <Edit3 size={14} /> Set
+                          <Edit3 size={13} /> Set
                         </button>
 
                         <button
@@ -913,7 +920,7 @@ const PartnerCoins: React.FC = () => {
                           onClick={() => handleOpenHistory(partner.userId, partner.name)}
                           title="View transaction history"
                         >
-                          <History size={14} />
+                          <History size={13} />
                         </button>
                       </div>
                     </td>
