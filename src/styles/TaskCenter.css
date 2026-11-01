@@ -907,3 +907,96 @@ body.theme-light .card-footer-bar {
   transform: translateY(-2px);
   box-shadow: 0 6px 18px var(--accent-glow);
 }
+
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE DESIGN — TASK CENTER (Tablets & Mobile)
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .tasks-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 14px !important;
+  }
+  .dynamic-task-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+    gap: 16px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .task-module-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 14px !important;
+  }
+  .header-action-row {
+    width: 100% !important;
+  }
+  .header-action-row button {
+    flex: 1 !important;
+    justify-content: center !important;
+  }
+  .tasks-stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .controls-filter-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding: 12px !important;
+  }
+  .task-category-tabs {
+    width: 100% !important;
+    overflow-x: auto !important;
+    padding-bottom: 4px !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .filter-actions-right {
+    width: 100% !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+  .search-box-wrap {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+  .frequency-select-dropdown {
+    width: 100% !important;
+  }
+  .dynamic-task-cards-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+  .modal-overlay-refined {
+    padding: 10px !important;
+  }
+  .modal-content-premium {
+    width: 100% !important;
+    max-width: calc(100vw - 20px) !important;
+    max-height: 92vh !important;
+    max-height: 92dvh !important;
+    overflow-y: auto !important;
+    border-radius: 16px !important;
+  }
+  .modal-header-glass {
+    padding: 16px 18px !important;
+  }
+  .modal-body-refined {
+    padding: 18px 16px !important;
+    gap: 14px !important;
+  }
+  .grid-row-premium {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .modal-footer-row {
+    flex-direction: column-reverse !important;
+    gap: 8px !important;
+  }
+  .modal-footer-row button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}

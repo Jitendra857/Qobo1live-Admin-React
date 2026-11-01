@@ -480,3 +480,34 @@
   font-size: 0.95rem;
   line-height: 1.6;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE DESIGN — TABLETS & MOBILE DEVICES
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 1024px) {
+  .vip-packages-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+    gap: 18px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .vip-stats-bar {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .vip-packages-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+  .vip-tabs-bar {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  .vip-tab-btn {
+    flex: 1 1 auto !important;
+    text-align: center !important;
+    padding: 10px 14px !important;
+  }
+}

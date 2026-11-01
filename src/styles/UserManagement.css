@@ -2807,3 +2807,114 @@ button.primary:hover {
   margin-top: auto;
 }
 
+
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE DESIGN — TABLETS & MOBILE DEVICES
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 1024px) {
+  .header-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 14px !important;
+    margin-bottom: 20px !important;
+  }
+  .top-tools {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 12px !important;
+  }
+  .search-bar {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .user-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+    gap: 14px !important;
+  }
+  .table-container-premium {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    width: 100% !important;
+  }
+  .modern-table {
+    min-width: 700px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 1.4rem !important;
+  }
+  .user-management-controls,
+  .role-filters-bar,
+  .controls-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+  .role-filter-btn {
+    flex: 1 1 auto !important;
+    text-align: center !important;
+    padding: 8px 12px !important;
+  }
+  .user-cards-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .user-card-box {
+    padding: 14px !important;
+  }
+  .user-card-actions {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+  .card-action-btn {
+    flex: 1 1 auto !important;
+    min-width: 36px !important;
+    height: 36px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-card-meta-grid {
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+  }
+  .user-card-body {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+  .user-card-avatar-wrap {
+    margin-bottom: 8px !important;
+  }
+}
+
+/* Custom User History Modal Responsiveness */
+@media (max-width: 1024px) {
+  .modal-box-custom {
+    width: 98vw !important;
+    max-width: 98vw !important;
+    height: 96vh !important;
+    height: 96dvh !important;
+    max-height: 96vh !important;
+    border-radius: 14px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-backdrop-custom {
+    padding: 6px !important;
+  }
+  .modal-box-custom {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 98vh !important;
+    height: 98dvh !important;
+    max-height: 98vh !important;
+    border-radius: 10px !important;
+  }
+}

@@ -92,3 +92,31 @@
     justify-content: center;
     gap: 4px;
 }
+
+
+@media (max-width: 768px) {
+  .auth-wrapper {
+    padding: 16px;
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    align-items: center;
+  }
+
+  .auth-card {
+    padding: 30px 20px;
+    max-width: 100%;
+    border-radius: 14px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  }
+
+  .auth-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .logo-glow {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+  }
+}

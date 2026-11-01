@@ -539,3 +539,82 @@
 @media (max-width: 1200px) {
   .charts-row, .details-row { grid-template-columns: 1fr; }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   RESPONSIVE DASHBOARD — TABLETS & MOBILE DEVICES
+   ═══════════════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .charts-row, .details-row {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  .dashboard-main-title {
+    font-size: 1.75rem !important;
+  }
+  .stats-row {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+    gap: 14px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-header-new {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 14px !important;
+    margin-bottom: 18px !important;
+  }
+  .dashboard-main-title {
+    font-size: 1.45rem !important;
+  }
+  .header-right-controls {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    gap: 10px !important;
+  }
+  .period-selector {
+    width: 100% !important;
+    justify-content: space-between !important;
+    display: flex !important;
+  }
+  .period-btn {
+    flex: 1 !important;
+    text-align: center !important;
+    padding: 8px 4px !important;
+    font-size: 0.75rem !important;
+  }
+  .breadcrumb-pill {
+    justify-content: center !important;
+    width: 100% !important;
+  }
+  .stats-row {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .stat-card-new {
+    padding: 16px 18px !important;
+  }
+  .stat-card-new .card-value {
+    font-size: 1.8rem !important;
+  }
+  .alerts-table-wrap,
+  .activity-card,
+  .chart-card-dash {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .alerts-table {
+    min-width: 500px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-main-title {
+    font-size: 1.25rem !important;
+  }
+  .stat-card-new {
+    padding: 14px 14px !important;
+  }
+}

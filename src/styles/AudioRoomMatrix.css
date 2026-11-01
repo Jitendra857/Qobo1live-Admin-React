@@ -511,3 +511,41 @@
   background: rgba(34, 197, 94, 0.12);
   border-color: rgba(34, 197, 94, 0.25);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE DESIGN — TABLETS & MOBILE DEVICES
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 1024px) {
+  .matrix-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+    gap: 16px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .matrix-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  .matrix-title-wrap h1 {
+    font-size: 1.45rem !important;
+  }
+  .matrix-stats-row {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .matrix-cards-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+  .seats-mini-preview {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 8px !important;
+  }
+  .speaker-seats-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)) !important;
+    gap: 10px !important;
+  }
+}

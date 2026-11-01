@@ -53,7 +53,7 @@ import GiftPreview from './pages/GiftPreview';
 import Emojis from './pages/Emojis';
 import LuckyGifts from './pages/LuckyGifts';
 
-import { Menu as MenuIcon } from 'lucide-react';
+import { Menu as MenuIcon, LogOut } from 'lucide-react';
 import { useSocket } from './hooks/useSocket';
 
 import { adminService } from './services/api';
@@ -119,13 +119,22 @@ function AppContent() {
       <Toaster position="top-right" reverseOrder={false} />
       
       {isAuthenticated && (
-        <div className="mobile-header">
-          <button className="mobile-burger-btn" onClick={() => setIsMobileMenuOpen(true)}>
-            <MenuIcon size={24} />
+        <header className="mobile-header">
+          <button className="mobile-burger-btn" onClick={() => setIsMobileMenuOpen(true)} aria-label="Open Navigation">
+            <MenuIcon size={22} />
           </button>
-          <img src="/logo.svg" alt="Logo" style={{ height: '30px' }} />
-          <div style={{ width: '40px' }} /> {/* Spacer */}
-        </div>
+          <div className="mobile-logo-wrap">
+            <img src="/logo.svg" alt="Qobo1live" style={{ height: '28px', maxWidth: '140px' }} />
+          </div>
+          <button 
+            className="mobile-logout-btn" 
+            onClick={handleLogout} 
+            title="Logout"
+            aria-label="Logout"
+          >
+            <LogOut size={18} />
+          </button>
+        </header>
       )}
 
       {isAuthenticated && menuPosition === 'left' && <Sidebar onLogout={handleLogout} />}

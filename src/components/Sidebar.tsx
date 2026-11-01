@@ -1,9 +1,10 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
   Home, Gift, Settings, UserCheck, Wallet,
   Tv, Headset, ChevronDown, ChevronRight,
-  Monitor, ChevronLeft, Menu as MenuIcon, Building2
+  Monitor, ChevronLeft, Menu as MenuIcon, Building2,
+  LogOut, X
 } from 'lucide-react';
 import { useLayout } from '../context/LayoutContext';
 import '../styles/Sidebar.css';
@@ -24,6 +25,7 @@ interface MenuItem {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
+  const location = useLocation();
   const {
     isSidebarCollapsed, setSidebarCollapsed,
     menuPosition, isMobileMenuOpen, setIsMobileMenuOpen,
@@ -32,7 +34,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
 
   const [expandedMenus, setExpandedMenus] = React.useState<string[]>(() => {
     const user = JSON.parse(localStorage.getItem('admin_user') || '{}');
-    return user?.role === 'super_admin' ? ['Agencies & Hosts'] : [];
+    const defaultOpen = ['Earnings & Payouts', 'Community & Users'];
+    if (user?.role === 'super_admin') defaultOpen.push('Agencies & Hosts');
+    return defaultOpen;
   });
 
   React.useEffect(() => {
@@ -41,6 +45,15 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
       setSidebarCollapsed(false);
     }
   }, [setSidebarCollapsed]);
+
+  // Automatically expand parent menu if current route is one of its sub-items
+  React.useEffect(() => {
+    menuItems.forEach(item => {
+      if (item.subItems?.some(sub => sub.path === location.pathname)) {
+        setExpandedMenus(prev => prev.includes(item.title!) ? prev : [...prev, item.title!]);
+      }
+    });
+  }, [location.pathname]);
 
   const toggleMenu = (title: string) => {
     setExpandedMenus(prev =>
@@ -59,6 +72,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
       subItems: [
         { title: 'User List', path: '/users' },
         { title: 'Partner Coins', path: '/partner-coins' },
+        { title: 'Withdraw Requests', path: '/withdrawals' },
         { title: 'Coins Sellers', path: '/coins-seller-requests' },
         { title: 'Banned & Reports', path: '/moderation' },
       ],
@@ -96,9 +110,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     {
       title: 'Earnings & Payouts', icon: <Wallet size={17} />, iconClass: 'icon-green',
       subItems: [
+        { title: 'Withdraw Requests', path: '/withdrawals' },
         { title: 'Coins Setup', path: '/coins-setup' },
         { title: 'User Balances', path: '/economy' },
-        { title: 'Withdraw Requests', path: '/withdrawals' },
         { title: 'Payment History', path: '/transactions' },
       ],
     },
@@ -161,7 +175,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   if (menuPosition === 'top') return null;
 
   const handleNavClick = () => {
-    if (window.innerWidth <= 768) setIsMobileMenuOpen(false);
+    if (window.innerWidth <= 1024) setIsMobileMenuOpen(false);
   };
 
   return (
@@ -181,9 +195,23 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
               className={sidebarTheme.id !== 'white' ? 'dark-sidebar-logo' : ''} 
             />
           )}
-          <button className="burger-btn" onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}>
-            {isSidebarCollapsed ? <MenuIcon size={17} /> : <ChevronLeft size={17} />}
-          </button>
+          <div className="branding-actions">
+            <button 
+              className="burger-btn desktop-collapse-btn" 
+              onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}
+              title={isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+            >
+              {isSidebarCollapsed ? <MenuIcon size={17} /> : <ChevronLeft size={17} />}
+            </button>
+            <button 
+              className="burger-btn mobile-close-drawer-btn" 
+              onClick={() => setIsMobileMenuOpen(false)}
+              title="Close Menu"
+              aria-label="Close Menu"
+            >
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         {/* Nav */}
@@ -256,6 +284,16 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
             </div>
           ))}
         </nav>
+
+        {/* Footer with Logout */}
+        {onLogout && (
+          <div className="sidebar-footer">
+            <button className="logout-btn" onClick={onLogout} title="Logout" aria-label="Logout">
+              <span className="logout-icon-wrap"><LogOut size={16} /></span>
+              {!isSidebarCollapsed && <span className="logout-text">Logout</span>}
+            </button>
+          </div>
+        )}
 
       </div>
     </>

@@ -7,14 +7,15 @@ import {
 import { useLayout, SIDEBAR_THEMES, APP_THEMES } from '../context/LayoutContext';
 
 const menuItems = [
-  { path: '/dashboard',  label: 'Dashboard',  icon: LayoutDashboard },
-  { path: '/users',      label: 'Users',      icon: Users },
+  { path: '/dashboard',   label: 'Dashboard',   icon: LayoutDashboard },
+  { path: '/users',       label: 'Users',       icon: Users },
+  { path: '/withdrawals', label: 'Withdrawals', icon: Wallet },
   { path: '/coins-setup', label: 'Coins Setup', icon: Coins },
-  { path: '/gifts',      label: 'Gifts',      icon: Gift },
-  { path: '/agents',     label: 'Agencies',   icon: Crown },
-  { path: '/economy',    label: 'Finance',    icon: Wallet },
-  { path: '/moderation', label: 'Moderation', icon: ShieldCheck },
-  { path: '/settings',   label: 'Settings',   icon: Settings },
+  { path: '/gifts',       label: 'Gifts',       icon: Gift },
+  { path: '/agents',      label: 'Agencies',    icon: Crown },
+  { path: '/economy',     label: 'Finance',     icon: Wallet },
+  { path: '/moderation',  label: 'Moderation',  icon: ShieldCheck },
+  { path: '/settings',    label: 'Settings',    icon: Settings },
 ];
 
 /* ── Top-bar menu (used when menuPosition === 'top') ─────── */
