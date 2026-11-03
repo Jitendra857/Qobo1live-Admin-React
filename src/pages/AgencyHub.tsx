@@ -8,6 +8,7 @@ import {
   LayoutGrid, List, Copy, Check
 } from 'lucide-react';
 import '../styles/UserManagement.css';
+import { SearchableSelect } from '../components/SearchableSelect';
 
 const AgencyHub: React.FC = () => {
   const [agencies, setAgencies] = useState<any[]>([]);
@@ -380,16 +381,23 @@ const AgencyHub: React.FC = () => {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <select
-            className="filter-select"
+          <SearchableSelect
             value={selectedSuperAdmin}
-            onChange={e => setSelectedSuperAdmin(e.target.value)}
-          >
-            <option value="all">All Super Admins</option>
-            {superAdmins.map(sa => (
-              <option key={sa.id} value={sa.email}>{sa.name || sa.email}</option>
-            ))}
-          </select>
+            onChange={setSelectedSuperAdmin}
+            placeholder="All Super Admins"
+            searchPlaceholder="Search super admin..."
+            prefixIcon={<ShieldCheck size={15} style={{ color: '#8b5cf6', flexShrink: 0 }} />}
+            options={[
+              { value: 'all', label: 'All Super Admins' },
+              ...superAdmins.map(sa => ({
+                value: sa.email,
+                label: sa.name ? `${sa.name} (${sa.email})` : sa.email,
+                subLabel: sa.email
+              }))
+            ]}
+            width="240px"
+            height={44}
+          />
         </div>
 
         <div className="view-mode-toggle" style={{ margin: 0 }}>

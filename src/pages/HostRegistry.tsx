@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { adminService } from '../services/api';
 import {
   CheckCircle, XCircle, UserCheck, Eye, Phone, Mail,
@@ -11,6 +11,7 @@ import '../styles/UserManagement.css';
 import '../styles/Modal.css';
 import MediaImage from '../components/MediaImage';
 import { useLayout } from '../context/LayoutContext';
+import { SearchableSelect } from '../components/SearchableSelect';
 
 const HostRegistry: React.FC = () => {
   const [apps, setApps]           = useState<any[]>([]);
@@ -22,10 +23,15 @@ const HostRegistry: React.FC = () => {
   const [viewMode, setViewMode]   = useState<'cards' | 'table'>('cards');
   const [copiedText, setCopiedText] = useState<string | null>(null);
 
-  // Super Admins state
+  // User & permissions
+  const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
+  const canApprove = currentUser?.role === 'super_admin' || currentUser?.role === 'agency';
+
+  // Super Admins & Agencies state
   const [superAdmins, setSuperAdmins] = useState<any[]>([]);
   const [selectedSuperAdmin, setSelectedSuperAdmin] = useState<string>('all');
   const [agenciesList, setAgenciesList] = useState<any[]>([]);
+  const [selectedAgency, setSelectedAgency] = useState<string>('all');
 
   // Reject / Modal State
   const [feedback, setFeedback] = useState('');
@@ -39,7 +45,7 @@ const HostRegistry: React.FC = () => {
     setSidebarCollapsed(false);
   }, [setMenuPosition, setSidebarCollapsed]);
 
-  const fetchApps = async (adminFilter = selectedSuperAdmin) => {
+  const fetchApps = async (adminFilter = selectedSuperAdmin, agencyFilter = selectedAgency) => {
     try {
       setLoading(true);
       if (currentUser?.role === 'agency') {
@@ -61,7 +67,7 @@ const HostRegistry: React.FC = () => {
         }
       } else {
         const [res, adminsRes, agenciesRes] = await Promise.allSettled([
-          adminService.getHosts(adminFilter),
+          adminService.getHosts(adminFilter, agencyFilter),
           adminService.getSuperAdmins(),
           adminService.getAgencies(adminFilter)
         ]);
@@ -84,8 +90,8 @@ const HostRegistry: React.FC = () => {
   };
 
   useEffect(() => { 
-    fetchApps(selectedSuperAdmin); 
-  }, [selectedSuperAdmin]);
+    fetchApps(selectedSuperAdmin, selectedAgency); 
+  }, [selectedSuperAdmin, selectedAgency]);
 
   // Live filter
   useEffect(() => {
@@ -117,11 +123,64 @@ const HostRegistry: React.FC = () => {
       
       result = result.filter(a => matchingAgencyCodes.includes((a.agencyCode || '').toLowerCase()));
     }
+    if (selectedAgency !== 'all') {
+      const qAgency = selectedAgency.toLowerCase().trim();
+      result = result.filter(a => (a.agencyCode || '').toLowerCase().trim() === qAgency);
+    }
     setFiltered(result);
-  }, [search, activeTab, selectedSuperAdmin, apps, agenciesList]);
+  }, [search, activeTab, selectedSuperAdmin, selectedAgency, apps, agenciesList]);
 
-  const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
-  const canApprove = currentUser?.role === 'super_admin' || currentUser?.role === 'agency';
+  // Available agencies based on current agenciesList and apps
+  const availableAgencies = useMemo(() => {
+    const map = new Map<string, { code: string; name: string }>();
+
+    agenciesList.forEach(ag => {
+      if (ag.code) {
+        const code = ag.code.trim();
+        map.set(code.toUpperCase(), {
+          code,
+          name: ag.name || code
+        });
+      }
+    });
+
+    // Also include any agency code present on existing host applications
+    apps.forEach(app => {
+      if (app.agencyCode && app.agencyCode.trim()) {
+        const code = app.agencyCode.trim();
+        const upper = code.toUpperCase();
+        if (!map.has(upper)) {
+          map.set(upper, {
+            code,
+            name: `${code} Agency`
+          });
+        }
+      }
+    });
+
+    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [agenciesList, apps]);
+
+  const agencyOptions = useMemo(() => [
+    { value: 'all', label: 'All Agencies' },
+    ...availableAgencies.map(ag => {
+      const isCodeInName = ag.name.toUpperCase().includes(ag.code.toUpperCase());
+      return {
+        value: ag.code,
+        label: isCodeInName ? ag.name : `${ag.name} (${ag.code})`,
+        subLabel: `Code: ${ag.code}`
+      };
+    })
+  ], [availableAgencies]);
+
+  const superAdminOptions = useMemo(() => [
+    { value: 'all', label: 'All Super Admins' },
+    ...superAdmins.map(sa => ({
+      value: sa.email,
+      label: sa.name ? `${sa.name} (${sa.email})` : sa.email,
+      subLabel: sa.email
+    }))
+  ], [superAdmins]);
 
   const totalCount    = apps.length;
   const pendingCount  = apps.filter(a => a.status?.toLowerCase() === 'pending').length;
@@ -357,8 +416,8 @@ const HostRegistry: React.FC = () => {
 
       {/* ── Toolbar ─────────────────────────────────────────────────────────── */}
       <div className="hr-toolbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: '280px' }}>
-          <div className="hr-search" style={{ flex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: '280px', flexWrap: 'wrap' }}>
+          <div className="hr-search" style={{ flex: '1 1 200px', minWidth: '180px' }}>
             <Search size={15} style={{ color:'var(--text-secondary)', flexShrink:0 }}/>
             <input
               placeholder="Search by name, phone, agency code..."
@@ -366,17 +425,33 @@ const HostRegistry: React.FC = () => {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <select
-            className="filter-select"
-            value={selectedSuperAdmin}
-            onChange={e => setSelectedSuperAdmin(e.target.value)}
-            style={{ height: '42px', border: '1px solid var(--glass-border)', borderRadius: '12px', background: 'var(--input-bg)', color: 'var(--text-primary)', fontWeight: '700', padding: '0 14px', outline: 'none' }}
-          >
-            <option value="all">All Super Admins</option>
-            {superAdmins.map(sa => (
-              <option key={sa.id} value={sa.email}>{sa.name || sa.email}</option>
-            ))}
-          </select>
+          {currentUser?.role !== 'agency' && (
+            <SearchableSelect
+              value={selectedSuperAdmin}
+              onChange={(val) => {
+                setSelectedSuperAdmin(val);
+                setSelectedAgency('all');
+              }}
+              placeholder="All Super Admins"
+              searchPlaceholder="Search super admin..."
+              prefixIcon={<ShieldCheck size={14} style={{ color: '#8b5cf6', flexShrink: 0 }} />}
+              options={superAdminOptions}
+              width="220px"
+              height={42}
+            />
+          )}
+          {currentUser?.role !== 'agency' && (
+            <SearchableSelect
+              value={selectedAgency}
+              onChange={setSelectedAgency}
+              placeholder="All Agencies"
+              searchPlaceholder="Search agency name or code..."
+              prefixIcon={<Building2 size={14} style={{ color: '#3b82f6', flexShrink: 0 }} />}
+              options={agencyOptions}
+              width="220px"
+              height={42}
+            />
+          )}
         </div>
 
         <div className="view-mode-toggle" style={{ margin: 0 }}>

@@ -60,7 +60,13 @@ export const adminService = {
   updateUser: (id: string, data: any) => api.put(`/admin/user/${id}`, data),
   deleteUser: (id: string) => api.delete(`/admin/user/${id}`),
   getLoginMulti: (data: any) => api.post('/admin/login-multi', data),
-  getHosts: (superAdmin?: string) => api.get(`/admin/host-list${superAdmin && superAdmin !== 'all' ? `?superAdmin=${encodeURIComponent(superAdmin)}` : ''}`),
+  getHosts: (superAdmin?: string, agency?: string) => {
+    const params = new URLSearchParams();
+    if (superAdmin && superAdmin !== 'all') params.append('superAdmin', superAdmin);
+    if (agency && agency !== 'all') params.append('agency', agency);
+    const qs = params.toString();
+    return api.get(`/admin/host-list${qs ? `?${qs}` : ''}`);
+  },
   getPackages: () => api.get('/admin/package-list'),
   getGifts: () => api.get('/admin/gift-list'),
   getLuckyGifts: () => api.get('/admin/lucky-gifts'),
