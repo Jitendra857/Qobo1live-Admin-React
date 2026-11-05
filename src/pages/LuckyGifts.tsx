@@ -46,6 +46,7 @@ const LuckyGifts: React.FC = () => {
 
     const [files, setFiles] = useState<{ [key: string]: File | null }>({
         icon: null,
+        thumbnail: null,
         animation: null,
         sound: null
     });
@@ -128,7 +129,7 @@ const LuckyGifts: React.FC = () => {
                 status: 'active'
             });
         }
-        setFiles({ icon: null, animation: null, sound: null });
+        setFiles({ icon: null, thumbnail: null, animation: null, sound: null });
         setIsModalOpen(true);
         scrollToModalTop();
     };
@@ -185,6 +186,7 @@ const LuckyGifts: React.FC = () => {
                 data.append('animationUrl', formData.animationUrl);
             }
 
+            if (files.thumbnail) data.append('thumbnail', files.thumbnail);
             if (files.icon) data.append('icon', files.icon);
             if (files.animation) data.append('animation', files.animation);
             if (files.sound) data.append('sound', files.sound);
@@ -406,14 +408,42 @@ const LuckyGifts: React.FC = () => {
                                 </div>
 
                                 <div className="card-center">
-                                    <div className="asset-icon-box">
-                                        {isSvgaUrl(gift.animationUrl) ? (
+                                    <div 
+                                        className="asset-icon-box"
+                                        style={{ cursor: (gift.animationUrl || gift.icon) ? 'pointer' : 'default' }}
+                                        onClick={() => {
+                                            if (gift.animationUrl || gift.icon) {
+                                                const previewUrl = gift.animationUrl || gift.icon;
+                                                const soundParam = gift.soundUrl ? `&soundUrl=${encodeURIComponent(gift.soundUrl)}` : '';
+                                                window.open(`/gift-preview?url=${encodeURIComponent(previewUrl)}&name=${encodeURIComponent(gift.name)}${soundParam}`, '_blank');
+                                            }
+                                        }}
+                                        title="Click to preview gift animation & play sound in new tab"
+                                    >
+                                        {gift.thumbnail ? (
+                                            <MediaImage src={gift.thumbnail} alt={gift.name} className="asset-icon" style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
+                                        ) : gift.icon && !isSvgaUrl(gift.icon) ? (
+                                            <MediaImage src={gift.icon} alt={gift.name} className="asset-icon" style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
+                                        ) : isSvgaUrl(gift.animationUrl) ? (
                                             <SvgaPlayer src={gift.animationUrl} style={{ width: '80px', height: '80px' }} />
                                         ) : (
                                             <MediaImage src={gift.icon || gift.image || '/default_gift.png'} alt={gift.name} className="asset-icon" />
                                         )}
                                     </div>
-                                    <h3 className="asset-name" style={{ marginTop: '10px' }}>{gift.name}</h3>
+                                    <h3 
+                                        className="asset-name" 
+                                        style={{ marginTop: '10px', cursor: (gift.animationUrl || gift.icon) ? 'pointer' : 'default' }}
+                                        title="Click to preview gift animation & play sound in new tab"
+                                        onClick={() => {
+                                            if (gift.animationUrl || gift.icon) {
+                                                const previewUrl = gift.animationUrl || gift.icon;
+                                                const soundParam = gift.soundUrl ? `&soundUrl=${encodeURIComponent(gift.soundUrl)}` : '';
+                                                window.open(`/gift-preview?url=${encodeURIComponent(previewUrl)}&name=${encodeURIComponent(gift.name)}${soundParam}`, '_blank');
+                                            }
+                                        }}
+                                    >
+                                        {gift.name}
+                                    </h3>
                                     <div className="asset-price" style={{ color: '#d97706', fontWeight: 800, fontSize: '1.15rem' }}>
                                         {price} Coins
                                     </div>
@@ -484,15 +514,41 @@ const LuckyGifts: React.FC = () => {
                                 return (
                                     <tr key={gift.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                                         <td style={{ padding: '10px 16px' }}>
-                                            <div style={{ width: '40px', height: '40px', borderRadius: '6px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                                                {isSvgaUrl(gift.animationUrl) ? (
+                                            <div 
+                                                style={{ width: '40px', height: '40px', borderRadius: '6px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', cursor: (gift.animationUrl || gift.icon) ? 'pointer' : 'default' }}
+                                                onClick={() => {
+                                                    if (gift.animationUrl || gift.icon) {
+                                                        const previewUrl = gift.animationUrl || gift.icon;
+                                                        const soundParam = gift.soundUrl ? `&soundUrl=${encodeURIComponent(gift.soundUrl)}` : '';
+                                                        window.open(`/gift-preview?url=${encodeURIComponent(previewUrl)}&name=${encodeURIComponent(gift.name)}${soundParam}`, '_blank');
+                                                    }
+                                                }}
+                                                title="Click to preview gift animation & play sound in new tab"
+                                            >
+                                                {gift.thumbnail ? (
+                                                    <MediaImage src={gift.thumbnail} alt={gift.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                                ) : gift.icon && !isSvgaUrl(gift.icon) ? (
+                                                    <MediaImage src={gift.icon} alt={gift.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                                ) : isSvgaUrl(gift.animationUrl) ? (
                                                     <SvgaPlayer src={gift.animationUrl} style={{ width: '38px', height: '38px' }} />
                                                 ) : (
                                                     <MediaImage src={gift.icon || gift.image || '/default_gift.png'} alt={gift.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                                                 )}
                                             </div>
                                         </td>
-                                        <td style={{ padding: '10px 16px', fontWeight: 600, color: '#1e293b' }}>{gift.name}</td>
+                                        <td 
+                                            style={{ padding: '10px 16px', fontWeight: 600, color: '#1e293b', cursor: (gift.animationUrl || gift.icon) ? 'pointer' : 'default' }}
+                                            title="Click to preview in new tab"
+                                            onClick={() => {
+                                                if (gift.animationUrl || gift.icon) {
+                                                    const previewUrl = gift.animationUrl || gift.icon;
+                                                    const soundParam = gift.soundUrl ? `&soundUrl=${encodeURIComponent(gift.soundUrl)}` : '';
+                                                    window.open(`/gift-preview?url=${encodeURIComponent(previewUrl)}&name=${encodeURIComponent(gift.name)}${soundParam}`, '_blank');
+                                                }
+                                            }}
+                                        >
+                                            {gift.name}
+                                        </td>
                                         <td style={{ padding: '10px 16px', fontWeight: 600, color: '#d97706' }}>{price} Coins</td>
                                         <td style={{ padding: '10px 16px' }}>
                                             <span style={{ background: '#eff6ff', color: '#2563eb', padding: '3px 8px', borderRadius: '10px', fontSize: '12px', fontWeight: 600 }}>
@@ -667,6 +723,13 @@ const LuckyGifts: React.FC = () => {
 
                             {/* File Upload Grid Matching Gifts.tsx */}
                             <div className="file-upload-grid-premium">
+                                <div className="upload-unit">
+                                    <span className="unit-label">Thumb</span>
+                                    <input type="file" accept="image/*,.svg" className="hidden" id="lucky-thumb-up" onChange={e => handleFileChange(e, 'thumbnail')} />
+                                    <label htmlFor="lucky-thumb-up" className={`unit-box ${files.thumbnail ? 'done' : ''}`} style={{ cursor: 'pointer' }} title="Upload lightweight grid thumbnail (PNG/WebP/SVG)">
+                                        {files.thumbnail ? <Check size={20} /> : <GiftIcon size={22} />}
+                                    </label>
+                                </div>
                                 <div className="upload-unit">
                                     <span className="unit-label">Icon</span>
                                     <input type="file" accept="image/*,.svg" className="hidden" id="lucky-icon-up" onChange={e => handleFileChange(e, 'icon')} />

@@ -35,6 +35,7 @@ const Gifts: React.FC = () => {
     });
     const [files, setFiles] = useState<{ [key: string]: File | null }>({
         icon: null,
+        thumbnail: null,
         animation: null,
         sound: null
     });
@@ -142,7 +143,7 @@ const Gifts: React.FC = () => {
                 animationUrl: '',
             });
         }
-        setFiles({ icon: null, animation: null, sound: null });
+        setFiles({ icon: null, thumbnail: null, animation: null, sound: null });
         setIsModalOpen(true);
         scrollToModalTop();
     };
@@ -173,6 +174,7 @@ const Gifts: React.FC = () => {
             data.set('type', formData.type === 'lucky' ? 'normal' : (formData.type || 'normal'));
             data.set('isLucky', 'false');
 
+            if (files.thumbnail) data.append('thumbnail', files.thumbnail);
             if (files.icon) data.append('icon', files.icon);
             if (files.animation) data.append('animation', files.animation);
             if (files.sound) data.append('sound', files.sound);
@@ -293,7 +295,23 @@ const Gifts: React.FC = () => {
                                 }}
                                 title="Click to preview gift animation & play sound in new tab"
                             >
-                                {isSvgaUrl(gift.animationUrl) ? (
+                                {gift.thumbnail ? (
+                                    <MediaImage 
+                                        src={gift.thumbnail} 
+                                        alt={gift.name} 
+                                        className="asset-icon" 
+                                        style={{ width: '80px', height: '80px', objectFit: 'contain' }}
+                                        fallbackIcon={gift.type === 'luxury' ? <Gem className="text-purple-500" size={36} /> : <GiftIcon className="text-blue-500" size={36} />}
+                                    />
+                                ) : gift.icon && !isSvgaUrl(gift.icon) ? (
+                                    <MediaImage 
+                                        src={gift.icon} 
+                                        alt={gift.name} 
+                                        className="asset-icon" 
+                                        style={{ width: '80px', height: '80px', objectFit: 'contain' }}
+                                        fallbackIcon={gift.type === 'luxury' ? <Gem className="text-purple-500" size={36} /> : <GiftIcon className="text-blue-500" size={36} />}
+                                    />
+                                ) : isSvgaUrl(gift.animationUrl) ? (
                                     <SvgaPlayer 
                                         src={gift.animationUrl} 
                                         className="asset-icon" 
@@ -316,8 +334,8 @@ const Gifts: React.FC = () => {
                                     />
                                 )}
 
-                                {/* Small Static Icon Badge overlayed on the bottom-right */}
-                                {gift.animationUrl && gift.icon && (
+                                {/* Small Static Icon/Thumbnail Badge overlayed on the bottom-right */}
+                                {gift.animationUrl && (gift.thumbnail || (gift.icon && !isSvgaUrl(gift.icon))) && (
                                     <div 
                                         style={{ 
                                             position: 'absolute', 
@@ -335,12 +353,12 @@ const Gifts: React.FC = () => {
                                             justifyContent: 'center',
                                             zIndex: 2
                                         }}
-                                        title="Static Drawer Icon"
+                                        title="Drawer Thumbnail"
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         <MediaImage 
-                                            src={gift.icon} 
-                                            alt="Static Icon" 
+                                            src={gift.thumbnail || gift.icon} 
+                                            alt="Thumbnail" 
                                             style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                                             fallbackIcon={<GiftIcon size={12} className="text-slate-400" />}
                                         />
@@ -504,6 +522,13 @@ const Gifts: React.FC = () => {
                             </div>
 
                             <div className="file-upload-grid-premium">
+                                <div className="upload-unit">
+                                    <span className="unit-label">Thumb</span>
+                                    <input type="file" accept="image/*,.svg" className="hidden" id="thumb-up-1" onChange={e => handleFileChange(e, 'thumbnail')} />
+                                    <label htmlFor="thumb-up-1" className={`unit-box ${files.thumbnail ? 'done' : ''}`} title="Upload lightweight grid thumbnail (PNG/WebP/SVG)">
+                                        {files.thumbnail ? <Check size={20} /> : <GiftIcon size={24} />}
+                                    </label>
+                                </div>
                                 <div className="upload-unit">
                                     <span className="unit-label">Icon</span>
                                     <input type="file" accept="image/*,.svg" className="hidden" id="icon-up-1" onChange={e => handleFileChange(e, 'icon')} />
