@@ -295,7 +295,7 @@ const Gifts: React.FC = () => {
                                 }}
                                 title="Click to preview gift animation & play sound in new tab"
                             >
-                                {gift.thumbnail ? (
+                                {gift.thumbnail && !isSvgaUrl(gift.thumbnail) ? (
                                     <MediaImage 
                                         src={gift.thumbnail} 
                                         alt={gift.name} 
@@ -311,9 +311,9 @@ const Gifts: React.FC = () => {
                                         style={{ width: '80px', height: '80px', objectFit: 'contain' }}
                                         fallbackIcon={gift.type === 'luxury' ? <Gem className="text-purple-500" size={36} /> : <GiftIcon className="text-blue-500" size={36} />}
                                     />
-                                ) : isSvgaUrl(gift.animationUrl) ? (
+                                ) : (isSvgaUrl(gift.animationUrl) || isSvgaUrl(gift.icon) || isSvgaUrl(gift.thumbnail)) ? (
                                     <SvgaPlayer 
-                                        src={gift.animationUrl} 
+                                        src={gift.animationUrl || gift.icon || gift.thumbnail} 
                                         className="asset-icon" 
                                         style={{ width: '80px', height: '80px', objectFit: 'contain' }}
                                         mute={true}
@@ -327,7 +327,7 @@ const Gifts: React.FC = () => {
                                     />
                                 ) : (
                                     <MediaImage 
-                                        src={gift.icon} 
+                                        src={gift.icon || gift.thumbnail} 
                                         alt={gift.name} 
                                         className="asset-icon" 
                                         fallbackIcon={gift.type === 'luxury' ? <Gem className="text-purple-500" size={36} /> : <GiftIcon className="text-blue-500" size={36} />}
@@ -335,7 +335,7 @@ const Gifts: React.FC = () => {
                                 )}
 
                                 {/* Small Static Icon/Thumbnail Badge overlayed on the bottom-right */}
-                                {gift.animationUrl && (gift.thumbnail || (gift.icon && !isSvgaUrl(gift.icon))) && (
+                                {gift.animationUrl && ((gift.thumbnail && !isSvgaUrl(gift.thumbnail)) || (gift.icon && !isSvgaUrl(gift.icon))) && (
                                     <div 
                                         style={{ 
                                             position: 'absolute', 
@@ -357,7 +357,7 @@ const Gifts: React.FC = () => {
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         <MediaImage 
-                                            src={gift.thumbnail || gift.icon} 
+                                            src={(!isSvgaUrl(gift.thumbnail) ? gift.thumbnail : null) || gift.icon} 
                                             alt="Thumbnail" 
                                             style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                                             fallbackIcon={<GiftIcon size={12} className="text-slate-400" />}

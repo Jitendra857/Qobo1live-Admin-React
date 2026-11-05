@@ -420,12 +420,12 @@ const LuckyGifts: React.FC = () => {
                                         }}
                                         title="Click to preview gift animation & play sound in new tab"
                                     >
-                                        {gift.thumbnail ? (
+                                        {gift.thumbnail && !isSvgaUrl(gift.thumbnail) ? (
                                             <MediaImage src={gift.thumbnail} alt={gift.name} className="asset-icon" style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
                                         ) : gift.icon && !isSvgaUrl(gift.icon) ? (
                                             <MediaImage src={gift.icon} alt={gift.name} className="asset-icon" style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
-                                        ) : isSvgaUrl(gift.animationUrl) ? (
-                                            <SvgaPlayer src={gift.animationUrl} style={{ width: '80px', height: '80px' }} />
+                                        ) : (isSvgaUrl(gift.animationUrl) || isSvgaUrl(gift.icon) || isSvgaUrl(gift.thumbnail)) ? (
+                                            <SvgaPlayer src={gift.animationUrl || gift.icon || gift.thumbnail} style={{ width: '80px', height: '80px' }} />
                                         ) : (
                                             <MediaImage src={gift.icon || gift.image || '/default_gift.png'} alt={gift.name} className="asset-icon" />
                                         )}
@@ -525,12 +525,12 @@ const LuckyGifts: React.FC = () => {
                                                 }}
                                                 title="Click to preview gift animation & play sound in new tab"
                                             >
-                                                {gift.thumbnail ? (
+                                                {gift.thumbnail && !isSvgaUrl(gift.thumbnail) ? (
                                                     <MediaImage src={gift.thumbnail} alt={gift.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                                                 ) : gift.icon && !isSvgaUrl(gift.icon) ? (
                                                     <MediaImage src={gift.icon} alt={gift.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                                                ) : isSvgaUrl(gift.animationUrl) ? (
-                                                    <SvgaPlayer src={gift.animationUrl} style={{ width: '38px', height: '38px' }} />
+                                                ) : (isSvgaUrl(gift.animationUrl) || isSvgaUrl(gift.icon) || isSvgaUrl(gift.thumbnail)) ? (
+                                                    <SvgaPlayer src={gift.animationUrl || gift.icon || gift.thumbnail} style={{ width: '38px', height: '38px' }} />
                                                 ) : (
                                                     <MediaImage src={gift.icon || gift.image || '/default_gift.png'} alt={gift.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                                                 )}
